@@ -6,17 +6,22 @@ import pkg_resources
 
 
 class Evalua():
-    def __init__(self, topic):
+    def __init__(self, topic, local=False):
         self.topic = topic
-        
+        self.local = local 
+
     def verifica(self, x, i):
         """
         Permite comparar el contenido de x con el de y. Si se encuentra una diferencia entonces emite una alerta.
         """
 
-        filename = 'data/' + self.topic + '/sol{:02d}.npy'.format(i)
-        stream = pkg_resources.resource_stream('macti', filename)
+        if self.local:
+            stream = self.topic + '/sol{:02d}.npy'.format(i)
+        else:
+            filename = 'data/' + self.topic + '/sol{:02d}.npy'.format(i)
+            stream = pkg_resources.resource_stream('macti', filename)
         y = np.load(stream)
+    
         try:
             assert_equal(list(x.flatten()), list(y.flatten()))
         except AssertionError as info:
@@ -32,6 +37,13 @@ if __name__ == '__main__':
     PA = 0.10 * x + 200
     PB = 0.35 * x + 20
 
+    print('\n Global data')
     d = Evalua('SistemasLineales')     
     d.verifica(PA, 1)
     d.verifica(PB, 2)
+
+    print('\n Local data')
+    f = Evalua('./data/SistemasLineales/', local=True)
+    f.verifica(PA, 1)
+    f.verifica(PB, 2)
+            
