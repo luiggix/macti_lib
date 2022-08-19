@@ -1,0 +1,1 @@
+PyNoxtli : Ver. 1.0, LMCS-2021, [GNU GPL License V3]

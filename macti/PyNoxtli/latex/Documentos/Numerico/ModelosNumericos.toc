@@ -1,0 +1,17 @@
+\babel@toc {spanish}{}
+\contentsline {section}{\numberline {1}Modelo num\'erico 1D}{2}%
+\contentsline {subsection}{\numberline {1.1}Ecuaciones FVM}{2}%
+\contentsline {subsection}{\numberline {1.2}Almacenamiento de la matriz: CSR}{3}%
+\contentsline {subsection}{\numberline {1.3}Condiciones de frontera}{3}%
+\contentsline {subsubsection}{\numberline {1.3.1}Dirichlet}{4}%
+\contentsline {subsubsection}{\numberline {1.3.2}Neumman}{4}%
+\contentsline {subsubsection}{\numberline {1.3.3}Ajuste en el almacenamiento CSR}{4}%
+\contentsline {section}{\numberline {2}Modelo num\'erico 2D}{5}%
+\contentsline {subsection}{\numberline {2.1}Ecuaciones FVM}{5}%
+\contentsline {subsection}{\numberline {2.2}Almacenamiento de la matrix: CSR}{7}%
+\contentsline {subsection}{\numberline {2.3}Condiciones de frontera}{9}%
+\contentsline {subsubsection}{\numberline {2.3.1}Dirichlet}{9}%
+\contentsline {subsubsection}{\numberline {2.3.2}Neumman}{10}%
+\contentsline {subsubsection}{\numberline {2.3.3}Doble condici\'on de frontera}{12}%
+\contentsline {subsubsection}{\numberline {2.3.4}Ajuste en el almacenamiento CSR}{13}%
+\contentsline {section}{\numberline {3}Numerical Schemes}{14}%

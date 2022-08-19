@@ -1,0 +1,39 @@
+\frametitle{TUNAM: interface to CUSP}
+
+
+\begin{tiny}
+
+\begin{lstlisting}
+//typedef cusp::device_memory MemorySpace;
+typedef cusp::host_memory MemorySpace;
+typedef float ValueType;
+
+int csr_from_cusp(int *h_rp, int *h_cj, float *h_va, float *h_b, float *h_T, int n, int nnz)
+{
+  // allocate storage for (n,n) matrix with nnz nonzeros in csr format
+  cusp::csr_matrix<int,ValueType,MemorySpace> A(n,n,nnz);
+
+  // initialize row ptr array
+  for(int i = 0; i < n+1; i++)
+    A.row_offsets[i] = h_rp[i];
+
+  // initialize column and value arrays
+  for(int i = 0; i < nnz; i++) {
+    A.column_indices[i] = h_cj[i];
+    A.values[i] = h_va[i];
+  }
+
+  // print matrix entries
+  cout << "\n ----- CSR FORMAT IN CUSP ----- \n";
+  cusp::print(A);
+
+  // allocate storage for solution (x) and right hand side (b)
+  cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
+  cusp::array1d<ValueType, MemorySpace> b(A.num_rows, 0);
+
+  return 0;
+}
+\end{lstlisting}
+\end{tiny}
+
+

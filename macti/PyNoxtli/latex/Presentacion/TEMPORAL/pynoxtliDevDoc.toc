@@ -1,0 +1,14 @@
+\babel@toc {spanish}{}
+\beamer@sectionintoc {1}{Boundary Value Problem}{2}{0}{1}
+\beamer@subsectionintoc {1}{1}{Finite Volume Method}{3}{0}{1}
+\beamer@sectionintoc {2}{DVS Framework}{8}{0}{2}
+\beamer@subsectionintoc {2}{1}{Derived nodes}{8}{0}{2}
+\beamer@subsectionintoc {2}{2}{DVS algorithms}{15}{0}{2}
+\beamer@sectionintoc {3}{Auxiliary Algebraic Developments}{17}{0}{3}
+\beamer@subsectionintoc {3}{1}{General Schur Formulas}{18}{0}{3}
+\beamer@subsectionintoc {3}{2}{Application of Schur complement matrix}{19}{0}{3}
+\beamer@subsectionintoc {3}{3}{Application of A\_Pi Pi}{21}{0}{3}
+\beamer@sectionintoc {4}{Application of Inverse of Schur}{22}{0}{4}
+\beamer@sectionintoc {5}{Finite Volume Method}{24}{0}{5}
+\beamer@sectionintoc {6}{Programming}{28}{0}{6}
+\beamer@sectionintoc {7}{Communications}{40}{0}{7}

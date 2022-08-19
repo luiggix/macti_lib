@@ -1,0 +1,7 @@
+\babel@toc {spanish}{}
+\contentsline {section}{\numberline {1}Modelo matem\'atico: Transferencia de calor}{2}%
+\contentsline {subsection}{\numberline {1.1}Conducci\'on de calor: estacionaria}{3}%
+\contentsline {subsubsection}{\numberline {1.1.1}Ejemplo: conducci\'on de calor estacionaria sin fuentes ni sumideros con $\kappa $ = cte}{3}%
+\contentsline {subsection}{\numberline {1.2}Conducci\'on de calor: NO estacionaria}{4}%
+\contentsline {subsection}{\numberline {1.3}Convecci\'on de calor: estacionaria}{5}%
+\contentsline {subsection}{\numberline {1.4}Convecci\'on de calor: NO estacionaria}{6}%

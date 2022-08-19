@@ -1,0 +1,1026 @@
+\documentclass[10pt,letterpaper]{article}
+\usepackage[spanish, mexico]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{moreverb}
+\usepackage{graphicx}
+\usepackage[export]{adjustbox}
+\usepackage{color}
+\usepackage{fancyheadings}
+\usepackage{listings}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\floatname{algorithm}{Algoritmo}
+
+%\usepackage{caption}
+\usepackage{subcaption}
+
+%-----------------------------------------------------------------------
+% Text dimensions 
+%-----------------------------------------------------------------------
+%% This controls the height of the text
+\setlength{\textheight}{22cm}
+\setlength{\voffset}{-1.5cm}
+
+%% This controls the width of the text
+\setlength{\textwidth}{16cm} % Aproxx. ~16cm
+\setlength{\hoffset}{-1.5cm}
+
+%% Separation of the footer from the body text
+\setlength{\footskip}{1.5cm} 
+
+%%
+%% Becuase I don't need marginal notes, then: 
+\setlength{\marginparsep}{0pt}
+\setlength{\marginparwidth}{0pt}
+%%
+%% Header is equal to \textwdith
+%% This is used when \marginparsep and \marginparwith are not zero
+%\addtolength{\headwidth}{\marginparsep}
+%\addtolength{\headwidth}{\marginparwidth}
+
+%% We have to substrac some points on even pages and odd pages
+%% in order to match headers and footers on even and odd pages
+\addtolength{\evensidemargin}{-56pt}
+\addtolength{\oddsidemargin}{-5pt}
+
+%-----------------------------------------------------------------------
+% Style of page and headings
+%-----------------------------------------------------------------------
+\pagestyle{fancy}
+
+\lhead[\fancyplain{}{\bf\thepage}]{\fancyplain{}{\bfseries\rightmark}}
+\rhead[\fancyplain{}{\bfseries\leftmark}]{\fancyplain{}{\bf\thepage}}
+\lfoot{\sf Depto. de Recursos Naturales, IGF--UNAM}
+\rfoot{\sf \copyright 2020, LMCS}
+\cfoot{}
+
+%\setlength{\headrulewidth}{0.4pt}
+%\setlength{\footrulewidth}{0.4pt}
+
+\newcommand{\mathbi}[1]{\textbf{\em #1}}
+\newcommand{\mbf}[1]{\mathbf{#1}}
+\newcommand{\mbi}[1]{\textbf{\em #1}}
+\newcommand{\mbiu}[1]{{_\textbf{\em #1}}}
+\newcommand{\mbu}[1]{{^\textbf{\em #1}}}
+\newcommand{\mcons}[1]{\mbox{\textsf{#1}}}
+\newcommand{\tensor}[1]{\underline{\underline{#1}}}
+\newcommand{\Vector}[1]{\mathbf{#1}}
+\renewcommand{\arraystretch}{1.75}
+
+\graphicspath{{../../Figuras/}}
+
+\lstset{language=python}
+\lstset{commentstyle=\textit}
+
+\title{pyNoxtli}
+
+\author{Luis M. de la Cruz}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+ \newpage
+
+\section{Modelo numérico 1D}
+
+\begin{figure}[h!]
+$$\includegraphics[scale=0.60]{malla1D_01}$$
+\caption{Malla en 1D.}
+\label{fig:malla1D_01}
+\end{figure}
+
+\begin{eqnarray*}
+\mbi{a}_\mbiu{P} \psi_\mbiu{P} = \mbi{a}_\mbiu{E} \psi_\mbiu{E} + \mbi{a}_\mbiu{W} \psi_\mbiu{W} +
+\mbi{b}_\mbiu{P} 
+& \Longrightarrow & 
+- \mbi{a}_\mbiu{W} \psi_\mbiu{W} + \mbi{a}_\mbiu{P} \psi_\mbiu{P} - \mbi{a}_\mbiu{E} \psi_\mbiu{E} = \mbi{b}_\mbiu{P}
+\end{eqnarray*}
+
+Para evitar confusión en los coeficientes $\mbi{a}$'s, usarémos un superíndice indicando a qué volumen corresponde la ecuación. 
+Por ejemplo para $\mbi{P}$ = 3 se tiene:
+%
+\begin{equation*}
+- \mbi{a}_\mbiu{W}^\mbiu{3} \psi_\mbiu{2} + \mbi{a}_\mbiu{P}^\mbiu{3} \psi_\mbiu{3} - \mbi{a}_\mbiu{E}^\mbiu{3} \psi_\mbiu{4} = \mbi{b}_\mbiu{3}
+\end{equation*}
+%
+
+\subsection{Ecuaciones FVM}
+{\scriptsize
+\begin{eqnarray*}
+\mathbi{W} = \mbi{0}, \mathbi{P} = \mbi{1}, \mathbi{E} = \mbi{2} & : &
+- \mbi{a}_\mbiu{W}^\mbi{1} \psi_\mbiu{0} + \mbi{a}_\mbiu{P}^\mbi{1} \psi_\mbiu{1} - \mbi{a}_\mbiu{E}^\mbi{1} \psi_\mbiu{2} = \mbi{b}_\mbiu{1} \\
+%
+\mathbi{W} = \mbi{1}, \mathbi{P} = \mbi{2}, \mathbi{E} = \mbi{3} & : &
+- \mbi{a}_\mbiu{W}^\mbi{2} \psi_\mbiu{1} + \mbi{a}_\mbiu{P}^\mbi{2} \psi_\mbiu{2} - \mbi{a}_\mbiu{E}^\mbi{2} \psi_\mbiu{3} = \mbi{b}_\mbiu{2} \\
+%
+\mathbi{W} = \mbi{2}, \mathbi{P} = \mbi{3}, \mathbi{E} = \mbi{4} & : &
+- \mbi{a}_\mbiu{W}^\mbi{3} \psi_\mbiu{2} + \mbi{a}_\mbiu{P}^\mbi{3} \psi_\mbiu{3} - \mbi{a}_\mbiu{E}^\mbi{3} \psi_\mbiu{4} = \mbi{b}_\mbiu{3} \\
+%
+\mathbi{W} = \mbi{3}, \mathbi{P} = \mbi{4}, \mathbi{E} = \mbi{5} & : &
+- \mbi{a}_\mbiu{W}^\mbi{4} \psi_\mbiu{3} + \mbi{a}_\mbiu{P}^\mbi{4} \psi_\mbiu{4} - \mbi{a}_\mbiu{E}^\mbi{4} \psi_\mbiu{5} = \mbi{b}_\mbiu{4} \\
+%
+\mathbi{W} = \mbi{4}, \mathbi{P} = \mbi{5}, \mathbi{E} = \mbi{6} & : &
+- \mbi{a}_\mbiu{W}^\mbi{5} \psi_\mbiu{4} + \mbi{a}_\mbiu{P}^\mbi{5} \psi_\mbiu{5} - \mbi{a}_\mbiu{E}^\mbi{5} \psi_\mbiu{6} = \mbi{b}_\mbiu{5} 
+\end{eqnarray*}
+
+\begin{equation*}
+\left(
+\begin{array}{c|rrrrr|c}
+\boxed{-\mbi{a}_\mbiu{W}^\mbi{1}} & \mbi{a}_\mbiu{P}^\mbi{1} & -\mbi{a}_\mbiu{E}^\mbi{1} & 0 & 0 & 0 & 0 \\ 
+& & & & & & \\
+ 0 & -\mbi{a}_\mbiu{W}^\mbi{2} & \mbi{a}_\mbiu{P}^\mbi{2} & -\mbi{a}_\mbiu{E}^\mbi{2} & 0 & 0 & 0\\
+& & & & & & \\
+ 0 & 0 & -\mbi{a}_\mbiu{W}^\mbi{3} & \mbi{a}_\mbiu{P}^\mbi{3} & -\mbi{a}_\mbiu{E}^\mbi{3} & 0 & 0 \\
+ & & & & & & \\
+ 0 & 0 & 0 & -\mbi{a}_\mbiu{W}^\mbi{4} & \mbi{a}_\mbiu{P}^\mbi{4} & -\mbi{a}_\mbiu{E}^\mbi{4} & 0\\
+ & & & & & & \\
+ 0 & 0 & 0 & 0 & -\mbi{a}_\mbiu{W}^\mbi{5} & \mbi{a}_\mbiu{P}^\mbi{5} & \boxed{-\mbi{a}_\mbiu{E}^\mbi{5}}
+\end{array}\right)
+\left(
+\begin{array}{c}
+\psi_\mbiu{0} \\
+\psi_\mbiu{1} \\
+\psi_\mbiu{2} \\
+\psi_\mbiu{3} \\
+\psi_\mbiu{4} \\
+\psi_\mbiu{5} \\
+\psi_\mbiu{6} 
+\end{array}
+\right) =
+\left(
+\begin{array}{c}
+\mbi{b}_\mbiu{1} \\ \\
+\mbi{b}_\mbiu{2} \\ \\
+\mbi{b}_\mbiu{3} \\ \\
+\mbi{b}_\mbiu{4} \\ \\
+\mbi{b}_\mbiu{5}
+\end{array}
+\right)
+\end{equation*}
+}
+
+\subsection{Almacenamiento de la matriz: CSR}
+
+\begin{minipage}{0.5\linewidth}
+\begin{algorithm}[H]
+	\caption{Formato CSR IJK 1D}\label{alg:CSR_IJK_1D}
+	{\scriptsize
+	\begin{algorithmic}[1]
+		\STATE INPUT: bi, ei
+		\STATE OUTPUT: $AA$, $JA$, $IA$
+		\STATE I := 0
+		\STATE irow := 0
+		\STATE IA[irow] := I
+		\FOR{$i$ := bi to ei}
+		\STATE Calculate $\mbi{a}_\mbiu{W}^\mbi{i}$, $\mbi{a}_\mbiu{P}^\mbi{i}$, $\mbi{a}_\mbiu{E}^\mbi{i}$
+		\STATE $AA$[I] := $\mbi{a}_\mbiu{W}^\mbi{i}$
+		\STATE $JA$[I] := irow - 1
+		\STATE I := I + 1
+		\STATE $AA$[I] := $\mbi{a}_\mbiu{P}^\mbi{i}$
+		\STATE $JA$[I] := irow
+		\STATE I := I + 1
+		\STATE $AA$[I] := $\mbi{a}_\mbiu{E}^\mbi{i}$
+		\STATE $JA$[I] := irow + 1
+		\STATE I := I+ 1
+		\STATE irow := irow + 1
+		\STATE IA[irow] := I  	
+		\ENDFOR
+		\STATE $JA$[0] := 0
+		\STATE $JA$[Nx-1] := 0
+	\end{algorithmic}
+	}
+\end{algorithm}
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+\begin{center}
+Matriz del sistema.
+
+\strut
+
+{\scriptsize
+	\begin{tabular}{|c|ccccc|}
+		\hline
+		$i$ & 0 & 1 & 2 & 3 & 4 \\
+		\hline & & & & & \\
+		0 & $\mbi{a}_\mbiu{P}^\mbi{1}$ & $-\mbi{a}_\mbiu{E}^\mbi{1}$ & 0 & 0 & 0 \\ & & & & & \\
+		1 &	$-\mbi{a}_\mbiu{W}^\mbi{2}$ & $\mbi{a}_\mbiu{P}^\mbi{2}$ & $-\mbi{a}_\mbiu{E}^\mbi{2}$ & 0 & 0 \\  & & & & & \\
+		2 & 0 & $-\mbi{a}_\mbiu{W}^\mbi{3}$ & $\mbi{a}_\mbiu{P}^\mbi{3}$ & $-\mbi{a}_\mbiu{E}^\mbi{3}$ & 0 \\  & & & & & \\
+		3 & 0 & 0 & $-\mbi{a}_\mbiu{W}^\mbi{4}$ & $\mbi{a}_\mbiu{P}^\mbi{4}$ & $-\mbi{a}_\mbiu{E}^\mbi{4}$ \\  & & & & & \\
+		4 & 0 & 0 & 0 & $-\mbi{a}_\mbiu{W}^\mbi{5}$ & $\mbi{a}_\mbiu{P}^\mbi{5}$ \\ & & & & & \\
+		\hline
+	\end{tabular}
+}
+\end{center}
+\end{minipage}
+
+\strut
+
+Resultado del almacenamiento:
+{\scriptsize
+\begin{equation*}
+\begin{array}{ccccccccccccccccc}
+\hline \\
+AA & = &
+\boxed{-\mbi{a}_\mbiu{W}^\mbi{1}} & \mbi{a}_\mbiu{P}^\mbi{1} & -\mbi{a}_\mbiu{E}^\mbi{1} &
+-\mbi{a}_\mbiu{W}^\mbi{2} & \mbi{a}_\mbiu{P}^\mbi{2} & -\mbi{a}_\mbiu{E}^\mbi{2} &
+-\mbi{a}_\mbiu{W}^\mbi{3} & \mbi{a}_\mbiu{P}^\mbi{3} & -\mbi{a}_\mbiu{E}^\mbi{3} &
+-\mbi{a}_\mbiu{W}^\mbi{4} & \mbi{a}_\mbiu{P}^\mbi{4} & -\mbi{a}_\mbiu{E}^\mbi{4} &
+-\mbi{a}_\mbiu{W}^\mbi{5} & \mbi{a}_\mbiu{P}^\mbi{5} & \boxed{-\mbi{a}_\mbiu{E}^\mbi{5}}
+\\ \\ \hline \\
+JA & = &
+\boxed{0} & 0 & 1 & 0 & 1 & 2 & 1 & 2 & 3 & 2 & 3 & 4 & 3 & 4 & \boxed{0}
+\\ \\ \hline \\
+IA & = &
+0 & 3 & 6 & 9 & 12 & 15
+\\ \\ \hline  
+\end{array}
+\end{equation*}
+}
+
+\subsection{Condiciones de frontera}
+
+\begin{figure}[h!]
+	$$\includegraphics[scale=0.60]{malla1D_02}$$
+	\caption{Malla en 1D.}
+	\label{fig:malla1D_01}
+\end{figure}
+
+\subsubsection{Dirichlet}
+
+\begin{minipage}[t]{0.5\textwidth}
+{\scriptsize 
+\begin{eqnarray*}
+	\frac{\psi_\mbiu{0} + \psi_\mbiu{1}}{2} & = & \psi_\mbiu{A} \\
+    \psi_\mbiu{0} & = & 2 \psi_\mbiu{A} - \psi_\mbiu{1} \\
+	- \mbi{a}_\mbiu{W}^\mbi{1} \psi_\mbiu{0} + \mbi{a}_\mbiu{P}^\mbi{1} \psi_\mbiu{1} - \mbi{a}_\mbiu{E}^\mbi{1} \psi_\mbiu{2} & = & \mbi{b}_\mbiu{1} \\
+	- \mbi{a}_\mbiu{W}^\mbi{1} (2 \psi_\mbiu{A} - \psi_\mbiu{1}) + \mbi{a}_\mbiu{P}^\mbi{1} \psi_\mbiu{1} - \mbi{a}_\mbiu{E}^\mbi{1} \psi_\mbiu{2} & = &
+	\mbi{b}_\mbiu{1} \\
+	(\mbi{a}_\mbiu{P}^\mbi{1} + \mbi{a}_\mbiu{W}^\mbi{1}) \psi_\mbiu{1} - \mbi{a}_\mbiu{E}^\mbi{1} \psi_\mbiu{2} & = &
+	\mbi{b}_\mbiu{1} + 2 \mbi{a}_\mbiu{W}^\mbi{1} \psi_\mbiu{A} \\
+-\textcolor{blue}{\mbi{a}_\mbiu{W}^\mbi{*,1}} \psi_\mbiu{0} + \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1}} \psi_\mbiu{1} - \mbi{a}_\mbiu{E}^\mbi{1} \psi_\mbiu{2} & = & \textcolor{blue}{\mbi{b}_\mbiu{1}^*}
+\end{eqnarray*}
+%
+\begin{align*}
+\boxed{\textcolor{blue}{\mbi{a}_\mbiu{W}^\mbi{*,1}} = 0} &
+& \boxed{\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1}} = \mbi{a}_\mbiu{P}^\mbi{1} + \mbi{a}_\mbiu{W}^\mbi{1}} &
+& \boxed{\textcolor{blue}{\mbi{b}_\mbiu{1}^*} = \mbi{b}_\mbiu{1} + 2 \mbi{a}_\mbiu{W}^\mbi{1} \psi_\mbiu{A}}
+\end{align*}
+}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+{\scriptsize 
+\begin{eqnarray*}
+	\frac{\psi_\mbiu{Nx} + \psi_\mbiu{Nx+1}}{2} & = & \psi_\mbiu{B} \quad \\
+	\psi_\mbiu{Nx+1} & = & 2 \psi_\mbiu{B} - \psi_\mbiu{Nx} \\
+	- \mbi{a}_\mbiu{W}^\mbi{Nx} \psi_\mbiu{Nx-1} + \mbi{a}_\mbiu{P}^\mbi{Nx} \psi_\mbiu{Nx} - \mbi{a}_\mbiu{E}^\mbi{Nx} \psi_\mbiu{Nx+1} & = & \mbi{b}_\mbiu{Nx} \\
+	- \mbi{a}_\mbiu{W}^\mbi{Nx}  \psi_\mbiu{Nx-1} + \mbi{a}_\mbiu{P}^\mbi{Nx} \psi_\mbiu{Nx} - \mbi{a}_\mbiu{E}^\mbi{Nx} (2 \psi_\mbiu{B} - \psi_\mbiu{Nx}) & = &
+	\mbi{b}_\mbiu{Nx} \\
+	- \mbi{a}_\mbiu{W}^\mbi{Nx} \psi_\mbiu{Nx-1} + (\mbi{a}_\mbiu{P}^\mbi{Nx} + \mbi{a}_\mbiu{E}^\mbi{Nx}) \psi_\mbiu{Nx} & = &
+	\mbi{b}_\mbiu{Nx} + 2 \mbi{a}_\mbiu{E}^\mbi{Nx} \psi_\mbiu{B} \\
+	-\mbi{a}_\mbiu{W}^\mbi{Nx} \psi_\mbiu{Nx-1} + \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,Nx}} \psi_\mbiu{Nx} - \textcolor{blue}{\mbi{a}_\mbiu{E}^\mbi{*,Nx}} \psi_\mbiu{Nx+1} & = & \textcolor{blue}{\mbi{b}_\mbiu{Nx}^*}
+\end{eqnarray*}
+%
+\begin{align*}
+\boxed{\textcolor{blue}{\mbi{a}_\mbiu{E}^\mbi{*,Nx}} = 0} &
+& \boxed{\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,Nx}} = \mbi{a}_\mbiu{P}^\mbi{Nx} + \mbi{a}_\mbiu{E}^\mbi{Nx}} &
+& \boxed{\textcolor{blue}{\mbi{b}_\mbiu{Nx}^*} = \mbi{b}_\mbiu{Nx} + 2 \mbi{a}_\mbiu{E}^\mbi{Nx} \psi_\mbiu{B}}
+\end{align*}
+}
+\end{minipage}
+
+\subsubsection{Neumman} 
+
+\begin{minipage}[t]{0.5\textwidth}
+{\scriptsize
+\begin{eqnarray*}
+	\frac{d \psi}{d x}\Big|_\mbiu{w} = \frac{\psi_\mbiu{1} - \psi_\mbiu{0}}{\Delta x_\mbiu{w}} & = & \text{f}_\mbiu{A} \\
+	\psi_\mbiu{0} & = & \psi_\mbiu{1} - \Delta x_\mbiu{w} \text{f}_\mbiu{A}  \\
+	- \mbi{a}_\mbiu{W}^\mbi{1} \psi_\mbiu{0} + \mbi{a}_\mbiu{P}^\mbi{1} \psi_\mbiu{1} - \mbi{a}_\mbiu{E}^\mbi{1} \psi_\mbiu{2} & = & \mbi{b}_\mbiu{1} \\
+	- \mbi{a}_\mbiu{W}^\mbi{1} (\psi_\mbiu{1} - \Delta x_\mbiu{w} \text{f}_\mbiu{A}) + \mbi{a}_\mbiu{P}^\mbi{1} \psi_\mbiu{1} - \mbi{a}_\mbiu{E}^\mbi{1} \psi_\mbiu{2} & = & \mbi{b}_\mbiu{1} \\
+	(\mbi{a}_\mbiu{P}^\mbi{1} - \mbi{a}_\mbiu{W}^\mbi{1}) \psi_\mbiu{1} - \mbi{a}_\mbiu{E}^\mbi{1} \psi_\mbiu{2} & = &
+	\mbi{b}_\mbiu{1} - \mbi{a}_\mbiu{W}^\mbi{1} \Delta x_\mbiu{w} \text{f}_\mbiu{A} \\
+	-\textcolor{blue}{\mbi{a}_\mbiu{W}^\mbi{*,1}} \psi_\mbiu{0} + \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1}} \psi_\mbiu{1} - \mbi{a}_\mbiu{E}^\mbi{1} \psi_\mbiu{2} & = & \textcolor{blue}{\mbi{b}_\mbiu{1}^*}
+\end{eqnarray*}
+%
+\begin{align*}
+\boxed{\textcolor{blue}{\mbi{a}_\mbiu{W}^\mbi{*,1}} = 0} &
+& \boxed{\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1}} = \mbi{a}_\mbiu{P}^\mbi{1} - \mbi{a}_\mbiu{W}^\mbi{1}} &
+& \boxed{\textcolor{blue}{\mbi{b}_\mbiu{1}^*} = \mbi{b}_\mbiu{1} - \mbi{a}_\mbiu{W}^\mbi{1} \Delta x_\mbiu{w} \text{f}_\mbiu{A}}
+\end{align*}
+}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+{\scriptsize 
+\begin{eqnarray*}
+	\frac{d \psi}{d x}\Big|_\mbiu{e} = \frac{\psi_\mbiu{Nx+1} - \psi_\mbiu{Nx}}{\Delta x_\mbiu{e}} & = & \text{f}_\mbiu{B} \\
+	\psi_\mbiu{Nx+1} & = & \psi_\mbiu{Nx} + \Delta x_\mbiu{e} \text{f}_\mbiu{B}  \\
+	- \mbi{a}_\mbiu{W}^\mbi{Nx} \psi_\mbiu{Nx-1} + \mbi{a}_\mbiu{P}^\mbi{Nx} \psi_\mbiu{Nx} - \mbi{a}_\mbiu{E}^\mbi{Nx} \psi_\mbiu{Nx+1} & = & \mbi{b}_\mbiu{Nx} \\
+	- \mbi{a}_\mbiu{W}^\mbi{Nx}  \psi_\mbiu{Nx-1} + \mbi{a}_\mbiu{P}^\mbi{Nx} \psi_\mbiu{Nx} - \mbi{a}_\mbiu{E}^\mbi{Nx} (\psi_\mbiu{Nx} + \Delta x_\mbiu{e} \text{f}_\mbiu{B})  & = &
+	\mbi{b}_\mbiu{Nx} \\
+	- \mbi{a}_\mbiu{W}^\mbi{Nx} \psi_\mbiu{Nx-1} + (\mbi{a}_\mbiu{P}^\mbi{Nx} - \mbi{a}_\mbiu{E}^\mbi{Nx}) \psi_\mbiu{Nx} & = &
+	\mbi{b}_\mbiu{Nx} + \mbi{a}_\mbiu{E}^\mbi{Nx} \Delta x_\mbiu{e} \text{f}_\mbiu{B} \\
+	-\mbi{a}_\mbiu{W}^\mbi{Nx} \psi_\mbiu{Nx-1} + \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,Nx}} \psi_\mbiu{Nx} - \textcolor{blue}{\mbi{a}_\mbiu{E}^\mbi{*,Nx}} \psi_\mbiu{Nx+1} & = & \textcolor{blue}{\mbi{b}_\mbiu{Nx}^*}
+\end{eqnarray*}
+%
+\begin{align*}
+\boxed{\textcolor{blue}{\mbi{a}_\mbiu{E}^\mbi{*,Nx}} = 0} & 
+& \boxed{\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,Nx}} = \mbi{a}_\mbiu{P}^\mbi{Nx} - \mbi{a}_\mbiu{E}^\mbi{Nx}} &
+& \boxed{\textcolor{blue}{\mbi{b}_\mbiu{Nx}^*} = \mbi{b}_\mbiu{Nx} + \mbi{a}_\mbiu{E}^\mbi{Nx} \Delta x_\mbiu{e} \text{f}_\mbiu{B}}
+\end{align*}
+}
+\end{minipage}
+
+\subsubsection{Ajuste en el almacenamiento CSR}
+
+{\scriptsize
+\begin{equation*}
+\left(
+\begin{array}{c|crrrc|c}
+-\textcolor{blue}{\mbi{a}_\mbiu{W}^\mbi{*,1}} & \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1}} & -\mbi{a}_\mbiu{E}^\mbi{1} & 0 & 0 & 0 & 0\\ 
+& & & & & \\
+0 & -\mbi{a}_\mbiu{W}^\mbi{2} & \mbi{a}_\mbiu{P}^\mbi{2} & -\mbi{a}_\mbiu{E}^\mbi{2} & 0 & 0 & 0\\
+& & & & & \\
+0 & 0 & -\mbi{a}_\mbiu{W}^\mbi{3} & \mbi{a}_\mbiu{P}^\mbi{3} & -\mbi{a}_\mbiu{E}^\mbi{3} & 0 & 0\\
+& & & & & \\
+0 & 0 & 0 & -\mbi{a}_\mbiu{W}^\mbi{4} & \mbi{a}_\mbiu{P}^\mbi{4} & -\mbi{a}_\mbiu{E}^\mbi{4} & 0\\
+& & & & & \\
+0 & 0 & 0 & 0 & - \mbi{a}_\mbiu{W}^\mbi{5} & \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,5}} & -\textcolor{blue}{\mbi{a}_\mbiu{E}^\mbi{*,5}}
+\end{array}\right)
+\left(
+\begin{array}{c}
+\psi_\mbiu{0} \\
+\psi_\mbiu{1} \\
+\psi_\mbiu{2} \\
+\psi_\mbiu{3} \\
+\psi_\mbiu{4} \\
+\psi_\mbiu{5} \\
+\psi_\mbiu{6} 
+\end{array}
+\right) =
+\left(
+\begin{array}{c}
+\mbi{b}_\mbiu{1}^* \\ \\
+\mbi{b}_\mbiu{2} \\ \\
+\mbi{b}_\mbiu{3} \\ \\
+\mbi{b}_\mbiu{4} \\ \\
+\mbi{b}_\mbiu{5}^*
+\end{array}
+\right)
+\end{equation*}
+
+\begin{equation*}
+\begin{array}{ccccccccccccccccc}
+\hline \\
+AA & = &
+-\textcolor{blue}{\mbi{a}_\mbiu{W}^\mbi{*,1}} & \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1}} & -\mbi{a}_\mbiu{E}^\mbi{1} &
+-\mbi{a}_\mbiu{W}^\mbi{2} & \mbi{a}_\mbiu{P}^\mbi{2} & -\mbi{a}_\mbiu{E}^\mbi{2} &
+-\mbi{a}_\mbiu{W}^\mbi{3} & \mbi{a}_\mbiu{P}^\mbi{3} & -\mbi{a}_\mbiu{E}^\mbi{3} &
+-\mbi{a}_\mbiu{W}^\mbi{4} & \mbi{a}_\mbiu{P}^\mbi{4} & -\mbi{a}_\mbiu{E}^\mbi{4} &
+-\mbi{a}_\mbiu{W}^\mbi{5} & \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,5}} & -\textcolor{blue}{\mbi{a}_\mbiu{E}^\mbi{*,5}}
+\\ \\ \hline
+\end{array}
+\end{equation*}
+}
+
+\newpage
+
+\section{Modelo numérico 2D}
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		\begin{flushleft}
+		\includegraphics[scale=0.45]{malla2D_00}
+		\end{flushleft}
+		\caption{}
+		\label{fig:malla_2D}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\begin{center}
+		\includegraphics[scale=0.45]{malla2D_02}			
+		\end{center}
+		\caption{}
+		\label{fig:sub2}
+	\end{subfigure}
+	\caption{A figure with two subfigures}
+	\label{fig:test}
+\end{figure}
+
+
+\begin{equation}
+\mbi{a}_\mbiu{P} \psi_\mbiu{P} = \mbi{a}_\mbiu{E} \psi_\mbiu{E} + \mbi{a}_\mbiu{W} \psi_\mbiu{W} +
+\mbi{a}_\mbiu{N} \psi_\mbiu{N} + \mbi{a}_\mbiu{S} \psi_\mbiu{S} +
+\mbi{b}_\mbiu{P}
+\quad \Longrightarrow \quad 
+- \mbi{a}_\mbiu{S} \psi_\mbiu{S} - \mbi{a}_\mbiu{W} \psi_\mbiu{W} +
+\mbi{a}_\mbiu{P} \psi_\mbiu{P}
+- \mbi{a}_\mbiu{E} \psi_\mbiu{E} - \mbi{a}_\mbiu{N} \psi_\mbiu{N}  = \mbi{b}_\mbiu{P}
+\label{eq:FVM_2D}
+\end{equation}
+
+En este caso también usaremos un superíndice indicando el volumen al que corresponde la ecuación. En este caso 
+dicho superíndice será $\mbi{P} \equiv \mbi{i,j}$ como se muestra en la figura \ref{fig:malla_2D}. Entonces, 
+para el volumen $(i,j)$ se tiene:
+
+\begin{equation*}
+- \mbi{a}_\mbiu{S}^\mbi{i,j} \psi_\mbiu{i,j-1} 
+- \mbi{a}_\mbiu{W}^\mbi{i,j} \psi_\mbiu{i-1,j} 
++ \mbi{a}_\mbiu{P}^\mbi{i,j} \psi_\mbiu{i,j} 
+- \mbi{a}_\mbiu{E}^\mbi{i,j} \psi_\mbiu{i+1,j} 
+- \mbi{a}_\mbiu{N}^\mbi{i,j} \psi_\mbiu{i,j+1} = \mbi{b}_\mbiu{i,j} 
+\end{equation*}
+
+\subsection{Ecuaciones FVM}
+
+\begin{figure}[h!]
+	$$\includegraphics[scale=0.60]{malla2D_01}$$
+	\caption{Malla en 2D.}
+	\label{fig:malla2D_01}
+\end{figure}
+
+{\scriptsize
+\begin{eqnarray*}
+\mathbi{S} = (\mbi{1}, \mbi{0}), \mathbi{W} = (\mbi{0}, \mbi{1}), \mathbi{P} = (\mbi{1}, \mbi{1}), \mathbi{E} = (\mbi{2}, \mbi{1}), \mathbi{N} = (\mbi{1}, \mbi{2})  
+& : &
+- \mbi{a}_\mbiu{S}^\mbi{1,1} \psi_\mbiu{1,0} 
+- \mbi{a}_\mbiu{W}^\mbi{1,1} \psi_\mbiu{0,1} + \mbi{a}_\mbiu{P}^\mbi{1,1} \psi_\mbiu{1,1} - \mbi{a}_\mbiu{E}^\mbi{1,1} \psi_\mbiu{2,1} 
+- \mbi{a}_\mbiu{N}^\mbi{1,1} \psi_\mbiu{1,2} = \mbi{b}_\mbiu{1,1} \\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mathbi{S} = (\mbi{2}, \mbi{0}), \mathbi{W} = (\mbi{1}, \mbi{1}), \mathbi{P} = (\mbi{2}, \mbi{1}), \mathbi{E} = (\mbi{3}, \mbi{1}), \mathbi{N} = (\mbi{2},\mbi{2})  
+& : &
+- \mbi{a}_\mbiu{S}^\mbi{2,1} \psi_\mbiu{2,0} 
+- \mbi{a}_\mbiu{W}^\mbi{2,1} \psi_\mbiu{1,1} + \mbi{a}_\mbiu{P}^\mbi{2,1} \psi_\mbiu{2,1} - \mbi{a}_\mbiu{E}^\mbi{2,1} \psi_\mbiu{3,1} 
+- \mbi{a}_\mbiu{N}^\mbi{2,1} \psi_\mbiu{2,2} = \mbi{b}_\mbiu{2,1} \\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mathbi{S} = (\mbi{3}, \mbi{0}), \mathbi{W} = (\mbi{2}, \mbi{1}), \mathbi{P} = (\mbi{3}, \mbi{1}), \mathbi{E} = (\mbi{4}, \mbi{1}), \mathbi{N} = (\mbi{3}, \mbi{2}) 
+& : &
+- \mbi{a}_\mbiu{S}^\mbi{3,1} \psi_\mbiu{3,0} 
+- \mbi{a}_\mbiu{W}^\mbi{3,1} \psi_\mbiu{2,1} + \mbi{a}_\mbiu{P}^\mbi{3,1} \psi_\mbiu{3,1} - \mbi{a}_\mbiu{E}^\mbi{3,1} \psi_\mbiu{4,1} 
+- \mbi{a}_\mbiu{N}^\mbi{3,1} \psi_\mbiu{3,2} = \mbi{b}_\mbiu{3,1} \\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mathbi{S} = (\mbi{1}, \mbi{1}), \mathbi{W} = (\mbi{0}, \mbi{2}), \mathbi{P} = (\mbi{1}, \mbi{2}), \mathbi{E} = (\mbi{2}, \mbi{2}), \mathbi{N} = (\mbi{1},\mbi{3})  
+& : &
+- \mbi{a}_\mbiu{S}^\mbi{1,2} \psi_\mbiu{1,1} 
+- \mbi{a}_\mbiu{W}^\mbi{1,2} \psi_\mbiu{0,2} + \mbi{a}_\mbiu{P}^\mbi{1,2} \psi_\mbiu{1,2} - \mbi{a}_\mbiu{E}^\mbi{1,2} \psi_\mbiu{2,2} 
+- \mbi{a}_\mbiu{N}^\mbi{1,2} \psi_\mbiu{1,3} = \mbi{b}_\mbiu{1,2} \\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mathbi{S} = (\mbi{2}, \mbi{1}), \mathbi{W} = (\mbi{1}, \mbi{2}), \mathbi{P} = (\mbi{2}, \mbi{2}), \mathbi{E} = (\mbi{3}, \mbi{2}), \mathbi{N} = (\mbi{2},\mbi{3})  
+& : &
+- \mbi{a}_\mbiu{S}^\mbi{2,2} \psi_\mbiu{2,1} 
+- \mbi{a}_\mbiu{W}^\mbi{2,2} \psi_\mbiu{1,2} + \mbi{a}_\mbiu{P}^\mbi{2,2} \psi_\mbiu{2,2} - \mbi{a}_\mbiu{E}^\mbi{2,2} \psi_\mbiu{3,2} 
+- \mbi{a}_\mbiu{N}^\mbi{2,2} \psi_\mbiu{2,3} = \mbi{b}_\mbiu{2,2} \\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mathbi{S} = (\mbi{3}, \mbi{1}), \mathbi{W} = (\mbi{2}, \mbi{2}), \mathbi{P} = (\mbi{3}, \mbi{2}), \mathbi{E} = (\mbi{4}, \mbi{2}), \mathbi{N} = (\mbi{3}, \mbi{3}) 
+& : &
+- \mbi{a}_\mbiu{S}^\mbi{3,2} \psi_\mbiu{3,1} 
+- \mbi{a}_\mbiu{W}^\mbi{3,2} \psi_\mbiu{2,2} + \mbi{a}_\mbiu{P}^\mbi{3,2} \psi_\mbiu{3,2} - \mbi{a}_\mbiu{E}^\mbi{3,2} \psi_\mbiu{4,2} 
+- \mbi{a}_\mbiu{N}^\mbi{3,2} \psi_\mbiu{3,3} = \mbi{b}_\mbiu{3,2} \\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mathbi{S} = (\mbi{1}, \mbi{2}), \mathbi{W} = (\mbi{0}, \mbi{3}), \mathbi{P} = (\mbi{1}, \mbi{3}), \mathbi{E} = (\mbi{2}, \mbi{3}), \mathbi{N} = (\mbi{1},\mbi{4})  
+& : &
+- \mbi{a}_\mbiu{S}^\mbi{1,3} \psi_\mbiu{1,2} 
+- \mbi{a}_\mbiu{W}^\mbi{1,3} \psi_\mbiu{0,3} + \mbi{a}_\mbiu{P}^\mbi{1,3} \psi_\mbiu{1,3} - \mbi{a}_\mbiu{E}^\mbi{1,3} \psi_\mbiu{2,3} 
+- \mbi{a}_\mbiu{N}^\mbi{1,3} \psi_\mbiu{1,4} = \mbi{b}_\mbiu{1,3} \\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mathbi{S} = (\mbi{2}, \mbi{2}), \mathbi{W} = (\mbi{1}, \mbi{3}), \mathbi{P} = (\mbi{2}, \mbi{3}), \mathbi{E} = (\mbi{3}, \mbi{3}), \mathbi{N} = (\mbi{2},\mbi{4})  
+& : &
+- \mbi{a}_\mbiu{S}^\mbi{2,3} \psi_\mbiu{2,2} 
+- \mbi{a}_\mbiu{W}^\mbi{2,3} \psi_\mbiu{1,3} + \mbi{a}_\mbiu{P}^\mbi{2,3} \psi_\mbiu{2,3} - \mbi{a}_\mbiu{E}^\mbi{2,3} \psi_\mbiu{3,3} 
+- \mbi{a}_\mbiu{N}^\mbi{2,3} \psi_\mbiu{2,4} = \mbi{b}_\mbiu{2,3} \\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mathbi{S} = (\mbi{3}, \mbi{2}), \mathbi{W} = (\mbi{2}, \mbi{3}), \mathbi{P} = (\mbi{3}, \mbi{3}), \mathbi{E} = (\mbi{4}, \mbi{3}), \mathbi{N} = (\mbi{3}, \mbi{4}) 
+& : &
+- \mbi{a}_\mbiu{S}^\mbi{3,3} \psi_\mbiu{3,2} 
+- \mbi{a}_\mbiu{W}^\mbi{3,3} \psi_\mbiu{2,3} + \mbi{a}_\mbiu{P}^\mbi{3,3} \psi_\mbiu{3,3} - \mbi{a}_\mbiu{E}^\mbi{3,3} \psi_\mbiu{4,3} 
+- \mbi{a}_\mbiu{N}^\mbi{3,3} \psi_\mbiu{3,4} = \mbi{b}_\mbiu{3,3}
+\end{eqnarray*}
+
+\begin{equation*}
+\left(
+\begin{array}{ccc|rrrrrrrrr|ccc}
+\boxed{-\mbi{a}_\mbiu{S}^\mbi{1,1}} & 0 & \boxed{-\mbi{a}_\mbiu{W}^\mbi{1,1}} & \mbi{a}_\mbiu{P}^\mbi{1,1} & -\mbi{a}_\mbiu{E}^\mbi{1,1} & 0 & -\mbi{a}_\mbiu{N}^\mbi{1,1} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ 
+& & & & & & & & & & & \\
+0 & \boxed{-\mbi{a}_\mbiu{S}^\mbi{2,1}} & 0 & -\mbi{a}_\mbiu{W}^\mbi{2,1} & \mbi{a}_\mbiu{P}^\mbi{2,1} & -\mbi{a}_\mbiu{E}^\mbi{2,1} & 0 & -\mbi{a}_\mbiu{N}^\mbi{2,1} & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+& & & & & & & & & & & \\
+0 & 0 & \boxed{-\mbi{a}_\mbiu{S}^\mbi{3,1}} & 0 & -\mbi{a}_\mbiu{W}^\mbi{3,1} & \mbi{a}_\mbiu{P}^\mbi{3,1} & \boxed{-\mbi{a}_\mbiu{E}^\mbi{3,1}} & 0 & -\mbi{a}_\mbiu{N}^\mbi{3,1} & 0 & 0 & 0 & 0 & 0 & 0 \\
+& & & & & & & & & & & \\ \hline & & & & & & & & & & & \\
+0 & 0 & 0 & -\mbi{a}_\mbiu{S}^\mbi{1,2} & 0 & \boxed{-\mbi{a}_\mbiu{W}^\mbi{1,2}} & \mbi{a}_\mbiu{P}^\mbi{1,2} & -\mbi{a}_\mbiu{E}^\mbi{1,2} & 0 & -\mbi{a}_\mbiu{N}^\mbi{1,2} & 0 & 0 & 0 & 0 & 0 \\
+& & & & & & & & & & & \\
+0 & 0 & 0 & 0 & -\mbi{a}_\mbiu{S}^\mbi{2,2} & 0 & -\mbi{a}_\mbiu{W}^\mbi{2,2} & \mbi{a}_\mbiu{P}^\mbi{2,2} & -\mbi{a}_\mbiu{E}^\mbi{2,2} & 0 & -\mbi{a}_\mbiu{N}^\mbi{2,2} & 0 & 0 & 0 & 0 \\
+& & & & & & & & & & & \\
+0 & 0 & 0 & 0 & 0 & -\mbi{a}_\mbiu{S}^\mbi{3,2} & 0 & -\mbi{a}_\mbiu{W}^\mbi{3,2} & -\mbi{a}_\mbiu{P}^\mbi{3,2} & \boxed{-\mbi{a}_\mbiu{E}^\mbi{3,2}} & 0 & -\mbi{a}_\mbiu{N}^\mbi{3,2} & 0 & 0 & 0 \\
+& & & & & & & & & & & \\ \hline & & & & & & & & & & & \\
+0 & 0 & 0 & 0 & 0 & 0 & -\mbi{a}_\mbiu{S}^\mbi{1,3} & 0 & \boxed{-\mbi{a}_\mbiu{W}^\mbi{1,3}} & -\mbi{a}_\mbiu{P}^\mbi{1,3} & \mbi{a}_\mbiu{E}^\mbi{1,3} & 0 & \boxed{-\mbi{a}_\mbiu{N}^\mbi{1,3}} & 0 & 0 \\ 
+& & & & & & & & & & & \\
+0 & 0 & 0 & 0 & 0 & 0 & 0 & -\mbi{a}_\mbiu{S}^\mbi{2,3} & 0 & -\mbi{a}_\mbiu{W}^\mbi{2,3} & \mbi{a}_\mbiu{P}^\mbi{2,3} & -\mbi{a}_\mbiu{E}^\mbi{2,3}  & 0 & \boxed{-\mbi{a}_\mbiu{N}^\mbi{2,3}} & 0  \\
+& & & & & & & & & & & \\
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & -\mbi{a}_\mbiu{S}^\mbi{3,3} & 0 & \mbi{a}_\mbiu{W}^\mbi{3,3} & -\mbi{a}_\mbiu{P}^\mbi{3,3} & \boxed{-\mbi{a}_\mbiu{E}^\mbi{3,3}} & 0 & \boxed{-\mbi{a}_\mbiu{N}^\mbi{3,3}}
+\end{array}\right)
+\end{equation*}
+}
+
+\subsection{Almacenamiento de la matrix: CSR}
+
+\begin{minipage}{0.50\linewidth}
+\begin{algorithm}[H]
+\caption{Formato CSR IJK 2D}\label{alg:CSR_IJK_1D}
+{\scriptsize
+\begin{algorithmic}[1]
+\STATE INPUT: bi, ei, bj, ej
+\STATE OUTPUT: $AA$, $JA$, $IA$
+\STATE I := 0
+\STATE irow := 0
+\STATE IA[irow] := I
+\FOR{$i$ := bi to ei}
+	\FOR{$j$ := bj to ej}
+		\STATE Calculate $\mbi{a}_\mbiu{S}^\mbi{i,j}$, $\mbi{a}_\mbiu{W}^\mbi{i,j}$, $\mbi{a}_\mbiu{P}^\mbi{i,j}$, $\mbi{a}_\mbiu{E}^\mbi{i,j}$, $\mbi{a}_\mbiu{N}^\mbi{i,j}$
+			\STATE $AA$[I] := $\mbi{a}_\mbiu{S}^\mbi{i,j}$
+			\STATE $JA$[I] := irow - NTx
+			\STATE I := I + 1
+			\STATE $AA$[I] := $\mbi{a}_\mbiu{W}^\mbi{i,j}$
+			\STATE $JA$[I] := irow - 1
+			\STATE I := I + 1
+			\STATE $AA$[I] := $\mbi{a}_\mbiu{P}^\mbi{i,j}$
+			\STATE $JA$[I] := irow
+			\STATE I := I + 1
+			\STATE $AA$[I] := $\mbi{a}_\mbiu{E}^\mbi{i,j}$
+			\STATE $JA$[I] := irow + 1
+			\STATE I := I + 1
+			\STATE $AA$[I] := $\mbi{a}_\mbiu{N}^\mbi{i,j}$
+			\STATE $JA$[I] := irow + NTx
+			\STATE I := I + 1
+			\STATE irow := irow + 1
+			\STATE IA[irow] := I 
+	\ENDFOR
+\ENDFOR
+\end{algorithmic}
+}
+\end{algorithm}
+\end{minipage}
+\begin{minipage}{0.50\linewidth}
+
+\begin{algorithm}[H]
+\caption{Corrije: $\mbi{a}_\mbiu{W}$ y $\mbi{a}_\mbiu{E}$}\label{alg:Corrige_aW_aE}
+{\scriptsize
+\begin{algorithmic}[1]
+	\STATE OFFSET\_X = Nd * NTx
+	\FOR{j := 0 to NTy-1 do}
+	\STATE I := j * OFFSET\_X
+	\STATE JA[I+1] := 0 
+	\STATE I := I + OFFSET\_X
+	\STATE JA[I-2] := 0 
+	\ENDFOR
+\end{algorithmic}
+}
+\end{algorithm}
+
+\begin{algorithm}[H]
+	\caption{Corrije: $\mbi{a}_\mbiu{S}$ y $\mbi{a}_\mbiu{N}$}\label{alg:Corrige_aS_aN}
+	{\scriptsize
+		\begin{algorithmic}[1]
+			\STATE OFFSET\_Y := (NTx * (NTy - 1) + 1) * Nd
+			\FOR{i := 0 to NTx-1 do}
+			\STATE I := i * Nd
+			\STATE JA[I] := 0 
+			\STATE I := I + OFFSET\_Y
+			\STATE JA[I-1] := 0
+			\ENDFOR
+		\end{algorithmic}
+	}
+\end{algorithm}
+
+\end{minipage}
+
+\strut
+
+Matriz del sistema.
+
+\strut
+
+{\scriptsize
+	\begin{tabular}{|c|ccc|ccc|ccc|}
+		\hline
+		& 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
+		\hline
+		0 & $\mbi{a}_\mbiu{P}^\mbi{1,1}$ & $-\mbi{a}_\mbiu{E}^\mbi{1,1}$ & 0 & $-\mbi{a}_\mbiu{N}^\mbi{1,1}$ & 0 & 0 & 0 & 0 & 0 \\ 
+		1 & $-\mbi{a}_\mbiu{W}^\mbi{2,1}$ & $\mbi{a}_\mbiu{P}^\mbi{2,1}$ & $-\mbi{a}_\mbiu{E}^\mbi{2,1}$ & 0 & $-\mbi{a}_\mbiu{N}^\mbi{2,1}$ & 0 & 0 & 0 & 0 \\
+		2 & 0 & $-\mbi{a}_\mbiu{W}^\mbi{3,1}$ & $\mbi{a}_\mbiu{P}^\mbi{3,1}$ & 0 & 0 & $-\mbi{a}_\mbiu{N}^\mbi{3,1}$ & 0 & 0 & 0 \\
+		\hline
+		3 & $-\mbi{a}_\mbiu{S}^\mbi{1,2}$ & 0 & 0 & $\mbi{a}_\mbiu{P}^\mbi{1,2}$ & $-\mbi{a}_\mbiu{E}^\mbi{1,2}$ & 0 & $-\mbi{a}_\mbiu{N}^\mbi{1,2}$ & 0 & 0 \\
+		4 & 0 & $-\mbi{a}_\mbiu{S}^\mbi{2,2}$ & 0 & $-\mbi{a}_\mbiu{W}^\mbi{2,2}$ & $\mbi{a}_\mbiu{P}^\mbi{2,2}$ & $-\mbi{a}_\mbiu{E}^\mbi{2,2}$ & 0 & $-\mbi{a}_\mbiu{N}^\mbi{2,2}$ & 0 \\
+		5 & 0 & 0 & $-\mbi{a}_\mbiu{S}^\mbi{3,2}$ & 0 & $\mbi{a}_\mbiu{W}^\mbi{3,2}$ & $-\mbi{a}_\mbiu{P}^\mbi{3,2}$ & 0 & 0 & $-\mbi{a}_\mbiu{N}^\mbi{3,2}$ \\
+		\hline
+		6 & 0 & 0 & 0 & $-\mbi{a}_\mbiu{S}^\mbi{1,3}$ & 0 & 0 & $-\mbi{a}_\mbiu{P}^\mbi{1,3}$ & $\mbi{a}_\mbiu{E}^\mbi{1,3}$ & 0 \\ 
+		7 & 0 & 0 & 0 & 0 & $-\mbi{a}_\mbiu{S}^\mbi{2,3}$ & 0 & $-\mbi{a}_\mbiu{W}^\mbi{2,3}$ & $\mbi{a}_\mbiu{P}^\mbi{2,3}$ & $-\mbi{a}_\mbiu{E}^\mbi{2,3}$  \\
+		8 & 0 & 0 & 0 & 0 & 0 & $-\mbi{a}_\mbiu{S}^\mbi{3,3}$ & 0 & $\mbi{a}_\mbiu{W}^\mbi{3,3}$ & $-\mbi{a}_\mbiu{P}^\mbi{3,3}$ \\
+		\hline
+	\end{tabular}
+}
+
+{\scriptsize
+\begin{equation*}
+\begin{array}{ccccccccccccccccc}
+    \hline \\
+	AA & = &
+	\boxed{-\mbi{a}_\mbiu{S}^\mbi{1,1}} & \boxed{-\mbi{a}_\mbiu{W}^\mbi{1,1}} & 
+	 \mbi{a}_\mbiu{P}^\mbi{1,1} &
+	-\mbi{a}_\mbiu{E}^\mbi{1,1} & -\mbi{a}_\mbiu{N}^\mbi{1,1} &
+	\boxed{-\mbi{a}_\mbiu{S}^\mbi{2,1}} & -\mbi{a}_\mbiu{W}^\mbi{2,1} & 
+	 \mbi{a}_\mbiu{P}^\mbi{2,1} &
+	-\mbi{a}_\mbiu{E}^\mbi{2,1} & -\mbi{a}_\mbiu{N}^\mbi{2,1} &
+	\boxed{-\mbi{a}_\mbiu{S}^\mbi{3,1}} & -\mbi{a}_\mbiu{W}^\mbi{3,1} & 
+	 \mbi{a}_\mbiu{P}^\mbi{3,1} &
+	\boxed{-\mbi{a}_\mbiu{E}^\mbi{3,1}} & -\mbi{a}_\mbiu{N}^\mbi{3,1}
+	\\ \\
+	& & 
+	-\mbi{a}_\mbiu{S}^\mbi{1,1} & \boxed{-\mbi{a}_\mbiu{W}^\mbi{1,1}} & 
+	\mbi{a}_\mbiu{P}^\mbi{1,1} &
+	-\mbi{a}_\mbiu{E}^\mbi{1,1} & -\mbi{a}_\mbiu{N}^\mbi{1,1} &
+	-\mbi{a}_\mbiu{S}^\mbi{2,1} & -\mbi{a}_\mbiu{W}^\mbi{2,1} & 
+	\mbi{a}_\mbiu{P}^\mbi{2,1} &
+	-\mbi{a}_\mbiu{E}^\mbi{2,1} & -\mbi{a}_\mbiu{N}^\mbi{2,1} &
+	-\mbi{a}_\mbiu{S}^\mbi{3,1} & -\mbi{a}_\mbiu{W}^\mbi{3,1} & 
+	\mbi{a}_\mbiu{P}^\mbi{3,1} &
+	\boxed{-\mbi{a}_\mbiu{E}^\mbi{3,1}} & -\mbi{a}_\mbiu{N}^\mbi{3,1}
+	\\ \\
+	& & 
+	-\mbi{a}_\mbiu{S}^\mbi{1,1} & \boxed{-\mbi{a}_\mbiu{W}^\mbi{1,1}} & 
+	\mbi{a}_\mbiu{P}^\mbi{1,1} &
+	-\mbi{a}_\mbiu{E}^\mbi{1,1} & \boxed{-\mbi{a}_\mbiu{N}^\mbi{1,1}} &
+	-\mbi{a}_\mbiu{S}^\mbi{2,1} & -\mbi{a}_\mbiu{W}^\mbi{2,1} & 
+	\mbi{a}_\mbiu{P}^\mbi{2,1} &
+	-\mbi{a}_\mbiu{E}^\mbi{2,1} & \boxed{-\mbi{a}_\mbiu{N}^\mbi{2,1}} &
+	-\mbi{a}_\mbiu{S}^\mbi{3,1} & -\mbi{a}_\mbiu{W}^\mbi{3,1} & 
+	\mbi{a}_\mbiu{P}^\mbi{3,1} &
+	\boxed{-\mbi{a}_\mbiu{E}^\mbi{3,1}} & \boxed{-\mbi{a}_\mbiu{N}^\mbi{3,1}}
+	\\ \\ \hline \\ 
+	JA & = & \boxed{0} & \boxed{0} & 0 & 1 & 3 
+	       & \boxed{0} & 0 & 1 & 2 & 4 
+	       & \boxed{0} & 1 & 2 & \boxed{0} & 5 \\ \\
+       &   & 0 & \boxed{0} & 3 & 4 & 6 
+           & 1 & 3 & 4 & 5 & 7 
+           & 2 & 4 & 5 & \boxed{0} & 8 \\ \\
+       &   & 3 & \boxed{0} & 6 & 7 & \boxed{0}
+           & 4 & 6 & 7 & 8 & \boxed{0}
+           & 5 & 7 & 8 & \boxed{0} & \boxed{0} 
+    \\ \\ \hline \\
+	IA & = & 0 & 5 & 10 & 15 & 20 & 25 & 30 & 35 & 40 & 45 
+	\\ \\ \hline
+\end{array}
+\end{equation*}
+}
+
+\newpage
+
+\subsection{Condiciones de frontera}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[scale=0.50]{malla2D_03}
+		\caption{}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[scale=0.50]{malla2D_04}
+		\caption{}
+		\label{fig:sub2}
+	\end{subfigure}
+
+	\begin{subfigure}{.5\textwidth}
+	\centering
+	\includegraphics[scale=0.50]{malla2D_05}
+	\caption{}
+	\label{fig:sub3}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+	\centering
+	\includegraphics[scale=0.50]{malla2D_06}
+	\caption{}
+	\label{fig:sub4}
+	\end{subfigure}
+	\caption{Condiciones de frontera}
+	\label{fig:test}
+\end{figure}
+
+\subsubsection{Dirichlet}
+
+\begin{eqnarray*}
+\frac{\psi_\mbiu{0,j} + \psi_\mbiu{1,j}}{2} & = & \psi_\mbiu{A} \\
+\psi_\mbiu{0,j} & = & 2 \psi_\mbiu{A} - \psi_\mbiu{1,j} \\
+- \mbi{a}_\mbiu{S}^\mbi{1,j} \psi_\mbiu{1,j-1} 
+- \mbi{a}_\mbiu{W}^\mbi{1,j} \psi_\mbiu{0,j} + \mbi{a}_\mbiu{P}^\mbi{1,j} \psi_\mbiu{1,j} - \mbi{a}_\mbiu{E}^\mbi{1,j} \psi_\mbiu{2,j} 
+- \mbi{a}_\mbiu{N}^\mbi{1,j} \psi_\mbiu{1,j+1} & = & \mbi{b}_\mbiu{1,j} \\
+- \mbi{a}_\mbiu{S}^\mbi{1,j} \psi_\mbiu{1,j-1} 
+- \mbi{a}_\mbiu{W}^\mbi{1,j} (2 \psi_\mbiu{A} - \psi_\mbiu{1,j}) + \mbi{a}_\mbiu{P}^\mbi{1,j} \psi_\mbiu{1,j} - \mbi{a}_\mbiu{E}^\mbi{1,j} \psi_\mbiu{2,j} 
+- \mbi{a}_\mbiu{N}^\mbi{1,j} \psi_\mbiu{1,j+1} & = & \mbi{b}_\mbiu{1,j} \\
+- \mbi{a}_\mbiu{S}^\mbi{1,j} \psi_\mbiu{1,j-1} 
++ (\mbi{a}_\mbiu{P}^\mbi{1,j} + \mbi{a}_\mbiu{W}^\mbi{1,j}) \psi_\mbiu{1,j} - \mbi{a}_\mbiu{E}^\mbi{1,j} \psi_\mbiu{2,j} 
+- \mbi{a}_\mbiu{N}^\mbi{1,j} \psi_\mbiu{1,j+1} & = & \mbi{b}_\mbiu{1,j} + 2 \mbi{a}_\mbiu{W}^\mbi{1,j} \psi_\mbiu{A} \\
+%
+- \mbi{a}_\mbiu{S}^\mbi{1,j} \psi_\mbiu{1,j-1} 
+- \textcolor{blue}{\mbi{a}_\mbiu{W}^\mbi{*,1,j}} \psi_\mbiu{0,j} 
++ \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1,j}} \psi_\mbiu{1,j} 
+- \mbi{a}_\mbiu{E}^\mbi{1,j} \psi_\mbiu{2,j} 
+- \mbi{a}_\mbiu{N}^\mbi{1,j} \psi_\mbiu{1,j+1} & = & \textcolor{blue}{\mbi{b}_\mbiu{1,j}^*}
+\end{eqnarray*}
+%
+\begin{align*}
+\boxed{\textcolor{blue}{\mbi{a}_\mbiu{W}^\mbi{*,1,j}} = 0} &
+& \boxed{\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1,j}} = \mbi{a}_\mbiu{P}^\mbi{1,j} + \mbi{a}_\mbiu{W}^\mbi{1,j}} &
+& \boxed{\textcolor{blue}{\mbi{b}_\mbiu{1,j}^*} = \mbi{b}_\mbiu{1,j} + 2 \mbi{a}_\mbiu{W}^\mbi{1,j} \psi_\mbiu{A}}
+\end{align*}
+
+\begin{eqnarray*}
+	\frac{\psi_\mbiu{Nx,j} + \psi_\mbiu{Nx+1,j}}{2} & = & \psi_\mbiu{B} \\
+	\psi_\mbiu{Nx+1,j} & = & 2 \psi_\mbiu{B} - \psi_\mbiu{Nx,j} \\
+- \mbi{a}_\mbiu{S}^\mbi{Nx,j} \psi_\mbiu{Nx,j-1} 
+- \mbi{a}_\mbiu{W}^\mbi{Nx,j} \psi_\mbiu{Nx-1,j} + \mbi{a}_\mbiu{P}^\mbi{Nx,j} \psi_\mbiu{Nx,j} - \mbi{a}_\mbiu{E}^\mbi{Nx,j} \psi_\mbiu{Nx+1,j} 
+- \mbi{a}_\mbiu{N}^\mbi{Nx,j} \psi_\mbiu{Nx,j+1} & = & \mbi{b}_\mbiu{Nx,j} \\
+- \mbi{a}_\mbiu{S}^\mbi{Nx,j} \psi_\mbiu{Nx,j-1} 
+- \mbi{a}_\mbiu{W}^\mbi{Nx,j} \psi_\mbiu{Nx-1,j-1} + \mbi{a}_\mbiu{P}^\mbi{Nx,j} \psi_\mbiu{Nx,j} 
+- \mbi{a}_\mbiu{E}^\mbi{Nx,j} (2 \psi_\mbiu{B} - \psi_\mbiu{Nx,j}) 
+- \mbi{a}_\mbiu{N}^\mbi{Nx,j} \psi_\mbiu{Nx,j+1} & = & \mbi{b}_\mbiu{Nx,j} \\
+- \mbi{a}_\mbiu{S}^\mbi{Nx,j} \psi_\mbiu{Nx,j-1} 
+- \mbi{a}_\mbiu{W}^\mbi{Nx,j} \psi_\mbiu{Nx-1,j} + (\mbi{a}_\mbiu{P}^\mbi{Nx,j} + \mbi{a}_\mbiu{E}^\mbi{Nx,j} ) \psi_\mbiu{Nx,j} 
+- \mbi{a}_\mbiu{N}^\mbi{Nx,j} \psi_\mbiu{Nx,j+1} & = & \mbi{b}_\mbiu{Nx,j} + 2 \mbi{a}_\mbiu{E}^\mbi{Nx,j} \psi_\mbiu{B} \\
+%
+- \mbi{a}_\mbiu{S}^\mbi{Nx,j} \psi_\mbiu{Nx,j-1} 
+- \mbi{a}_\mbiu{W}^\mbi{Nx,j} \psi_\mbiu{Nx-1,j} + \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,Nx,j}} \psi_\mbiu{Nx,j} - \textcolor{blue}{\mbi{a}_\mbiu{E}^\mbi{*,Nx,j}} \psi_\mbiu{Nx+1,j} 
+- \mbi{a}_\mbiu{N}^\mbi{Nx,j} \psi_\mbiu{Nx,j+1} & = & \textcolor{blue}{\mbi{b}_\mbiu{Nx,j}^*}
+\end{eqnarray*}
+%
+\begin{align*}
+\boxed{\textcolor{blue}{\mbi{a}_\mbiu{E}^\mbi{*,Nx,j}} = 0} &
+& \boxed{\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,Nx,j}} = \mbi{a}_\mbiu{P}^\mbi{Nx,j} + \mbi{a}_\mbiu{E}^\mbi{Nx,j}} &
+& \boxed{\textcolor{blue}{\mbi{b}_\mbiu{Nx,j}^*} = \mbi{b}_\mbiu{Nx,j} + 2 \mbi{a}_\mbiu{E}^\mbi{Nx,j} \psi_\mbiu{B}}
+\end{align*}
+
+\begin{eqnarray*}
+	\frac{\psi_\mbiu{i,0} + \psi_\mbiu{i,1}}{2} & = & \psi_\mbiu{C} \\
+	\psi_\mbiu{i,0} & = & 2 \psi_\mbiu{C} - \psi_\mbiu{i,1} \\
+- \mbi{a}_\mbiu{S}^\mbi{i,1} \psi_\mbiu{i,0} 
+- \mbi{a}_\mbiu{W}^\mbi{i,1} \psi_\mbiu{i-1,1} + \mbi{a}_\mbiu{P}^\mbi{i,1} \psi_\mbiu{i,1} - \mbi{a}_\mbiu{E}^\mbi{i,1} \psi_\mbiu{i+1,1} 
+- \mbi{a}_\mbiu{N}^\mbi{i,1} \psi_\mbiu{i,2} & = & \mbi{b}_\mbiu{i,1} \\
+- \mbi{a}_\mbiu{S}^\mbi{i,1} (2 \psi_\mbiu{C} - \psi_\mbiu{i,1})
+- \mbi{a}_\mbiu{W}^\mbi{i,1} \psi_\mbiu{i-1,1} + \mbi{a}_\mbiu{P}^\mbi{i,1} \psi_\mbiu{i,1} - \mbi{a}_\mbiu{E}^\mbi{i,1} \psi_\mbiu{i+1,1} 
+- \mbi{a}_\mbiu{N}^\mbi{i,1} \psi_\mbiu{i,2} & = & \mbi{b}_\mbiu{i,1} \\
+- \mbi{a}_\mbiu{W}^\mbi{i,1} \psi_\mbiu{i-1,1} + (\mbi{a}_\mbiu{P}^\mbi{i,1} + \mbi{a}_\mbiu{S}^\mbi{i,1})\psi_\mbiu{i,1} - \mbi{a}_\mbiu{E}^\mbi{i,1} \psi_\mbiu{i+1,1} 
+- \mbi{a}_\mbiu{N}^\mbi{i,1} \psi_\mbiu{i,2} & = & \mbi{b}_\mbiu{i,1} + 2 \mbi{a}_\mbiu{S}^\mbi{i,1} \psi_\mbiu{C} \\
+%
+- \textcolor{blue}{\mbi{a}_\mbiu{S}^\mbi{*,i,1}} \psi_\mbiu{i,0} 
+- \mbi{a}_\mbiu{W}^\mbi{i,1} \psi_\mbiu{i-1,1} + \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,i,1}} \psi_\mbiu{i,1} - \mbi{a}_\mbiu{E}^\mbi{i,1} \psi_\mbiu{i+1,1} 
+- \mbi{a}_\mbiu{N}^\mbi{i,1} \psi_\mbiu{i,2} & = & \textcolor{blue}{\mbi{b}_\mbiu{i,1}^*}
+\end{eqnarray*}
+%
+\begin{align*}
+\boxed{\textcolor{blue}{\mbi{a}_\mbiu{S}^\mbi{*,i,1}} = 0} &
+& \boxed{\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,i,1}} = \mbi{a}_\mbiu{P}^\mbi{i,1} + \mbi{a}_\mbiu{S}^\mbi{i,1}} &
+& \boxed{\textcolor{blue}{\mbi{b}_\mbiu{i,1}^*} = \mbi{b}_\mbiu{i,1} + 2 \mbi{a}_\mbiu{S}^\mbi{i,1} \psi_\mbiu{C}}
+\end{align*}
+
+\begin{eqnarray*}
+\frac{\psi_\mbiu{i,Ny} + \psi_\mbiu{i,Ny+1}}{2} & = & \psi_\mbiu{D} \\
+\psi_\mbiu{i,Ny+1} & = & 2 \psi_\mbiu{D} - \psi_\mbiu{i,Ny} \\
+- \mbi{a}_\mbiu{S}^\mbi{i,Ny} \psi_\mbiu{i,Ny-1} 
+- \mbi{a}_\mbiu{W}^\mbi{i,Ny} \psi_\mbiu{i-1,Ny} + \mbi{a}_\mbiu{P}^\mbi{i,Ny} \psi_\mbiu{i,Ny} - \mbi{a}_\mbiu{E}^\mbi{i,Ny} \psi_\mbiu{i+1,Ny} 
+- \mbi{a}_\mbiu{N}^\mbi{i,Ny} \psi_\mbiu{i,Ny+1} & = & \mbi{b}_\mbiu{i,Ny} \\
+- \mbi{a}_\mbiu{S}^\mbi{i,Ny} \psi_\mbiu{i,Ny-1} 
+- \mbi{a}_\mbiu{W}^\mbi{i,Ny} \psi_\mbiu{i-1,Ny} + \mbi{a}_\mbiu{P}^\mbi{i,Ny} \psi_\mbiu{i,Ny} - \mbi{a}_\mbiu{E}^\mbi{i,Ny} \psi_\mbiu{i+1,Ny} 
+- \mbi{a}_\mbiu{N}^\mbi{i,Ny} (2 \psi_\mbiu{D} - \psi_\mbiu{i,Ny}) & = & \mbi{b}_\mbiu{i,Ny} \\
+- \mbi{a}_\mbiu{S}^\mbi{i,Ny} \psi_\mbiu{i,Ny-1} 
+- \mbi{a}_\mbiu{W}^\mbi{i,Ny} \psi_\mbiu{i-1,Ny} + (\mbi{a}_\mbiu{P}^\mbi{i,Ny} + \mbi{a}_\mbiu{N}^\mbi{i,Ny}) \psi_\mbiu{i,Ny} 
+- \mbi{a}_\mbiu{E}^\mbi{i,Ny} \psi_\mbiu{i+1,Ny} 
+& = & \mbi{b}_\mbiu{i,Ny} + 2\mbi{a}_\mbiu{N}^\mbi{i,Ny} \psi_\mbiu{D} \\
+%
+- \mbi{a}_\mbiu{S}^\mbi{i,Ny} \psi_\mbiu{i,Ny-1} 
+- \mbi{a}_\mbiu{W}^\mbi{i,Ny} \psi_\mbiu{i-1,Ny} + \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,i,Ny}} \psi_\mbiu{i,Ny} - \mbi{a}_\mbiu{E}^\mbi{i,Ny} \psi_\mbiu{i+1,Ny} 
+- \textcolor{blue}{\mbi{a}_\mbiu{N}^\mbi{*,i,Ny}} \psi_\mbiu{i,Ny+1} & = & \textcolor{blue}{\mbi{b}_\mbiu{i,Ny}^*}
+\end{eqnarray*}
+%
+\begin{align*}
+\boxed{\textcolor{blue}{\mbi{a}_\mbiu{N}^\mbi{*,i,Ny}} = 0} &
+& \boxed{\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,i,Ny}} = \mbi{a}_\mbiu{P}^\mbi{i,Ny} + \mbi{a}_\mbiu{N}^\mbi{i,Ny}} &
+& \boxed{\textcolor{blue}{\mbi{b}_\mbiu{i,Ny}^*} = \mbi{b}_\mbiu{i,Ny} + 2 \mbi{a}_\mbiu{N}^\mbi{i,Ny} \psi_\mbiu{D}}
+\end{align*}
+
+\subsubsection{Neumman}
+
+\begin{eqnarray*}
+	\frac{\partial \psi}{\partial x}\Big|_\mbiu{w} = \frac{\psi_\mbiu{1,j} - \psi_\mbiu{0,j}}{\Delta x_\mbiu{w}} & = & \text{f}_\mbiu{A} \\
+	\psi_\mbiu{0,j} & = & \psi_\mbiu{1,j} - \Delta x_\mbiu{w} \text{f}_\mbiu{A}  \\
+	- \mbi{a}_\mbiu{S}^\mbi{1,j} \psi_\mbiu{1,j-1} 
+	- \mbi{a}_\mbiu{W}^\mbi{1,j} \psi_\mbiu{0,j} + \mbi{a}_\mbiu{P}^\mbi{1,j} \psi_\mbiu{1,j} - \mbi{a}_\mbiu{E}^\mbi{1,j} \psi_\mbiu{2,j} 
+	- \mbi{a}_\mbiu{N}^\mbi{1,j} \psi_\mbiu{1,j+1} & = & \mbi{b}_\mbiu{1,j} \\
+	- \mbi{a}_\mbiu{S}^\mbi{1,j} \psi_\mbiu{1,j-1} 
+	- \mbi{a}_\mbiu{W}^\mbi{1,j} (\psi_\mbiu{1,j} - \Delta x_\mbiu{w} \text{f}_\mbiu{A}) + \mbi{a}_\mbiu{P}^\mbi{1,j} \psi_\mbiu{1,j} - \mbi{a}_\mbiu{E}^\mbi{1,j} \psi_\mbiu{2,j} 
+	- \mbi{a}_\mbiu{N}^\mbi{1,j} \psi_\mbiu{1,j+1} & = & \mbi{b}_\mbiu{1,j} \\
+	- \mbi{a}_\mbiu{S}^\mbi{1,j} \psi_\mbiu{1,j-1} 
+	+ (\mbi{a}_\mbiu{P}^\mbi{1,j} - \mbi{a}_\mbiu{W}^\mbi{1,j}) \psi_\mbiu{1,j} - \mbi{a}_\mbiu{E}^\mbi{1,j} \psi_\mbiu{2,j} 
+	- \mbi{a}_\mbiu{N}^\mbi{1,j} \psi_\mbiu{1,j+1} & = & \mbi{b}_\mbiu{1,j} - \mbi{a}_\mbiu{W}^\mbi{1,j} \Delta x_\mbiu{w} \text{f}_\mbiu{A} \\
+%
+	- \mbi{a}_\mbiu{S}^\mbi{1,j} \psi_\mbiu{1,j-1} 
+	- \textcolor{blue}{\mbi{a}_\mbiu{W}^\mbi{*,1,j}} \psi_\mbiu{0,j} + \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1,j}} \psi_\mbiu{1,j} - \mbi{a}_\mbiu{E}^\mbi{1,j} \psi_\mbiu{2,j} 
+	- \mbi{a}_\mbiu{N}^\mbi{1,j} \psi_\mbiu{1,j+1} & = & \textcolor{blue}{\mbi{b}_\mbiu{1,j}^*}
+\end{eqnarray*}
+%
+\begin{align*}
+\boxed{\textcolor{blue}{\mbi{a}_\mbiu{W}^\mbi{*,1,j}} = 0} &
+& \boxed{\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1,j}} = \mbi{a}_\mbiu{P}^\mbi{1,j} - \mbi{a}_\mbiu{W}^\mbi{1,j}} &
+& \boxed{\textcolor{blue}{\mbi{b}_\mbiu{1,j}^*} = \mbi{b}_\mbiu{1,j} - \mbi{a}_\mbiu{W}^\mbi{1,j} \Delta x_\mbiu{w} \text{f}_\mbiu{A}}
+\end{align*}
+
+\begin{eqnarray*}
+	\frac{\partial \psi}{\partial x}\Big|_\mbiu{e} = \frac{\psi_\mbiu{Nx+1,j} - \psi_\mbiu{Nx,j}}{\Delta x_\mbiu{e}} & = & \text{f}_\mbiu{B} \\
+	\psi_\mbiu{Nx+1,j} & = & \psi_\mbiu{Nx,j} + \Delta x_\mbiu{e} \text{f}_\mbiu{B} \\
+	- \mbi{a}_\mbiu{S}^\mbi{Nx,j} \psi_\mbiu{Nx,j-1} 
+	- \mbi{a}_\mbiu{W}^\mbi{Nx,j} \psi_\mbiu{Nx-1,j} + \mbi{a}_\mbiu{P}^\mbi{Nx,j} \psi_\mbiu{Nx,j} - \mbi{a}_\mbiu{E}^\mbi{Nx,j} \psi_\mbiu{Nx+1,j} 
+	- \mbi{a}_\mbiu{N}^\mbi{Nx,j} \psi_\mbiu{Nx,j+1} & = & \mbi{b}_\mbiu{Nx,j} \\
+	- \mbi{a}_\mbiu{S}^\mbi{Nx,j} \psi_\mbiu{Nx,j-1} 
+	- \mbi{a}_\mbiu{W}^\mbi{Nx,j} \psi_\mbiu{Nx-1,j-1} + \mbi{a}_\mbiu{P}^\mbi{Nx,j} \psi_\mbiu{Nx,j} 
+	- \mbi{a}_\mbiu{E}^\mbi{Nx,j} (\psi_\mbiu{Nx,j} + \Delta x_\mbiu{e} \text{f}_\mbiu{B}) 
+	- \mbi{a}_\mbiu{N}^\mbi{Nx,j} \psi_\mbiu{Nx,j+1} & = & \mbi{b}_\mbiu{Nx,j} \\
+	- \mbi{a}_\mbiu{S}^\mbi{Nx,j} \psi_\mbiu{Nx,j-1} 
+	- \mbi{a}_\mbiu{W}^\mbi{Nx,j} \psi_\mbiu{Nx-1,j} + (\mbi{a}_\mbiu{P}^\mbi{Nx,j} - \mbi{a}_\mbiu{E}^\mbi{Nx,j} ) \psi_\mbiu{Nx,j} 
+	- \mbi{a}_\mbiu{N}^\mbi{Nx,j} \psi_\mbiu{Nx,j+1} & = & \mbi{b}_\mbiu{Nx,j} + \mbi{a}_\mbiu{E}^\mbi{Nx,j} \Delta x_\mbiu{e} \text{f}_\mbiu{B} \\
+%
+	- \mbi{a}_\mbiu{S}^\mbi{Nx,j} \psi_\mbiu{Nx,j-1} 
+	- \mbi{a}_\mbiu{W}^\mbi{Nx,j} \psi_\mbiu{Nx-1,j} + \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,Nx,j}} \psi_\mbiu{Nx,j} - \textcolor{blue}{\mbi{a}_\mbiu{E}^\mbi{*,Nx,j}} \psi_\mbiu{Nx+1,j}
+	- \mbi{a}_\mbiu{N}^\mbi{Nx,j} \psi_\mbiu{Nx,j+1} & = & \textcolor{blue}{\mbi{b}_\mbiu{Nx,j}^*}	
+\end{eqnarray*}
+%
+\begin{align*}
+\boxed{\textcolor{blue}{\mbi{a}_\mbiu{E}^\mbi{*,Nx,j}} = 0} &
+& \boxed{\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,Nx,j}} = \mbi{a}_\mbiu{P}^\mbi{Nx,j} - \mbi{a}_\mbiu{E}^\mbi{Nx,j}} &
+& \boxed{\textcolor{blue}{\mbi{b}_\mbiu{Nx,j}^*} = \mbi{b}_\mbiu{Nx,j} + \mbi{a}_\mbiu{E}^\mbi{Nx,j} \Delta x_\mbiu{e} \text{f}_\mbiu{B}}
+\end{align*}
+
+\begin{eqnarray*}
+	\frac{\partial \psi}{\partial y}\Big|_\mbiu{s} = \frac{\psi_\mbiu{i,1} - \psi_\mbiu{i,0}}{\Delta y_\mbiu{s}} & = & \text{f}_\mbiu{C} \\
+	\psi_\mbiu{i,0} & = & \psi_\mbiu{i,1} - \Delta y_\mbiu{s} \text{f}_\mbiu{C} \\
+	- \mbi{a}_\mbiu{S}^\mbi{i,1} \psi_\mbiu{i,0} 
+	- \mbi{a}_\mbiu{W}^\mbi{i,1} \psi_\mbiu{i-1,1} + \mbi{a}_\mbiu{P}^\mbi{i,1} \psi_\mbiu{i,1} - \mbi{a}_\mbiu{E}^\mbi{i,1} \psi_\mbiu{i+1,1} 
+	- \mbi{a}_\mbiu{N}^\mbi{i,1} \psi_\mbiu{i,2} & = & \mbi{b}_\mbiu{i,1} \\
+	- \mbi{a}_\mbiu{S}^\mbi{i,1} (\psi_\mbiu{i,1} - \Delta y_\mbiu{s} \text{f}_\mbiu{C})
+	- \mbi{a}_\mbiu{W}^\mbi{i,1} \psi_\mbiu{i-1,1} + \mbi{a}_\mbiu{P}^\mbi{i,1} \psi_\mbiu{i,1} - \mbi{a}_\mbiu{E}^\mbi{i,1} \psi_\mbiu{i+1,1} 
+	- \mbi{a}_\mbiu{N}^\mbi{i,1} \psi_\mbiu{i,2} & = &\mbi{b}_\mbiu{i,1} \\
+	- \mbi{a}_\mbiu{W}^\mbi{i,1} \psi_\mbiu{i-1,1} + (\mbi{a}_\mbiu{P}^\mbi{i,1} - \mbi{a}_\mbiu{S}^\mbi{i,1})\psi_\mbiu{i,1} - \mbi{a}_\mbiu{E}^\mbi{i,1} \psi_\mbiu{i+1,1} 
+	- \mbi{a}_\mbiu{N}^\mbi{i,1} \psi_\mbiu{i,2} & = & \mbi{b}_\mbiu{i,1} - \mbi{a}_\mbiu{S}^\mbi{i,1} \Delta y_\mbiu{s} \text{f}_\mbiu{C} \\
+%
+	- \textcolor{blue}{\mbi{a}_\mbiu{S}^\mbi{*,i,1}} \psi_\mbiu{i,0} 
+	- \mbi{a}_\mbiu{W}^\mbi{i,1} \psi_\mbiu{i-1,1} + \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,i,1}} \psi_\mbiu{i,1} - \mbi{a}_\mbiu{E}^\mbi{i,1} \psi_\mbiu{i+1,1} 
+	- \mbi{a}_\mbiu{N}^\mbi{i,1} \psi_\mbiu{i,2} & = & \textcolor{blue}{\mbi{b}_\mbiu{i,1}^*}
+\end{eqnarray*}
+%
+\begin{align*}
+\boxed{\textcolor{blue}{\mbi{a}_\mbiu{S}^\mbi{*,i,1}} = 0} &
+& \boxed{\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,i,1}} = \mbi{a}_\mbiu{P}^\mbi{i,1} - \mbi{a}_\mbiu{S}^\mbi{i,1}} &
+& \boxed{\textcolor{blue}{\mbi{b}_\mbiu{i,1}^*} = \mbi{b}_\mbiu{i,1} - \mbi{a}_\mbiu{S}^\mbi{i,1} \Delta y_\mbiu{s} \text{f}_\mbiu{C}}
+\end{align*}
+
+
+\begin{eqnarray*}
+	\frac{\partial \psi}{\partial y}\Big|_\mbiu{n} = \frac{\psi_\mbiu{i,Ny+1} - \psi_\mbiu{i,Ny}}{\Delta y_\mbiu{n}} & = & \text{f}_\mbiu{D} \\
+	\psi_\mbiu{i,Ny+1} & = & \psi_\mbiu{i,Ny} + \Delta y_\mbiu{n} \text{f}_\mbiu{D} \\
+	- \mbi{a}_\mbiu{S}^\mbi{i,Ny} \psi_\mbiu{i,Ny-1} 
+	- \mbi{a}_\mbiu{W}^\mbi{i,Ny} \psi_\mbiu{i-1,Ny} + \mbi{a}_\mbiu{P}^\mbi{i,Ny} \psi_\mbiu{i,Ny} - \mbi{a}_\mbiu{E}^\mbi{i,Ny} \psi_\mbiu{i+1,Ny} 
+	- \mbi{a}_\mbiu{N}^\mbi{i,Ny} \psi_\mbiu{i,Ny+1} & = & \mbi{b}_\mbiu{i,Ny} \\
+	- \mbi{a}_\mbiu{S}^\mbi{i,Ny} \psi_\mbiu{i,Ny-1} 
+	- \mbi{a}_\mbiu{W}^\mbi{i,Ny} \psi_\mbiu{i-1,Ny} + \mbi{a}_\mbiu{P}^\mbi{i,Ny} \psi_\mbiu{i,Ny} - \mbi{a}_\mbiu{E}^\mbi{i,Ny} \psi_\mbiu{i+1,Ny} 
+	- \mbi{a}_\mbiu{N}^\mbi{i,Ny} (\psi_\mbiu{i,Ny} + \Delta y_\mbiu{n} \text{f}_\mbiu{D}) & = & \mbi{b}_\mbiu{i,Ny} \\
+	- \mbi{a}_\mbiu{S}^\mbi{i,Ny} \psi_\mbiu{i,Ny-1} 
+	- \mbi{a}_\mbiu{W}^\mbi{i,Ny} \psi_\mbiu{i-1,Ny} + (\mbi{a}_\mbiu{P}^\mbi{i,Ny} - \mbi{a}_\mbiu{N}^\mbi{i,Ny}) \psi_\mbiu{i,Ny} 
+	- \mbi{a}_\mbiu{E}^\mbi{i,Ny} \psi_\mbiu{i+1,Ny} 
+	& = & \mbi{b}_\mbiu{i,Ny} + \mbi{a}_\mbiu{N}^\mbi{i,Ny} \Delta y_\mbiu{n} \text{f}_\mbiu{D} \\
+%
+	- \mbi{a}_\mbiu{S}^\mbi{i,Ny} \psi_\mbiu{i,Ny-1} 
+	- \mbi{a}_\mbiu{W}^\mbi{i,Ny} \psi_\mbiu{i-1,Ny} + \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,i,Ny}} \psi_\mbiu{i,Ny} - \mbi{a}_\mbiu{E}^\mbi{i,Ny} \psi_\mbiu{i+1,Ny} 
+	- \textcolor{blue}{\mbi{a}_\mbiu{N}^\mbi{*,i,Ny}} \psi_\mbiu{i,Ny+1} & = & \textcolor{blue}{\mbi{b}_\mbiu{i,Ny}^*}
+\end{eqnarray*}
+%
+\begin{align*}
+\boxed{\textcolor{blue}{\mbi{a}_\mbiu{N}^\mbi{*,i,Ny}} = 0} &
+& \boxed{\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,i,Ny}} = \mbi{a}_\mbiu{P}^\mbi{i,Ny} - \mbi{a}_\mbiu{N}^\mbi{i,Ny}} &
+& \boxed{\textcolor{blue}{\mbi{b}_\mbiu{i,Ny}^*} = \mbi{b}_\mbiu{i,Ny} + \mbi{a}_\mbiu{N}^\mbi{i,Ny} \Delta y_\mbiu{n} \text{f}_\mbiu{D}}
+\end{align*}
+
+\subsubsection{Doble condición de frontera}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=0.50]{malla2D_07}
+	\caption{doble condición de frontera.}
+	\label{fig:x}
+\end{figure}%
+
+\begin{eqnarray*}
+	\frac{\psi_\mbiu{0,1} + \psi_\mbiu{1,1}}{2} & = & \psi_\mbiu{A} \\
+	\psi_\mbiu{0,1} & = & 2 \psi_\mbiu{A} - \psi_\mbiu{1,1} \\
+	\frac{\partial \psi}{\partial y}\Big|_\mbiu{s} = \frac{\psi_\mbiu{1,1} - \psi_\mbiu{1,0}}{\Delta y_\mbiu{s}} & = & \text{f}_\mbiu{C} \\
+	\psi_\mbiu{1,0} & = & \psi_\mbiu{1,1} - \Delta y_\mbiu{s} \text{f}_\mbiu{C} \\
+	- \mbi{a}_\mbiu{S}^\mbi{1,1} \psi_\mbiu{1,0} 
+	- \mbi{a}_\mbiu{W}^\mbi{1,1} \psi_\mbiu{0,1} + \mbi{a}_\mbiu{P}^\mbi{1,1} \psi_\mbiu{1,1} - \mbi{a}_\mbiu{E}^\mbi{1,1} \psi_\mbiu{2,1} 
+	- \mbi{a}_\mbiu{N}^\mbi{1,1} \psi_\mbiu{1,2} & = & \mbi{b}_\mbiu{1,1} \\
+%
+	- \mbi{a}_\mbiu{S}^\mbi{1,1} (\psi_\mbiu{1,1} - \Delta y_\mbiu{s} \text{f}_\mbiu{C}) 
+	- \mbi{a}_\mbiu{W}^\mbi{1,1} (2 \psi_\mbiu{A} - \psi_\mbiu{1,1}) + \mbi{a}_\mbiu{P}^\mbi{1,1} \psi_\mbiu{1,1} - \mbi{a}_\mbiu{E}^\mbi{1,1} \psi_\mbiu{2,1} 
+	- \mbi{a}_\mbiu{N}^\mbi{1,1} \psi_\mbiu{1,2} & = & \mbi{b}_\mbiu{1,1} \\
+%
+	  (\mbi{a}_\mbiu{P}^\mbi{1,1} + \mbi{a}_\mbiu{W}^\mbi{1,1} - \mbi{a}_\mbiu{S}^\mbi{1,1}) \psi_\mbiu{1,1} - \mbi{a}_\mbiu{E}^\mbi{1,1} \psi_\mbiu{2,1} 
+	- \mbi{a}_\mbiu{N}^\mbi{1,1} \psi_\mbiu{1,2} & = & \mbi{b}_\mbiu{1,1} + 2 \mbi{a}_\mbiu{W}^\mbi{1,1} \psi_\mbiu{A} - \mbi{a}_\mbiu{S}^\mbi{1,1} \Delta y_\mbiu{s} \text{f}_\mbiu{C} \\
+	- \textcolor{blue}{\mbi{a}_\mbiu{S}^\mbi{*,1,1}} \psi_\mbiu{1,0} 
+	- \textcolor{blue}{\mbi{a}_\mbiu{W}^\mbi{*,1,1}} \psi_\mbiu{0,1} + \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1,1}} \psi_\mbiu{1,1} - \mbi{a}_\mbiu{E}^\mbi{1,1} \psi_\mbiu{2,1} 
+	- \mbi{a}_\mbiu{N}^\mbi{1,1} \psi_\mbiu{1,2} & = & \textcolor{blue}{\mbi{b}_\mbiu{1,1}^*} 
+\end{eqnarray*}
+%
+\begin{align*}
+\boxed{\textcolor{blue}{\mbi{a}_\mbiu{S}^\mbi{*,1,1}} = 0} &
+& \boxed{\textcolor{blue}{\mbi{a}_\mbiu{W}^\mbi{*,1,1}} = 0} &
+& \boxed{\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1,1}} = \mbi{a}_\mbiu{P}^\mbi{1,1} + \mbi{a}_\mbiu{W}^\mbi{1,1} - \mbi{a}_\mbiu{S}^\mbi{1,1}}&
+& \boxed{\textcolor{blue}{\mbi{b}_\mbiu{1,1}^*} = \mbi{b}_\mbiu{1,1} + 2 \mbi{a}_\mbiu{W}^\mbi{1,1} \psi_\mbiu{A} - \mbi{a}_\mbiu{S}^\mbi{1,1} \Delta y_\mbiu{s} \text{f}_\mbiu{C}}
+\end{align*}
+
+\subsubsection{Ajuste en el almacenamiento CSR}
+
+{\scriptsize 
+\begin{equation*}
+\left(
+\begin{array}{ccc|rrrrrrrrr|ccc}
+\textcolor{blue}{-\mbi{a}_\mbiu{S}^\mbi{*,1,1}} & 0 & \textcolor{blue}{-\mbi{a}_\mbiu{W}^\mbi{*,1,1}} & \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1,1}} & -\mbi{a}_\mbiu{E}^\mbi{1,1} & 0 & -\mbi{a}_\mbiu{N}^\mbi{1,1} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ 
+& & & & & & & & & & & \\
+0 & \textcolor{blue}{-\mbi{a}_\mbiu{S}^\mbi{*,2,1}} & 0 & -\mbi{a}_\mbiu{W}^\mbi{2,1} & \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,2,1}} & -\mbi{a}_\mbiu{E}^\mbi{2,1} & 0 & -\mbi{a}_\mbiu{N}^\mbi{2,1} & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+& & & & & & & & & & & \\
+0 & 0 & \textcolor{blue}{-\mbi{a}_\mbiu{S}^\mbi{*,3,1}} & 0 & -\mbi{a}_\mbiu{W}^\mbi{3,1} & \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,3,1}} & \textcolor{blue}{-\mbi{a}_\mbiu{E}^\mbi{*,3,1}} & 0 & -\mbi{a}_\mbiu{N}^\mbi{3,1} & 0 & 0 & 0 & 0 & 0 & 0 \\
+& & & & & & & & & & & \\ \hline & & & & & & & & & & & \\
+0 & 0 & 0 & -\mbi{a}_\mbiu{S}^\mbi{1,2} & 0 & \textcolor{blue}{-\mbi{a}_\mbiu{W}^\mbi{*,1,2}} & \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1,2}} & -\mbi{a}_\mbiu{E}^\mbi{1,2} & 0 & -\mbi{a}_\mbiu{N}^\mbi{1,2} & 0 & 0 & 0 & 0 & 0 \\
+& & & & & & & & & & & \\
+0 & 0 & 0 & 0 & -\mbi{a}_\mbiu{S}^\mbi{2,2} & 0 & -\mbi{a}_\mbiu{W}^\mbi{2,2} & \mbi{a}_\mbiu{P}^\mbi{2,2} & -\mbi{a}_\mbiu{E}^\mbi{2,2} & 0 & -\mbi{a}_\mbiu{N}^\mbi{2,2} & 0 & 0 & 0 & 0 \\
+& & & & & & & & & & & \\
+0 & 0 & 0 & 0 & 0 & -\mbi{a}_\mbiu{S}^\mbi{3,2} & 0 & -\mbi{a}_\mbiu{W}^\mbi{3,2} & \textcolor{blue}{-\mbi{a}_\mbiu{P}^\mbi{*,3,2}} & \textcolor{blue}{-\mbi{a}_\mbiu{E}^\mbi{*,3,2}} & 0 & -\mbi{a}_\mbiu{N}^\mbi{3,2} & 0 & 0 & 0 \\
+& & & & & & & & & & & \\ \hline & & & & & & & & & & & \\
+0 & 0 & 0 & 0 & 0 & 0 & -\mbi{a}_\mbiu{S}^\mbi{1,3} & 0 & \textcolor{blue}{-\mbi{a}_\mbiu{W}^\mbi{*,1,3}} & \textcolor{blue}{-\mbi{a}_\mbiu{P}^\mbi{*,1,3}} & \mbi{a}_\mbiu{E}^\mbi{1,3} & 0 & \textcolor{blue}{-\mbi{a}_\mbiu{N}^\mbi{*,1,3}} & 0 & 0 \\ 
+& & & & & & & & & & & \\
+0 & 0 & 0 & 0 & 0 & 0 & 0 & -\mbi{a}_\mbiu{S}^\mbi{2,3} & 0 & -\mbi{a}_\mbiu{W}^\mbi{2,3} & \textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,2,3}} & -\mbi{a}_\mbiu{E}^\mbi{2,3}  & 0 & \textcolor{blue}{-\mbi{a}_\mbiu{N}^\mbi{*,2,3}} & 0  \\
+& & & & & & & & & & & \\
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & -\mbi{a}_\mbiu{S}^\mbi{3,3} & 0 & \mbi{a}_\mbiu{W}^\mbi{3,3} & \textcolor{blue}{-\mbi{a}_\mbiu{P}^\mbi{*,3,3}} & \textcolor{blue}{-\mbi{a}_\mbiu{E}^\mbi{*,3,3}} & 0 & \textcolor{blue}{-\mbi{a}_\mbiu{N}^\mbi{*,3,3}}
+\end{array}\right)
+\end{equation*}
+}
+
+{\scriptsize
+\begin{equation*}
+	\begin{array}{ccccccccccccccccc}
+	\hline \\
+	AA & = &
+	\textcolor{blue}{-\mbi{a}_\mbiu{S}^\mbi{*,1,1}} & \textcolor{blue}{-\mbi{a}_\mbiu{W}^\mbi{*,1,1}} & 
+	\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1,1}} &
+	-\mbi{a}_\mbiu{E}^\mbi{1,1} & -\mbi{a}_\mbiu{N}^\mbi{1,1} &
+	\textcolor{blue}{-\mbi{a}_\mbiu{S}^\mbi{*,2,1}} & -\mbi{a}_\mbiu{W}^\mbi{2,1} & 
+	\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,2,1}} &
+	-\mbi{a}_\mbiu{E}^\mbi{2,1} & -\mbi{a}_\mbiu{N}^\mbi{2,1} &
+	\textcolor{blue}{-\mbi{a}_\mbiu{S}^\mbi{*,3,1}} & -\mbi{a}_\mbiu{W}^\mbi{3,1} & 
+	\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,3,1}} &
+	\textcolor{blue}{-\mbi{a}_\mbiu{E}^\mbi{*,3,1}} & -\mbi{a}_\mbiu{N}^\mbi{3,1}
+	\\ \\
+	& & 
+	-\mbi{a}_\mbiu{S}^\mbi{1,1} & \textcolor{blue}{-\mbi{a}_\mbiu{W}^\mbi{*,1,1}} & 
+	\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1,1}} &
+	-\mbi{a}_\mbiu{E}^\mbi{1,1} & -\mbi{a}_\mbiu{N}^\mbi{1,1} &
+	-\mbi{a}_\mbiu{S}^\mbi{2,1} & -\mbi{a}_\mbiu{W}^\mbi{2,1} & 
+	\mbi{a}_\mbiu{P}^\mbi{2,1} &
+	-\mbi{a}_\mbiu{E}^\mbi{2,1} & -\mbi{a}_\mbiu{N}^\mbi{2,1} &
+	-\mbi{a}_\mbiu{S}^\mbi{3,1} & -\mbi{a}_\mbiu{W}^\mbi{3,1} & 
+	\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,3,1}} &
+	\textcolor{blue}{-\mbi{a}_\mbiu{E}^\mbi{*,3,1}} & -\mbi{a}_\mbiu{N}^\mbi{3,1}
+	\\ \\
+	& & 
+	-\mbi{a}_\mbiu{S}^\mbi{1,1} & \textcolor{blue}{-\mbi{a}_\mbiu{W}^\mbi{*,1,1}} & 
+	\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,1,1}} &
+	-\mbi{a}_\mbiu{E}^\mbi{1,1} & \textcolor{blue}{-\mbi{a}_\mbiu{N}^\mbi{*,1,1}} &
+	-\mbi{a}_\mbiu{S}^\mbi{2,1} & -\mbi{a}_\mbiu{W}^\mbi{2,1} & 
+	\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,2,1}} &
+	-\mbi{a}_\mbiu{E}^\mbi{2,1} & \textcolor{blue}{-\mbi{a}_\mbiu{N}^\mbi{*,2,1}} &
+	-\mbi{a}_\mbiu{S}^\mbi{3,1} & -\mbi{a}_\mbiu{W}^\mbi{3,1} & 
+	\textcolor{blue}{\mbi{a}_\mbiu{P}^\mbi{*,3,1}} &
+	\textcolor{blue}{-\mbi{a}_\mbiu{E}^\mbi{*,3,1}} & -\textcolor{blue}{\mbi{a}_\mbiu{N}^\mbi{*,3,1}}
+	\\ \\ \hline
+	\end{array}
+	\end{equation*}
+}
+
+
+\newpage
+
+\section{Numerical Schemes}
+
+ 
+
+\end{document}

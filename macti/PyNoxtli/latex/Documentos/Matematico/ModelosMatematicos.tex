@@ -1,0 +1,278 @@
+\documentclass[10pt,letterpaper]{article}
+\usepackage[spanish, mexico]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{moreverb}
+\usepackage{graphicx}
+\usepackage[export]{adjustbox}
+\usepackage{color}
+\usepackage{fancyheadings}
+\usepackage{listings}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\floatname{algorithm}{Algoritmo}
+
+%\usepackage{caption}
+\usepackage{subcaption}
+
+%-----------------------------------------------------------------------
+% Text dimensions 
+%-----------------------------------------------------------------------
+%% This controls the height of the text
+\setlength{\textheight}{22cm}
+\setlength{\voffset}{-1.5cm}
+
+%% This controls the width of the text
+\setlength{\textwidth}{16cm} % Aproxx. ~16cm
+\setlength{\hoffset}{-1.5cm}
+
+%% Separation of the footer from the body text
+\setlength{\footskip}{1.5cm} 
+
+%%
+%% Becuase I don't need marginal notes, then: 
+\setlength{\marginparsep}{0pt}
+\setlength{\marginparwidth}{0pt}
+%%
+%% Header is equal to \textwdith
+%% This is used when \marginparsep and \marginparwith are not zero
+%\addtolength{\headwidth}{\marginparsep}
+%\addtolength{\headwidth}{\marginparwidth}
+
+%% We have to substrac some points on even pages and odd pages
+%% in order to match headers and footers on even and odd pages
+\addtolength{\evensidemargin}{-56pt}
+\addtolength{\oddsidemargin}{-5pt}
+
+%-----------------------------------------------------------------------
+% Style of page and headings
+%-----------------------------------------------------------------------
+\pagestyle{fancy}
+
+\lhead[\fancyplain{}{\bf\thepage}]{\fancyplain{}{\bfseries\rightmark}}
+\rhead[\fancyplain{}{\bfseries\leftmark}]{\fancyplain{}{\bf\thepage}}
+\lfoot{\sf Depto. de Recursos Naturales, IGF--UNAM}
+\rfoot{\sf \copyright 2020, LMCS}
+\cfoot{}
+
+%\setlength{\headrulewidth}{0.4pt}
+%\setlength{\footrulewidth}{0.4pt}
+
+\newcommand{\mathbi}[1]{\textbf{\em #1}}
+\newcommand{\mbf}[1]{\mathbf{#1}}
+\newcommand{\mbi}[1]{\textbf{\em #1}}
+\newcommand{\mbiu}[1]{{_\textbf{\em #1}}}
+\newcommand{\mbu}[1]{{^\textbf{\em #1}}}
+\newcommand{\mcons}[1]{\mbox{\textsf{#1}}}
+\newcommand{\tensor}[1]{\underline{\underline{#1}}}
+\newcommand{\Vector}[1]{\mathbf{#1}}
+\renewcommand{\arraystretch}{1.75}
+
+\graphicspath{{../Figuras/}}
+
+\lstset{language=python}
+\lstset{commentstyle=\textit}
+
+\title{pyNoxtli}
+
+\author{Luis M. de la Cruz}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+ \newpage
+
+\section{Modelo matemático: Transferencia de calor}
+
+Ecuación general de transferencia de calor:
+
+\begin{equation*}
+c_p \rho \frac{\partial T}{\partial t} +
+c_p \rho \frac{\partial}{\partial x_j} \left( u_j T \right) -
+\frac{\partial }{\partial x_j} \left( \kappa \frac{\partial T}{\partial x_j}\right) = 
+S
+\end{equation*}
+%
+donde se usa la convención de Einstein (índices repetidos se suman) y se define lo siguiente:
+%
+\begin{center}
+\begin{tabular}[h!]{cp{10cm}c}
+Símbolo &  & Unidades \\
+\hline
+\multicolumn{3}{c}{\textbf{Parámetros físicos}}\\
+$c_p$    & Capacidad calorífica específica. & [J / Kg $^\text{o}$K]\\
+$\rho$    & Densidad. & [Kg / m$^3$]\\
+$\kappa$ & Conductividad térmica. &  [W / m $^\text{o}$K] \\
+$S$ & Ganancia (fuente) o pérdida (sumidero) de calor & [J/m$^3$ s] \\
+
+$\displaystyle \alpha = \frac{\kappa}{c_p \rho}$ & Difusividad térmica. & [m$^2$/s] \\ \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}[h!]{cp{10cm}c}
+Símbolo &  & Unidades \\
+\hline
+\multicolumn{3}{c}{\textbf{Variables independientes}}\\
+$x_j$    & Coordenadas cartesianas de la posición: $(x_1, x_2, x_3) \equiv (x, y, z)$. & [m] \\
+$t$      & Tiempo. & [s] \\
+\hline
+\multicolumn{3}{c}{\textbf{Variables dependientes}}\\
+$T$    & Temperatura. & [$^\text{o}$K] \\
+$u_j$ & Componentes de la velocidad: $(u_1, u_2, u_3) \equiv (u_x, u_y, u_z)$. & [m/s] \\
+\hline
+\end{tabular}
+\end{center}
+
+\newpage
+\subsection{Conducción de calor: estacionaria}
+
+
+\begin{equation*}
+- \frac{\partial }{\partial x_j} \left( \kappa \frac{\partial T}{\partial x_j}\right) = S
+\end{equation*}
+
+\begin{enumerate}
+
+\item Conducción de calor estacionaria sin fuentes ni sumideros ($S=0$) :
+
+\begin{equation*}
+- \frac{\partial }{\partial x_j} \left( \kappa \frac{\partial T}{\partial x_j}\right) = 0
+\end{equation*}
+
+\item Conducción de calor estacionaria con $\kappa$ = constante:
+
+\begin{equation*}
+- \kappa \frac{\partial^2 T}{\partial x_j \partial x_j} = S
+\end{equation*}
+
+\item Conducción de calor estacionaria sin fuentes ni sumideros ($S=0$), con $\kappa$ = constante:
+
+\begin{equation*}
+- \frac{\partial^2 T}{\partial x_j \partial x_j} = 0
+\end{equation*}
+
+\end{enumerate}
+
+
+\subsubsection{Ejemplo: conducción de calor estacionaria sin fuentes ni sumideros con $\kappa$ = cte}
+
+Se considera el problema de conducción de calor, sin fuentes, en una barra aislada cuyos extremos se
+mantienen a temperatura constante de 100°C y 500°C. Calcular la distribución de temperaturas en la barra
+
+\newpage
+\subsection{Conducción de calor: NO estacionaria}
+
+\begin{enumerate}
+\item Conducción de calor no estacionaria:
+
+\begin{equation*}
+\frac{\partial T}{\partial t} -
+\frac{\alpha}{\kappa} \frac{\partial }{\partial x_j} \left( \kappa \frac{\partial T}{\partial x_j}\right) = \frac{\alpha}{\kappa} S
+\end{equation*}
+
+\item Conducción de calor no estacionaria sin fuentes ni sumideros ($S=0$) :
+
+\begin{equation*}
+\frac{\partial T}{\partial t} - 
+\frac{\alpha}{\kappa} \frac{\partial }{\partial x_j} \left( \kappa \frac{\partial T}{\partial x_j}\right) = 0
+\end{equation*}
+
+\item Conducción de calor no estacionaria con $\kappa$ = constante:
+
+\begin{equation*}
+\frac{\partial T}{\partial t} - \alpha \frac{\partial^2 T}{\partial x_j \partial x_j} = \frac{\alpha}{\kappa} S
+\end{equation*}
+	
+\item Conducción de calor no estacionaria sin fuentes ni sumideros ($S=0$), con $\kappa$ = constante:
+
+\begin{equation*}
+\frac{\partial T}{\partial t} - \alpha \frac{\partial^2 T}{\partial x_j \partial x_j} = 0
+\end{equation*}
+
+\end{enumerate}
+
+\newpage
+\subsection{Convección de calor: estacionaria}
+
+\begin{enumerate}
+\item Convección de calor estacionaria:
+
+\begin{equation*}
+\frac{\partial}{\partial x_j} \left( u_j T \right) -
+\frac{\alpha}{\kappa} \frac{\partial }{\partial x_j} \left( \kappa \frac{\partial T}{\partial x_j}\right) = 
+\frac{\alpha}{\kappa} S
+\end{equation*}
+	
+\item Convección de calor estacionaria sin fuentes ni sumideros ($S=0$):
+
+\begin{equation*}
+\frac{\partial}{\partial x_j} \left( u_j T \right) -
+\frac{\alpha}{\kappa} \frac{\partial }{\partial x_j} \left( \kappa \frac{\partial T}{\partial x_j}\right) = 0
+\end{equation*}
+
+\item Convección de calor estacionaria con $\kappa$ = constante:
+
+\begin{equation*}
+\frac{\partial}{\partial x_j} \left( u_j T \right) -
+\alpha \frac{\partial^2 T}{\partial x_j \partial x_j} = 
+\frac{\alpha}{\kappa} S
+\end{equation*}
+
+\item Convección de calor estacionaria sin fuentes ni sumideros ($S=0$), con $\kappa$ = constante:
+
+\begin{equation*}
+\frac{\partial}{\partial x_j} \left( u_j T \right) -
+\alpha \frac{\partial^2 T}{\partial x_j \partial x_j} = 0
+\end{equation*}
+
+\end{enumerate}
+
+\newpage
+\subsection{Convección de calor: NO estacionaria}
+
+\begin{enumerate}
+\item Convección de calor no estacionaria:
+
+\begin{equation*}
+\frac{\partial T}{\partial t} +
+\frac{\partial}{\partial x_j} \left( u_j T \right) -
+\frac{\alpha}{\kappa} \frac{\partial }{\partial x_j} \left( \kappa \frac{\partial T}{\partial x_j}\right) = 
+\frac{\alpha}{\kappa} S
+\end{equation*}
+	
+\item Convección de calor estacionaria sin fuentes ni sumideros ($S=0$):
+
+\begin{equation*}
+\frac{\partial T}{\partial t} +
+\frac{\partial}{\partial x_j} \left( u_j T \right) -
+\frac{\alpha}{\kappa} \frac{\partial }{\partial x_j} \left( \kappa \frac{\partial T}{\partial x_j}\right) = 0
+\end{equation*}
+
+\item Convección de calor estacionaria con $\kappa$ = constante:
+
+\begin{equation*}
+\frac{\partial T}{\partial t} +
+\frac{\partial}{\partial x_j} \left( u_j T \right) -
+\alpha \frac{\partial^2 T}{\partial x_j \partial x_j} = 
+\frac{\alpha}{\kappa} S
+\end{equation*}
+
+\item Convección de calor estacionaria sin fuentes ni sumideros ($S=0$), con $\kappa$ = constante:
+
+\begin{equation*}
+\frac{\partial T}{\partial t} +
+\frac{\partial}{\partial x_j} \left( u_j T \right) -
+\alpha \frac{\partial^2 T}{\partial x_j \partial x_j} = 0
+\end{equation*}
+
+\end{enumerate}
+\newpage
+
+\end{document}

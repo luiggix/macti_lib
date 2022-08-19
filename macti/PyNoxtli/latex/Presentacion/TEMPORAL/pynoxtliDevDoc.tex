@@ -1,0 +1,1867 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%   A Beamer presentation by Rodrigo Platte, Arizona State University, May 18 2007.
+%   Feel free to modify this file to generate your own presentation.
+%
+%   This Latex file should be compiled with pdflatex, for this reason, it is recommended 
+% that you convert the figures in your presentation to pdf. Postscript files (.ps and .eps) 
+% will not compile properly when pdflatex is used. You may use commands like "convert"
+% or "eps2pdf" (in linux) to convert your figures. 
+%
+%   The final output is a PDF file that is best visualized with Adobe Reader.
+%
+%   More information can be found in beameruserguide.pdf
+%
+%   This presentation requires the following files:
+%   BEAMERoptions.tex, ASUlogo.pdf,  asu.pdf, beamerouterthememathASUlogo.sty
+%  intro1.pdf, intro2.pdf, intro3.pdf, intro4.pdf, analytic.pdf
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%\documentclass[compress]{beamer}
+% Use this instead for printing and distributing your slides (suppresses overlays)
+\documentclass[handout]{beamer}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Edit the file BEAMERoptions.tex to change theme, color, fonts, logo, etc.%
+\input{opcionesPresentacion.tex}		%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\usecolortheme{dove}
+
+% Load packages
+%%%%%%%%%%%%%%%%%%%%%
+\usepackage[spanish]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{graphics}
+\usepackage{multimedia} % for movies and sound
+\usepackage{times}
+\usepackage{marvosym}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{listings}
+%
+%\usepackage{tikz}
+%\usetikzlibrary{arrows,backgrounds}
+%\tikzstyle{block}=[draw opacity=0.7,line width=1.4cm]
+\usepackage{xcolor,colortbl}
+
+%%%%%%%%%%%%%%%%%%%%%
+
+\graphicspath{{../../Figuras/}}
+
+%-----------------------------------------------------------------------
+% Definition of some commands
+%-----------------------------------------------------------------------
+\newcommand{\dt}{\partial t}
+\newcommand{\dpsi}{\partial \psi}
+\newcommand{\ddpsi}{\partial^2 \psi}
+\newcommand{\dxj}{\partial x_j}
+\newcommand{\dxi}{\partial x_i}
+\newcommand{\dd}[1]{% arg1: some variable
+	\ensuremath{ \partial #1 } }
+\newcommand{\conv}[1]{% arg1: neighbors = e,w,n,s,f,b
+	\ensuremath{ c_{\boldsymbol{#1}} } }
+\newcommand{\diff}[2][x]{% 
+\ensuremath{ \left(\frac{\partial \psi}{\partial #1}\right)_{\boldsymbol{#2}}}}
+\newcommand{\vel}[2][u]{% arg1: u,v,w; arg2: neighbors = e,w,n,s,f,b
+\ensuremath{ #1_{\boldsymbol{#2}} } }
+\newcommand{\deltas}[2][x]{% arg1: x, y, z; arg1: neighbors = e,w,n,s,f,b
+\ensuremath{ \Delta #1_{\boldsymbol{#2}} } }
+\newcommand{\spsi}[1]{% arg1: neighbors = e,w,n,s,f,b,_E,_W,_N,_S,_F,_B,_P
+	\ensuremath{ \psi_{\boldsymbol{#1}} } }
+\newcommand{\sla}[1]{% arg1: neighbors = _E,_W,_N,_S,_F,_B,_P
+	\ensuremath{ a_{\boldsymbol{#1}} } }
+\newcommand{\coef}[2][a]{% arg2: neighbors = e,w,n,s,f,b,_E,_W,_N,_S,_F,_B,_P
+	\ensuremath{ #1_{\boldsymbol{#2}} } }
+\newcommand{\dvdt}{
+	\ensuremath{ \textrm{\scriptsize{$\frac{\Delta V}{\Delta t}$}} } }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%% The title and name 
+%% Note: [short title]{long title}, [short author(s) name]{long author(s) name}
+\title[]{PyNoxtli}
+\subtitle{
+\textcolor{yellow}{Version 0.1}
+}
+
+
+\author[de la Cruz]
+{
+  \textcolor{blue}{Luis M. de la Cruz}\inst{1} 
+}
+
+\institute[UNAM] 
+{ 
+  \inst{1}
+  \textcolor{blue}{\small{Geophysics Institute}} \\ 
+  \Email : {\tiny{\textsf{luiggi@unam.mx}}} | 
+  {\tiny{{\bf web} : {\textsf{mmc.geofisica.unam.mx}}}} \\
+\includegraphics[height=.85cm]{unamlogo.png} \\
+{\small{Universidad Nacional Aut\'onoma de M\'exico}}
+
+}
+
+\date[]{\footnotesize{May 2013}}
+% Show ASU logo in title page
+%%%%%%%%%%%%%%%%%%%%%%
+%\institute[UNAM]{
+%\includegraphics[height=.85cm]{unamlogo.png} \\
+%{\color{blue} Depto. de Recursos Naturales, Instituto de Geof\'isica}\\
+%{\color{blue} Universidad Nacional Aut\'onoma de M\'exico }\\
+%
+%}
+%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\blue}{\cellcolor{blue!25}}  %{0.9}
+\newcommand{\red}{\cellcolor{red!45}}  %{0.9}
+\newcommand{\green}{\cellcolor{green!45}}  %{0.9}
+
+\newcommand{\Matriz}[1]{\underline{\underline{#1}}}
+%\newcommand{\InvMatriz}[1]{{\underline{\underline{#1}}}^{\tilde{} \, ^1}}
+\newcommand{\InvMatriz}[1]{{\underline{\underline{#1}}}^{^{-1}}}
+%\newcommand{\InvSchur}{\Matriz{S}^{\tilde{} \, ^1}}
+\newcommand{\InvSchur}{\Matriz{S}^{^{-1}}}
+\newcommand{\Schur}{\Matriz{S}}
+\newcommand{\Vector}[1]{\underline{#1}}
+\newcommand{\VectorD}[1]{\underline{#1}_{_\Delta}}
+\newcommand{\SubScript}[1]{_{_{#1}}}
+
+\newcommand{\mathbi}[1]{\textbf{\em #1}}
+\newcommand{\mbi}[1]{\textbf{\em #1}}
+\newcommand{\mbiu}[1]{_{\textbf{\em #1}}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%% Presentation Starts Here %%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+\lstset{
+	language=C++,
+	keywordstyle=\bfseries\ttfamily\color[rgb]{0,0,1},
+	identifierstyle=\ttfamily,
+	commentstyle=\ttfamily\color[rgb]{0.133,0.545,0.133},
+	stringstyle=\ttfamily\color[rgb]{0.627,0.126,0.941},
+	showstringspaces=false,
+	basicstyle=\tiny,
+	numberstyle=\tiny,
+	numbers=left,
+	stepnumber=1,
+	numbersep=10pt,
+	tabsize=2,
+	breaklines=true,
+	prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+	breakatwhitespace=false,
+	aboveskip={1.5\baselineskip},
+    columns=fixed,
+    extendedchars=true,
+    backgroundcolor=\color[gray]{.97},
+    emph={StructuredMesh,Uniform,ScalarField2D,SparseMatrix,Diagonal,ScalarEquation,LaplaceScheme,Solver,TDMA2DX,SubDomain,DerivedMatrix, DerivedVector,CGM,LAEngine,DerivedVectorSpace,DVS_BDDC},emphstyle=\color{red}
+}
+
+%%% Title frame %%%%%
+\begin{frame}[plain]
+	\titlepage
+%	\transboxout
+\end{frame}
+
+
+%%%% Outline (optional) %%%%%%%%%%%%%%%%%%%%%
+%% The outline depends on \section and \subsection commands
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}
+%  \frametitle{Outline}
+%%  \tableofcontents[pausesections]
+%  \tableofcontents
+%%  \transboxin
+%\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Boundary Value Problem}
+
+\begin{frame}{BVP in the whole domain}
+
+\begin{columns}
+\begin{column}{0.45\textwidth}
+\begin{huge}
+\[
+\mathcal{L} u = f_{_\Omega}  
+\]
+\[
+\Matriz{M} \, \Vector{U} = \Vector{F}
+\]
+\end{huge}
+\end{column}
+\begin{column}{0.45\textwidth}
+$$\includegraphics[width=8cm]{subdom1.png}$$
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\subsection{Finite Volume Method}
+
+\begin{frame}{Finite Volume Method}
+
+\begin{columns}
+\begin{column}{0.50\textwidth}
+$$\includegraphics[width=6cm]{meshFVM.pdf}$$
+\end{column}
+\begin{column}{0.50\textwidth}
+{\scriptsize{
+\begin{itemize}
+\item The variables are calculated on the centers of the volumes.
+\item Discretized equations in 2D: 
+\begin{eqnarray*}
+\mbi{a}_{\mbiu{P}} \psi_{\mbiu{P}} & = & \mbi{a}_{\mbiu{E}} \psi_{\mbiu{E}} + \mbi{a}_{\mbiu{W}} \psi_{\mbiu{W}} + \\
+                                   &   & \mbi{a}_{\mbiu{N}} \psi_{\mbiu{N}} + \mbi{a}_{\mbiu{S}} \psi_{\mbiu{S}} + S_{\mbiu{P}}
+\end{eqnarray*}
+\item Discretized equations in 3D: 
+\begin{eqnarray*}
+\mbi{a}_{\mbiu{P}} \psi_{\mbiu{P}} & = & \mbi{a}_{\mbiu{E}} \psi_{\mbiu{E}} + \mbi{a}_{\mbiu{W}} \psi_{\mbiu{W}} + \\
+                                   &   & \mbi{a}_{\mbiu{N}} \psi_{\mbiu{N}} + \mbi{a}_{\mbiu{S}} \psi_{\mbiu{S}} + \\
+                                   &   & \mbi{a}_{\mbiu{F}} \psi_{\mbiu{F}} + \mbi{a}_{\mbiu{B}} \psi_{\mbiu{B}} + S_{\mbiu{P}}
+\end{eqnarray*}
+\end{itemize}
+}}
+\end{column}
+\end{columns}
+
+{\scriptsize{
+\begin{itemize}
+\item $\mbi{P} = i,j$; $\mbi{E} = i+1,j$; $\mbi{W} = i-1,j$; $\mbi{N} = i,j+1$; $\mbi{S} = i,j-1$
+\item FVM equations:
+$ \displaystyle \boxed{
+\mbi{a}_{\mbiu{i,j}} \psi_{\mbiu{i,j}}  =  \mbi{a}_{\mbiu{i+1,j}} \psi_{\mbiu{i+1,j}} + \mbi{a}_{\mbiu{i-1,j}} \psi_{\mbiu{i-1,j}} + 
+                                       \mbi{a}_{\mbiu{i,j+1}} \psi_{\mbiu{i,j+1}} + \mbi{a}_{\mbiu{i,j-1}} \psi_{\mbiu{i,j-1}} + S_{\mbiu{i,j}}}
+$
+\end{itemize}
+}}
+
+\end{frame}
+
+\begin{frame}{Finite Volume Method: Linear Systems 2D}
+$$\includegraphics[width=10cm]{tdma2D.jpg}$$
+\end{frame}
+
+\begin{frame}{Finite Volume Method: Linear Systems 3D}
+$$\includegraphics[width=10cm]{tdma3D.jpg}$$
+\end{frame}
+
+
+\begin{frame}{Finite Volume Method: example in 2D}
+$$\includegraphics[width=7cm]{meshFVM.pdf}$$
+\end{frame}
+
+\begin{frame}{Finite Volume Method: matrix}
+
+\begin{tiny}
+\begin{equation*}
+\begin{array}{|c|c|ccccc|ccccc|ccccc|ccccc|}
+\hline
+i  &   & 1 & 2 & 3 & 4 & 5 & 1 & 2 & 3 & 4 & 5 & 1 & 2 & 3 & 4 & 5 & 1 & 2 & 3 & 4 & 5 \\
+\hline
+   & j & \multicolumn{5}{c|}{1} & \multicolumn{5}{c|}{2} & \multicolumn{5}{c|}{3} & \multicolumn{5}{c|}{4} \\
+\hline
+1 & 1 & \mbiu{P} & \mbiu{E} &   &   &  & \mbiu{N}   &   &   &   &   &   &   &   &   &   &   &  &  & &     \\
+2 & 1 & \mbiu{W} & \mbiu{P} & \mbiu{E}   &   &   &  & \mbiu{N}   &   &   &   &   &   &   &   &   &  & & & &   \\
+3 & 1 &   & \mbiu{W} & \mbiu{P} & \mbiu{E}   &   &  &  & \mbiu{N}   &   &   &   &   &   &   &   & & & & &      \\
+4 & 1 &   &   &\mbiu{W} & \mbiu{P} & \mbiu{E}   &   &  &  & \mbiu{N}   &   &   &   &   &   &   &   &  & & &   \\
+5 & 1 &   &   &   &\mbiu{W} & \mbiu{P} &   &   &   &  &  \mbiu{N}   &   &   &   &   &   &   & & & &     \\
+\hline
+1 & 2 & \mbiu{S}   &   &   &   &  & \mbiu{P} & \mbiu{E}   &   &  &  & \mbiu{N}   &   &   &   &   &   &   &   &  & \\
+2 & 2 &   & \mbiu{S}   &   &   &  &  \mbiu{W} & \mbiu{P} & \mbiu{E}  &  &   &  &  \mbiu{N}   &   &   &   &   &   &   &  &  \\
+3 & 2 &   &   & \mbiu{S}   &   &   &  & \mbiu{W} & \mbiu{P} & \mbiu{E}   &   &  &  & \mbiu{N}   &   &   &   &   &   & &   \\
+4 & 2 &   &   &   & \mbiu{S}   &   &   &  &\mbiu{W} & \mbiu{P} & \mbiu{E}   &   &  &  & \mbiu{N}   &   &   &   &   &  & \\
+5 & 2 &   &   &   &   & \mbiu{S}   &   &   &  & \mbiu{W} & \mbiu{P} &   &   &   &  &  \mbiu{N}   &   &   &   &  & \\
+\hline
+1 & 3 &   &   &   &   &   & \mbiu{S}   &   &   &   &  & \mbiu{P} & \mbiu{E}   &   &   &  & \mbiu{N}   &   &   &  & \\
+2 & 3 &   &   &   &   &   &   & \mbiu{S}   &   &   &  & \mbiu{W} & \mbiu{P} & \mbiu{E}   &   &  &  & \mbiu{N}   &   &  &   \\
+3 & 3 &   &   &   &   &   &   &   & \mbiu{S}   &   &   &  & \mbiu{W} & \mbiu{P} & \mbiu{E}   &   &  &  & \mbiu{N}   &  & \\
+4 & 3 &   &   &   &   &   &   &   &   & \mbiu{S}   &   &  &  & \mbiu{W} & \mbiu{P} & \mbiu{E}   &   &  &  & \mbiu{N}  & \\
+5 & 3 &   &   &   &   &   &   &   &   &   & \mbiu{S}   &   &  &  & \mbiu{W} & \mbiu{P} &   &   &   &   & \mbiu{N} \\
+\hline
+1 & 4 &   &   &   &   &   &   &   &   &   &   & \mbiu{S}   &   &   &   &  & \mbiu{P} & \mbiu{E}   &   &  &  \\
+2 & 4 &   &   &   &   &   &   &   &   &   &   &   & \mbiu{S}   &   &   &   & \mbiu{W} & \mbiu{P} & \mbiu{E}  & &     \\
+3 & 4 &   &   &   &   &   &   &   &   &   &   &   &   & \mbiu{S}   &   &  &  & \mbiu{W} & \mbiu{P} & \mbiu{E}  & \\
+4 & 4 &   &   &   &   &   &   &   &   &   &   &   &   &   & \mbiu{S}   &   &  &  & \mbiu{W} & \mbiu{W} & \mbiu{E} \\
+5 & 4 &   &   &   &   &   &   &   &   &   &   &   &   &   &   & \mbiu{S}   &   &   &  & \mbiu{W} & \mbiu{P} \\
+\hline
+\end{array}
+\end{equation*}
+
+\strut
+
+\[
+a_{\mbiu{P}} = a_{\mbiu{E}} + a_{\mbiu{W}} + a_{\mbiu{N}} + a_{\mbiu{S}}
+\]
+
+\end{tiny}
+
+\end{frame}
+
+\section{DVS Framework}
+
+\subsection{Derived nodes}
+
+\begin{frame}{Original domain and nodes (\textit{Fine mesh})}
+
+\begin{center}
+{\footnotesize{
+\begin{tabular}{lll}
+& & \\
+& & \\
+& &
+\end{tabular}
+}}
+\end{center}
+
+$$\includegraphics[width=8cm]{subdom1.png}$$
+
+\end{frame}
+
+\begin{frame}{Original domain partitioned into subdomains}
+
+\begin{center}
+{\footnotesize{
+\begin{tabular}{lll}
+& & \\
+& & \\
+& &
+\end{tabular}
+}}
+\end{center}
+
+$$\includegraphics[width=8cm]{subdom2.png}$$
+
+\end{frame}
+
+\begin{frame}{Splitting of nodes : \textbf{Derived Nodes}}
+
+\[ 
+\text{Non-overlapping formulation:} \,\,\,\,\,
+\boxed{\Matriz{a} \, \Matriz{A}^t \, \Vector{u} = \Vector{f} 
+\,\,\, \text{and} \,\,\,
+\Matriz{j} \, \Vector{u} = 0}
+\]
+
+$$\includegraphics[width=8cm]{subdom5.png}$$
+
+\end{frame}
+
+
+\begin{frame}{Derived nodes and its multiplicity}
+
+\[ 
+\text{Non-overlapping formulation:} \,\,\,\,\,
+\boxed{\Matriz{a} \, \Matriz{A}^t \, \Vector{u} = \Vector{f} 
+\,\,\, \text{and} \,\,\,
+\Matriz{j} \, \Vector{u} = 0}
+\,\,\,\,\, \Matriz{A}^t = \sum^E_{\gamma = 1} \Matriz{A}^\gamma
+\]
+
+$$\includegraphics[width=8cm]{subdom3.png}$$
+
+\end{frame}
+
+\begin{frame}{Identification of the derived nodes}
+
+
+\begin{columns}
+\begin{column}{0.60\textwidth}
+\begin{center}
+{\footnotesize{
+\begin{tabular}{llll}
+$I$ : Interior nodes &
+$\Pi = I \cup \pi$ &
+$\Sigma = I \cup \Delta$\\
+$\Delta$ : Dual nodes &
+\multicolumn{2}{l}{$X = \Pi \cup \Delta$ : Derived nodes} \\
+$\pi$ : Primal nodes &
+\multicolumn{2}{l}{$\Gamma$ : Interior boundaries}
+\end{tabular}
+}}
+\end{center}
+\end{column}
+\begin{column}{0.40\textwidth}
+\uncover<2->{\textcolor{blue}{All the operations of DVS algorithms are done locally in each subdomain}}
+\end{column}
+\end{columns}
+
+$$\includegraphics[width=8cm]{subdom4.png}$$
+
+
+
+\end{frame}
+
+
+\begin{frame}{Matrices}
+
+\[
+\Matriz{A}^t =
+\left(
+\begin{array}{ccc}
+\Matriz{A}^{t}\SubScript{I I} & \Matriz{A}^{t}\SubScript{I\Delta} & \Matriz{A}^{t}\SubScript{I\pi} \\
+\Matriz{A}^{t}\SubScript{\Delta I} & \Matriz{A}^{t}\SubScript{\Delta\Delta} & \Matriz{A}^{t}\SubScript{\Delta\pi} \\
+\Matriz{A}^{t}\SubScript{\pi I} & \Matriz{A}^{t}\SubScript{\pi\Delta} & \Matriz{A}^{t}\SubScript{\pi\pi} 
+\end{array}
+\right) \equiv
+\left( \begin{array}{cc}
+\Matriz{A}^{t}\SubScript{\Pi \Pi} & \Matriz{A}^{t}\SubScript{\Pi \Delta} \\
+\Matriz{A}^{t}\SubScript{\Delta \Pi} & \Matriz{A}^{t}\SubScript{\Delta\Delta} 
+\end{array} \right) 
+\]
+
+\[
+\begin{array}{ccc}
+\Matriz{A}^{t}\SubScript{\Pi \Pi} =
+\left( \begin{array}{cc}
+\Matriz{A}^{t}\SubScript{I I} & \Matriz{A}^{t}\SubScript{I\pi} \\
+\Matriz{A}^{t}\SubScript{\pi I} & \Matriz{A}^{t}\SubScript{\pi\pi} 
+\end{array} \right), & &
+\Matriz{A}^{t}\SubScript{\Pi \Delta} =
+\left( \begin{array}{c}
+\Matriz{A}^{t}\SubScript{I\Delta} \\
+\Matriz{A}^{t}\SubScript{\pi\Delta} 
+\end{array} \right)  \\
+\Matriz{A}^{t}\SubScript{\Delta \Pi} =
+\left( \begin{array}{cc}
+\Matriz{A}^{t}\SubScript{\Delta I} & \Matriz{A}^{t}\SubScript{\Delta\pi} 
+\end{array} \right), & &
+\Matriz{A}^{t}\SubScript{\Delta\Delta} =
+\left( \begin{array}{c}
+\Matriz{A}^{t}\SubScript{\Delta \Delta} 
+\end{array} \right)
+\end{array}
+\]
+
+\end{frame}
+
+\begin{frame}{Matrices}
+
+\[
+\Matriz{A}^t =
+\left(
+\begin{array}{ccc}
+\Matriz{A}^{t}\SubScript{I I} & \Matriz{A}^{t}\SubScript{I\Delta} & \Matriz{A}^{t}\SubScript{I\pi} \\
+\Matriz{A}^{t}\SubScript{\Delta I} & \Matriz{A}^{t}\SubScript{\Delta\Delta} & \Matriz{A}^{t}\SubScript{\Delta\pi} \\
+\Matriz{A}^{t}\SubScript{\pi I} & \Matriz{A}^{t}\SubScript{\pi\Delta} & \Matriz{A}^{t}\SubScript{\pi\pi} 
+\end{array}
+\right) \equiv
+\left( \begin{array}{cc}
+\Matriz{A}^{t}\SubScript{\Pi \Pi} & \Matriz{A}^{t}\SubScript{\Pi \Delta} \\
+\Matriz{A}^{t}\SubScript{\Delta \Pi} & \Matriz{A}^{t}\SubScript{\Delta\Delta} 
+\end{array} \right) 
+\]
+
+\[
+\begin{array}{ccc}
+\Matriz{A}^{t}\SubScript{\Pi \Pi} =
+\left( \begin{array}{cc}
+\Matriz{A}^{t}\SubScript{I I} & \Matriz{A}^{t}\SubScript{I\pi} \\
+\Matriz{A}^{t}\SubScript{\pi I} & \Matriz{A}^{t}\SubScript{\pi\pi} 
+\end{array} \right), & &
+\Matriz{A}^{t}\SubScript{\Pi \Delta} =
+\left( \begin{array}{c}
+\Matriz{A}^{t}\SubScript{I\Delta} \\
+\Matriz{A}^{t}\SubScript{\pi\Delta} 
+\end{array} \right)  \\
+\Matriz{A}^{t}\SubScript{\Delta \Pi} =
+\left( \begin{array}{cc}
+\Matriz{A}^{t}\SubScript{\Delta I} & \Matriz{A}^{t}\SubScript{\Delta\pi} 
+\end{array} \right), & &
+\Matriz{A}^{t}\SubScript{\Delta\Delta} =
+\left( \begin{array}{c}
+\Matriz{A}^{t}\SubScript{\Delta \Delta} 
+\end{array} \right)
+\end{array}
+\]
+
+\end{frame}
+
+\subsection{DVS algorithms}
+
+
+\begin{frame}{The Preconditioned DVS -- Algorithms}
+
+\begin{block}{Four algorithms}
+
+{\small{
+\begin{tabular}{|c|c|c|c|}
+\hline
+Name & Operator & Constraint \\
+\hline
+\hline
+DVS-BDDC &
+$\displaystyle 
+\Matriz{a} \, \InvSchur  \Matriz{a} \, \Schur \, \VectorD{u} =
+\Matriz{a} \, \InvSchur  \VectorD{f}$ &
+ $\Matriz{j} \, \VectorD{u} = 0$ \\
+\hline
+\hline
+DVS-FETI-DP & 
+$\displaystyle 
+\Matriz{j} \, \Schur \,\, \Matriz{j} \, \InvSchur \, \Vector{\lambda} =
+\Matriz{j} \, \Schur \,\, \Matriz{j} \, \InvSchur  \VectorD{f}$ &
+ $\Matriz{a} \, \Vector{\lambda} = 0$ \\
+\hline
+\hline
+DVS-PRIMAL & 
+$\displaystyle 
+\InvSchur \, \Matriz{j} \, \Schur \,\, \Matriz{j} \, \VectorD{\mathrm{v}} =
+\InvSchur \, \Matriz{j} \, \Schur \,\, \Matriz{j} \, \InvSchur \, \VectorD{f}$ &
+ $\Matriz{a} \, \Schur \, \VectorD{\mathrm{v}} = 0$ \\
+\hline
+\hline
+DVS-DUAL &
+$\displaystyle 
+\Schur \, \Matriz{a} \, \InvSchur  \Matriz{a} \, \Vector{\mu} =
+\Schur \, \Matriz{a} \, \InvSchur \, \Matriz{a} \, \Schur \,\, \Matriz{j} \, \InvSchur \, \VectorD{f}$ &
+ $\Matriz{j} \, \InvSchur \Vector{\mu} = 0$ \\
+\hline
+\end{tabular}
+}}
+\end{block}
+
+\end{frame}
+
+\begin{frame}{DVS--BDDC}
+
+\begin{itemize}
+
+\item DVS-algorithms can be posed in the form:
+\begin{itemize}
+\item $\Matriz{M} \, \VectorD{u} = \VectorD{b}$ with restriction $\Matriz{R} \, \VectorD{u}$
+\end{itemize}
+
+\item In the case of DVS-BDDC we have:
+\begin{itemize}
+\item $\Matriz{M}  = \Matriz{a} \, \InvSchur  \Matriz{a} \, \Schur $
+\item $\VectorD{b} = \Matriz{a} \, \InvSchur \VectorD{f}$
+\item $\Matriz{R} = \Matriz{j}$
+\end{itemize}
+
+\end{itemize}
+
+\begin{exampleblock}{DVS-BDDC in action}
+
+\begin{columns}
+\begin{column}{0.48\textwidth}
+$\boxed{\Matriz{M} \, \VectorD{u} = \Matriz{a} \, \InvSchur  \Matriz{a} \, \Schur \, \VectorD{u}}$
+\begin{enumerate}[<+->]
+\item {\scriptsize{Apply Schur: $\VectorD{vec} \leftarrow \Schur \, \VectorD{u}$}}
+\item {\scriptsize{Apply Average: $\VectorD{vec} \leftarrow \Matriz{a} \, \VectorD{vec}$}}
+\item {\scriptsize{Apply Inverse of Schur: $\VectorD{vec} \leftarrow\InvSchur \VectorD{vec} $}}
+\item {\scriptsize{Apply Average: $\VectorD{vec} \leftarrow \Matriz{a} \, \VectorD{vec}$}}
+\end{enumerate}
+\end{column}
+\begin{column}{0.48\textwidth}
+$\boxed{\VectorD{b} = \Matriz{a} \, \InvSchur \VectorD{f}}$
+\begin{enumerate}[<+->]
+\item {\scriptsize{Apply Inverse of Schur: $\VectorD{vec} \leftarrow\InvSchur \VectorD{f} $}}
+\item {\scriptsize{Apply Average: $\VectorD{vec} \leftarrow \Matriz{a} \, \VectorD{vec}$}}
+\end{enumerate}
+\end{column}
+\end{columns}
+\end{exampleblock}
+
+\end{frame}
+
+\section{Auxiliary Algebraic Developments}
+
+\begin{frame}{Matrix Notations}
+
+%{\small{
+\begin{itemize}
+\item All matrices are linear transformations of $W$ into $W$: $\Matriz{B}: W \rightarrow W$
+\item Let $M \in X$, $N \in X$ and $M \cap N = \varnothing$ subsets of $X$  
+\end{itemize}
+\begin{columns}
+\begin{column}{0.30\textwidth}
+$$\includegraphics[width=1.75cm]{domain06.png}$$
+\end{column}
+\begin{column}{0.30\textwidth}
+$$\includegraphics[width=1.75cm]{domain07.png}$$
+\end{column}
+\begin{column}{0.30\textwidth}
+$$\includegraphics[width=1.75cm]{domain08.png}$$
+\end{column}
+\end{columns}
+
+We write:
+
+\begin{columns}
+\begin{column}{0.50\textwidth}
+\[
+\Matriz{B} =
+\left(
+\begin{array}{cc}
+\Matriz{B}\SubScript{MM} & \Matriz{B}\SubScript{MN} \\
+\Matriz{B}\SubScript{NM} & \Matriz{B}\SubScript{NN}
+\end{array}
+\right)
+\]
+\end{column}
+\begin{column}{0.50\textwidth}
+\[
+\InvMatriz{B} =
+\left(
+\begin{array}{cc}
+(\InvMatriz{B})\SubScript{MM} & (\InvMatriz{B})\SubScript{MN} \\
+(\InvMatriz{B})\SubScript{NM} & (\InvMatriz{B})\SubScript{NN}
+\end{array}
+\right) 
+\]
+\end{column}
+\end{columns}
+
+\end{frame}
+
+%
+\subsection{General Schur Formulas}
+
+\begin{frame}{General Schur Formulas}
+
+\begin{center}
+\begin{enumerate}
+\item  $\displaystyle \boxed{ \sigma\SubScript{NN}(\Matriz{B}) \Vector{\text{v}}\SubScript{N} = \Vector{g}\SubScript{N}}$
+
+\begin{itemize}
+
+\item $\displaystyle
+\sigma\SubScript{NN}(\Matriz{B}) = \Matriz{B}\SubScript{NN} - \Matriz{B}\SubScript{NM} (\Matriz{B}\SubScript{MM})^{^{-1}} \Matriz{B}\SubScript{MN}$ 
+
+\item $\Vector{g}\SubScript{N} = \Vector{w}\SubScript{N} - \Matriz{B}\SubScript{NM} (\Matriz{B}\SubScript{MM})^{^{-1}} \Vector{w}\SubScript{M}$
+\end{itemize}
+
+\item $\displaystyle \boxed{\Vector{\text{v}}\SubScript{M} = (\Matriz{B}\SubScript{MM})^{^{-1}}(\Vector{w}\SubScript{M} - \Matriz{B}\SubScript{MN}\Vector{\text{v}}\SubScript{N})}$
+
+\begin{itemize}
+\item $\Matriz{B}\SubScript{MM} \Vector{\text{v}}\SubScript{M} = (\Vector{w}\SubScript{M} - \Matriz{B}\SubScript{MN}\Vector{\text{v}}\SubScript{N})$
+\end{itemize}
+
+\end{enumerate}
+\end{center}
+
+\end{frame}
+
+\subsection{Application of Schur complement matrix}
+
+\begin{frame}{Application of $\Matriz{S}$}
+
+\begin{columns}
+\begin{column}{0.25\textwidth}
+\[
+\VectorD{vec} \leftarrow \Matriz{S} \, \VectorD{u}
+\]
+
+\[
+\Matriz{A} = \Matriz{a}^\prime \Matriz{A}^{t} \Matriz{a}^\prime
+\]
+\end{column}
+\begin{column}{0.75\textwidth}
+
+\[
+\Matriz{S} \equiv \Matriz{A}\SubScript{\Delta \Delta} - \Matriz{A}\SubScript{\Delta \Pi} (\Matriz{A}\SubScript{\Pi \Pi})^{^{-1}} \Matriz{A}\SubScript{\Pi \Delta}
+\]
+\pause
+\[
+\Matriz{A}\SubScript{\Delta \Delta} = \Matriz{A}\SubScript{\Delta \Delta}^{t}; \,\,\,\,\,
+\Matriz{A}\SubScript{\Delta \Delta}^{t} = \sum\limits_{\alpha = 1}^{E} \Matriz{A}\SubScript{\Delta \Delta}^{t, \alpha}
+\]
+\pause
+\[
+\Matriz{A}\SubScript{\Pi \Delta} = \Matriz{a}^\prime \, \Matriz{A}\SubScript{\Pi \Delta}^{t} = \Matriz{a}^\prime \left(\sum\limits_{\alpha = 1}^{E} \Matriz{A}\SubScript{\Pi \Delta}^{t, \alpha}\right)
+\]
+\pause
+\[
+\Matriz{A}\SubScript{\Delta \Pi} = \Matriz{A}\SubScript{\Delta \Pi}^{t}\Matriz{a}^\prime = \left(\sum\limits_{\alpha = 1}^{E} \Matriz{A}\SubScript{\Delta \Pi }^{t, \alpha} \right)\Matriz{a}^\prime
+\]
+
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Schur complement: $\VectorD{vec} \leftarrow \Schur \, \VectorD{u} $}
+
+\begin{columns}
+\begin{column}{0.45\textwidth}
+{\footnotesize{
+
+Sub-sets: $M = \Pi = I \cup \pi$  and $N = \Delta$
+
+\uncover<1->{$$\includegraphics[width=2.0cm]{domain06.png}$$}
+\uncover<2->{
+\[
+\boxed{
+\left(
+\begin{array}{cc}
+\Matriz{A}\SubScript{\Pi \Pi} & \Matriz{A}\SubScript{\Pi \Delta} \\
+\Matriz{A}\SubScript{\Delta \Pi} & \Matriz{A}\SubScript{\Delta \Delta}
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+\Vector{u}\SubScript{\Pi} \\
+\Vector{u}\SubScript{\Delta} 
+\end{array}
+\right) =
+\left(
+\begin{array}{c}
+\Vector{f}\SubScript{\Pi} \\
+\Vector{f}\SubScript{\Delta} 
+\end{array}
+\right)
+}
+\]
+}
+}}
+
+\end{column}
+\begin{column}{0.55\textwidth}
+\uncover<4->{
+{\footnotesize{
+\begin{itemize}
+\item {\footnotesize{Schur Complement Formulation}}
+\end{itemize}
+\[  \text{Apply: }\,\,\,
+\boxed{
+\Schur \, \VectorD{u} = \sigma\SubScript{\Delta \Delta}(\Matriz{A}) \Vector{u}\SubScript{\Delta} %= \Vector{f}\SubScript{\Delta}
+}
+\]
+\[
+\,\,\, \text{ where }\,\,\,
+\sigma\SubScript{\Delta \Delta}(\Matriz{A}) = \Matriz{A}\SubScript{\Delta \Delta} - \Matriz{A}\SubScript{\Delta \Pi} (\Matriz{A}\SubScript{\Pi \Pi})^{^{-1}} \Matriz{A}\SubScript{\Pi \Delta }
+\]
+
+\[
+\Matriz{A}\SubScript{\Pi \Delta} \Vector{u}\SubScript{\Delta} = \Vector{\textrm{v}}\SubScript{\Pi}
+\]
+
+\[
+(\Matriz{A}\SubScript{\Pi \Pi})^{^{-1}} \Vector{\textrm{v}}\SubScript{\Pi} = \Vector{\textrm{w}}\SubScript{\Pi}
+\rightarrow
+\Matriz{A}\SubScript{\Pi \Pi} \Vector{\textrm{w}}\SubScript{\Pi} = \Vector{\textrm{v}}\SubScript{\Pi}
+\]
+
+}}
+}
+
+
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\subsection{Application of A\_Pi Pi}
+
+\begin{frame}{Application of $(\Matriz{A}\SubScript{\Pi \Pi})^{^{-1}} \Vector{\textrm{v}}\SubScript{\Pi} = \Vector{\textrm{w}}\SubScript{\Pi}$}
+
+\begin{columns}
+\begin{column}{0.45\textwidth}
+{\footnotesize{
+
+Sub-sets: $M = \Pi = I$  and $N = \pi$
+
+\uncover<1->{$$\includegraphics[width=2.0cm]{domain07.png}$$}
+
+\uncover<2->{
+\[
+\boxed{
+\left(
+\begin{array}{cc}
+\Matriz{A}\SubScript{II} & \Matriz{A}\SubScript{I \pi} \\
+\Matriz{A}\SubScript{\pi I} & \Matriz{A}\SubScript{\pi \pi}
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+\Vector{\mathrm{w}}\SubScript{I} \\
+\Vector{\mathrm{w}}\SubScript{\pi} 
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+\Vector{\mathrm{v}}\SubScript{I} \\
+\Vector{\mathrm{v}}\SubScript{\pi} 
+\end{array}
+\right)
+}
+\]
+}
+}}
+
+
+\end{column}
+\begin{column}{0.55\textwidth}
+
+\uncover<4->{
+{\scriptsize{
+\begin{itemize}
+\item {\footnotesize{Schur Complement Formulation}}
+\end{itemize}
+\[ \text{Solve:} \,\,\,
+\boxed{
+\sigma\SubScript{\pi \pi}(\Matriz{A}\SubScript{\Pi \Pi}) \Vector{\mathrm{w}}\SubScript{\pi} = \Vector{g}\SubScript{\pi}
+}
+\]
+\[
+\,\,\, \text{ where }\,\,\,
+\sigma\SubScript{\pi \pi}(\Matriz{A}\SubScript{\Pi \Pi}) = \Matriz{a}^\prime \left(\Matriz{A}\SubScript{\pi \pi}^{t} - \Matriz{A}\SubScript{\pi I}^{t} (\Matriz{A}\SubScript{I I}^{t})^{^{-1}} \Matriz{A}\SubScript{I \pi}^{t}\right)\Matriz{a}^\prime
+\]
+\[
+\,\,\, \text{ and }\,\,\,
+\Vector{g}\SubScript{\pi} = \Vector{\mathrm{v}}\SubScript{\pi} - \Matriz{a}^\prime \, \Matriz{A}\SubScript{\pi I}^{t} (\Matriz{A}\SubScript{I I}^{t})^{^{-1}} \Vector{\mathrm{v}}\SubScript{I}
+\]
+\[ \text{Calculate:} \,\,\,
+\boxed{
+\Vector{\mathrm{w}}\SubScript{I} = 
+(\Matriz{A}\SubScript{I I}^{t})^{^{-1}}(\Vector{\mathrm{v}}\SubScript{I} - \Matriz{A}\SubScript{I \pi}\Vector{\mathrm{w}}\SubScript{\pi})
+}
+\]
+\[
+\rightarrow \Vector{\mathrm{w}}\SubScript{\Pi} = \Vector{\mathrm{w}}\SubScript{I} + \Vector{\mathrm{w}}\SubScript{\pi} 
+\]
+}}
+}
+
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\section{Application of Inverse of Schur}
+
+\begin{frame}{Application of $\InvSchur$}
+
+Basic result:
+\[
+(\InvMatriz{A})\SubScript{\Delta \Delta} \Vector{w} = \left(\InvMatriz{A} \Vector{w}\SubScript{\Delta} \right)\SubScript{\Delta} = \InvSchur \VectorD{w}
+\]
+
+Define: $\Sigma \equiv I \cup \Delta$
+
+Then: $X = \Sigma \cup \pi$ and $\varnothing = \Sigma \cap \pi$
+
+Furthemore:
+\[
+\Matriz{A} = 
+\left(
+\begin{array}{cc}
+\Matriz{A}\SubScript{\Sigma \Sigma} & \Matriz{A}\SubScript{\Sigma \pi} \\
+\Matriz{A}\SubScript{\pi \Sigma} & \Matriz{A}\SubScript{\pi \pi}
+\end{array}
+\right) = 
+\left(
+\begin{array}{cc}
+\Matriz{A}\SubScript{\Sigma \Sigma}^{t} & \Matriz{A}\SubScript{\Sigma \pi}^{t} \Matriz{a}^\prime\\
+\Matriz{a}^\prime \, \Matriz{A}\SubScript{\pi \Sigma}^{t} & \Matriz{a}^\prime \, \Matriz{A}\SubScript{\pi \pi}^{t}\Matriz{a}^\prime
+\end{array}
+\right)
+\]
+
+\[
+\InvMatriz{A} = 
+\left(
+\begin{array}{cc}
+(\InvMatriz{A})\SubScript{\Pi \Pi} & (\InvMatriz{A})\SubScript{\Pi \Delta} \\
+(\InvMatriz{A})\SubScript{\Delta \Pi} & (\InvMatriz{A})\SubScript{\Delta \Delta}
+\end{array}
+\right) = 
+\left(
+\begin{array}{cc}
+(\InvMatriz{A})\SubScript{\Pi \Pi} & (\InvMatriz{A})\SubScript{\Pi \Delta} \\
+(\InvMatriz{A})\SubScript{\Delta \Pi} & \InvSchur
+\end{array}
+\right)
+\]
+\end{frame}
+
+\begin{frame}{Inverse of Schur $\VectorD{vec} \leftarrow \InvSchur \VectorD{f} $}
+
+\begin{columns}
+\begin{column}{0.45\textwidth}
+{\footnotesize{
+
+Because $\InvSchur = (\InvMatriz{A})\SubScript{\Delta \Delta}$ then
+
+solve $\Matriz{A} \, \Vector{u} = \Vector{f}$ and restrict $\Vector{\mathrm{v}}$ to $\Delta$
+
+Sub-sets: $M = \Sigma = I \cup \Delta$  and $N = \pi$
+
+\uncover<1->{$$\includegraphics[width=2.0cm]{domain08.png}$$}
+\uncover<2->{
+\[
+\boxed{
+\left(
+\begin{array}{cc}
+\Matriz{A}\SubScript{\Sigma\Sigma}^{t} & \Matriz{A}\SubScript{\Sigma \pi}^{t} \Matriz{a}^\prime\\
+\Matriz{a}^\prime \, \Matriz{A}\SubScript{\pi \Sigma}^{t} & \Matriz{a}^\prime \, \Matriz{A}\SubScript{\pi \pi}^{t}\Matriz{a}^\prime
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+\Vector{u}\SubScript{\Sigma} \\
+\Vector{u}\SubScript{\pi} 
+\end{array}
+\right) =
+\left(
+\begin{array}{c}
+\Vector{f}\SubScript{\Sigma} \\
+\Vector{f}\SubScript{\pi} 
+\end{array}
+\right)
+}
+\]
+}
+}}
+
+\end{column}
+\begin{column}{0.55\textwidth}
+\uncover<4->{
+{\scriptsize{
+\begin{itemize}
+\item {\footnotesize{Schur Complement Formulation}}
+\end{itemize}
+\[ \text{Solve:} \,\,\,
+\boxed{
+\sigma\SubScript{\pi \pi}(\Matriz{A}) \Vector{u}\SubScript{\pi} = \Vector{g}\SubScript{\pi}
+}
+\]
+\[
+\,\,\, \text{ where }\,\,\,
+\sigma\SubScript{\pi \pi}(\Matriz{A}) = \Matriz{a}^\prime \left(\Matriz{A}\SubScript{\pi \pi}^{t} - \Matriz{A}\SubScript{\pi \Sigma}^{t} (\Matriz{A^{t}}\SubScript{\Sigma \Sigma})^{^{-1}} \Matriz{A}\SubScript{\Sigma \pi}^{t} \right) \Matriz{a}^\prime
+\]
+\[
+\,\,\, \text{ and }\,\,\,
+\Vector{g}\SubScript{\pi} = \Vector{f}\SubScript{\pi} - \Matriz{a}^\prime \Matriz{A}\SubScript{\pi \Sigma}^{t} (\Matriz{A^{t}}\SubScript{\Sigma \Sigma})^{^{-1}} \Vector{f}\SubScript{\Sigma}
+\]
+\[ \text{Calculate:} \,\,\,
+\boxed{
+\Vector{u}\SubScript{\Sigma} = 
+(\Matriz{A^{t}}\SubScript{\Sigma \Sigma})^{^{-1}}(\Vector{f}\SubScript{\Sigma} - \Matriz{A^{t}}\SubScript{\Sigma \pi}\Vector{u}\SubScript{\pi})
+}
+\]
+
+
+\[
+\Vector{u} = \Vector{u}\SubScript{\Sigma} + \Vector{u}\SubScript{\pi} =
+\Vector{u}\SubScript{I} + \Vector{u}\SubScript{\Delta} + \Vector{u}\SubScript{\pi}
+\]
+
+\[
+\rightarrow \boxed{\InvSchur \VectorD{f} = \VectorD{u}}
+\]
+
+}
+}}
+
+\end{column}
+\end{columns}
+
+\end{frame}
+
+
+\section{Finite Volume Method}
+
+
+
+\begin{frame}{Finite Volume Method: partition}
+
+{\small{
+\begin{itemize}
+\item We make the partition on the centers of the volumes.
+\end{itemize}
+}}
+
+$$\includegraphics[width=6cm]{meshFVMPart.pdf}$$
+
+\end{frame}
+
+\begin{frame}{Finite Volume Method: subdomains}
+$$\includegraphics[width=8cm]{meshFVMSubdom.pdf}$$
+\end{frame}
+
+\begin{frame}{}
+
+\begin{columns}
+\begin{column}{0.18\textwidth}
+$$\includegraphics[width=2.2cm]{meshFVMSubdom1.pdf}$$
+\end{column}
+\begin{column}{0.82\textwidth}
+\begin{tiny}
+\begin{equation*}
+\begin{array}{|c|c|ccc|c|ccc|c|ccc|c|ccc|c|}
+\hline
+i  &   & 1 & 2 & 3 & \blue 4 & 1 & 2 & 3 & \blue 4 & 1 & 2 & 3 & \blue 4 & 1 & 2 & 3 & \blue 4 \\
+\hline
+   & j & \multicolumn{4}{c|}{1} & \multicolumn{4}{c|}{2} & \multicolumn{4}{c|}{3} & \multicolumn{4}{c|}{4} \\
+\hline
+1 & 1 & \mbiu{P} & \mbiu{E}   &  & \blue & \mbiu{N}   &   &  & \blue &   &   &   & \blue &   &   &   & \blue   \\
+2 & 1 & \mbiu{W} & \mbiu{P} & \mbiu{E} & \blue &   & \mbiu{N} &  & \blue &   &   &   & \blue &   &   &   & \blue   \\
+3 & 1 &  &  \mbiu{W} & \mbiu{P} & \blue \mbiu{E} &   &  & \mbiu{N} & \blue &   &   &   & \blue &   &   &   & \blue   \\
+\hline
+1 & 2 & \mbiu{S}  & & &   \blue & \mbiu{P} & \mbiu{E}  & & \blue & \mbiu{N}  & & &  \blue &   &   &   & \blue   \\
+2 & 2 &  & \mbiu{S}   & &  \blue & \mbiu{W} &\mbiu{P} & \mbiu{E} & \blue & &  \mbiu{N} & & \blue &   &   &   & \blue   \\
+3 & 2 &   &  & \mbiu{S} &  \blue &  & \mbiu{W} & \mbiu{P} & \blue \mbiu{E} &  & &  \mbiu{N} & \blue &   &   &   & \blue   \\
+\hline
+1 & 3 &   &   &   & \blue & \mbiu{S}   & &   & \blue & \mbiu{P} & \mbiu{E} &  & \blue & \mbiu{N}   &   & &  \blue   \\
+2 & 3 &   &   &   & \blue &  &  \mbiu{S}  &  & \blue & \mbiu{W} & \mbiu{P} & \mbiu{E} & \blue & & \mbiu{N} &  & \blue   \\
+3 & 3 &   &   &   & \blue &   &  & \mbiu{S} & \blue &  & \mbiu{W} & \mbiu{P} & \blue \mbiu{E} & & &   \mbiu{N} & \blue   \\
+\hline
+1 & 4 &   &   &   & \blue &   &   &   & \blue & \mbiu{S}   &   & & \blue & \mbiu{P} & \mbiu{E}  & & \blue   \\
+2 & 4 &   &   &   & \blue &   &   &   & \blue &  &  \mbiu{S}   & & \blue &\mbiu{W} & \mbiu{P} & \mbiu{E} & \blue \\
+3 & 4 &   &   &   & \blue &   &   &   & \blue &   &  & \mbiu{S} & \blue &  & \mbiu{W} & \mbiu{P} & \blue \mbiu{E} \\
+\hline
+\end{array}
+\end{equation*}
+\end{tiny}
+\end{column}
+\end{columns}
+
+\begin{columns}
+\begin{column}{0.18\textwidth}
+$$\includegraphics[width=2.3cm]{meshFVMSubdom2.pdf}$$
+\end{column}
+\begin{column}{0.82\textwidth}
+\begin{tiny}
+\begin{equation*}
+\begin{array}{|c|c|c|ccc|c|ccc|c|ccc|c|ccc|}
+\hline
+i  &   & \blue 2 & 3 & 4 & 5 & \blue 2 & 3 & 4 & 5 & \blue 2 & 3 & 4 & 5 & \blue 2 & 3 & 4 & 5 \\
+\hline
+   & j & \multicolumn{4}{c|}{1} & \multicolumn{4}{c|}{2} & \multicolumn{4}{c|}{3} & \multicolumn{4}{c|}{4} \\
+\hline
+3 & 1 & \blue \mbiu{W} & \mbiu{P} & \mbiu{E}  & &  \blue  & \mbiu{N}   &   &  & \blue  &   &   &   & \blue  &   &   &    \\
+4 & 1 & \blue  & \mbiu{W} & \mbiu{P} & \mbiu{E} &  \blue  & &  \mbiu{N}   & & \blue  &   &   &   & \blue  &   &   &    \\
+5 & 1 & \blue  &  & \mbiu{W} & \mbiu{P} & \blue  &   &  & \mbiu{N} & \blue  &   &   &   & \blue  &   &   &    \\
+\hline
+3 & 2 & \blue  & \mbiu{S}   &   & & \blue \mbiu{W} & \mbiu{P} & \mbiu{E}   & &  \blue & \mbiu{N}  &  &   & \blue  &   &   &   \\
+4 & 2 & \blue  &  & \mbiu{S}   & & \blue &  \mbiu{W} & \mbiu{P} & \mbiu{E} & \blue  & &  \mbiu{N}  &  & \blue  &   &   &   \\
+5 & 2 & \blue  &   &  & \mbiu{S} & \blue  &  & \mbiu{W} & \mbiu{P} & \blue  &   &  & \mbiu{N} & \blue  &   &   &   \\
+\hline
+3 & 3 & \blue  &   &  &    & \blue  & \mbiu{S} &  &   & \blue  \mbiu{W} & \mbiu{P} & \mbiu{E}   & & \blue & \mbiu{N}   &  & \\
+4 & 3 & \blue  &   &   &   & \blue  &  & \mbiu{S}  &  & \blue  & \mbiu{W} & \mbiu{P} & \mbiu{E} & \blue  & &   \mbiu{N}   & \\
+5 & 3 & \blue  &   &   &   & \blue  &  &  &   \mbiu{S} & \blue  &  &  \mbiu{W} & \mbiu{P} & \blue  &   &   & \mbiu{N} \\
+\hline
+3 & 4 & \blue  &   &   &   & \blue  &   &   &   & \blue  & \mbiu{S}   &  &  & \blue \mbiu{W} & \mbiu{P} & \mbiu{E} &  \\
+4 & 4 & \blue  &   &   &   & \blue  &   &   &   & \blue  &  & \mbiu{S}   & & \blue &  \mbiu{W} & \mbiu{P} & \mbiu{E} \\
+5 & 4 & \blue  &   &   &   & \blue  &   &   &   & \blue  &  & &  \mbiu{S} & \blue  &  &  \mbiu{W} & \mbiu{P} \\
+\hline
+\end{array}
+\end{equation*}
+\end{tiny}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{}
+$$\includegraphics[width=10cm]{meshFVMSubdomHalo.pdf}$$
+\end{frame}
+
+\section{Programming}
+
+\begin{frame}{TUNAM}
+\textsf{code.google.com/p/tunam}
+\end{frame}
+
+\begin{frame}{Meshes in TUNAM}
+
+\begin{columns}
+\begin{column}{0.60\textwidth}
+$$\includegraphics[width=6cm]{meshFVMPart.pdf}$$
+\end{column}
+\begin{column}{0.40\textwidth}
+\begin{footnotesize}
+\begin{itemize}
+\item Empty circles: Nodes on the real boundary.
+\item Filled circles: Nodes in the interior of the domain.
+\item The nodes on the real boundary are treated as volumes, in such a way that all coefficients are calculated on all these points.
+\end{itemize}
+\end{footnotesize}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Subdomains in TUNAM}
+$$\includegraphics[width=8cm]{SubDomainDVS_TUNAM.pdf}$$
+\end{frame}
+
+\begin{frame}{TUNAM: Storage (Subdomain 1)}
+
+\begin{columns}
+\begin{column}{0.23\textwidth}
+$$\includegraphics[width=3.0cm]{SubDomain_1_DVS_TUNAM.pdf}$$
+\end{column}
+\begin{column}{0.77\textwidth}
+
+\begin{tiny}
+\begin{equation*}
+\begin{array}{|c|ccc|c|ccc|c|ccc|c|ccc|c|}
+\hline
+i  &   1 & 2 & 3 & \blue 4 & 1 & 2 & 3 & \blue 4 & 1 & 2 & 3 & \blue 4 & 1 & 2 & 3 & \blue 4 \\
+\hline
+   &  \multicolumn{4}{c|}{1} & \multicolumn{4}{c|}{2} & \multicolumn{4}{c|}{3} & \multicolumn{4}{c|}{4} \\
+\hline
+\pi &  \mbiu{P} & \mbiu{E}   &  & \blue & \mbiu{N}   &   &  & \blue &   &   &   & \blue &   &   &   & \blue   \\
+\Delta &  \mbiu{W} & \mbiu{P} & \mbiu{E} & \blue &   & \mbiu{N} &  & \blue &   &   &   & \blue &   &   &   & \blue   \\
+\pi &   &  \mbiu{W} & \mbiu{P} & \blue \mbiu{E} &   &  & \mbiu{N} & \blue &   &   &   & \blue &   &   &   & \blue   \\
+\hline
+\Delta &  \mbiu{S}  & & &   \blue & \mbiu{P} & \mbiu{E}  & & \blue & \mbiu{N}  & & &  \blue &   &   &   & \blue   \\
+I &   & \mbiu{S}   & &  \blue & \mbiu{W} &\mbiu{P} & \mbiu{E} & \blue & &  \mbiu{N} & & \blue &   &   &   & \blue   \\
+\Delta &    &  & \mbiu{S} &  \blue &  & \mbiu{W} & \mbiu{P} & \blue \mbiu{E} &  & &  \mbiu{N} & \blue &   &   &   & \blue   \\
+\hline
+\Delta &    &   &   & \blue & \mbiu{S}   & &   & \blue & \mbiu{P} & \mbiu{E} &  & \blue & \mbiu{N}   &   & &  \blue   \\
+I &    &   &   & \blue &  &  \mbiu{S}  &  & \blue & \mbiu{W} & \mbiu{P} & \mbiu{E} & \blue & & \mbiu{N} &  & \blue   \\
+\Delta &    &   &   & \blue &   &  & \mbiu{S} & \blue &  & \mbiu{W} & \mbiu{P} & \blue \mbiu{E} & & &   \mbiu{N} & \blue   \\
+\hline
+\pi &    &   &   & \blue &   &   &   & \blue & \mbiu{S}   &   & & \blue & \mbiu{P} & \mbiu{E}  & & \blue   \\
+\Delta &   &   &   & \blue &   &   &   & \blue &  &  \mbiu{S}   & & \blue &\mbiu{W} & \mbiu{P} & \mbiu{E} & \blue \\
+\pi &    &   &   & \blue &   &   &   & \blue &   &  & \mbiu{S} & \blue &  & \mbiu{W} & \mbiu{P} & \blue \mbiu{E} \\
+\hline
+\end{array}
+\end{equation*}
+\end{tiny}
+
+\end{column}
+\end{columns}
+
+\begin{tiny}
+\[
+\begin{array}{|rr||c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+& DP &
+ \pi & \Delta & \pi & \Delta & I & \Delta & \Delta & I & \Delta & \pi & \Delta & \pi \\
+\hline
+& i  &  
+1 & 2 & 3 & 1 & 2 & 3 & 1 & 2 & 3 & 1 & 2 & 3  \\
+\hline
+& j  &  
+1 & 1 & 1 & 2 & 2 & 2 & 3 & 3 & 3 & 4 & 4 & 4 \\
+\hline
+\hline
+\textsf{store[0]} & \rightarrow &
+\mbiu{P} & \mbiu{P} & \mbiu{P} & \mbiu{P} & \mbiu{P} & \mbiu{P} & \mbiu{P} & \mbiu{P} & \mbiu{P} & \mbiu{P} & \mbiu{P} & \mbiu{P} \\
+\hline
+\textsf{store[1]} & \rightarrow &
+ \mbiu{E} & \mbiu{E} & \blue \textcolor{black}{\mbiu{E}} &
+ \mbiu{E} & \mbiu{E} & \blue \textcolor{black}{\mbiu{E}} &
+ \mbiu{E} & \mbiu{E} & \blue \textcolor{black}{\mbiu{E}} &
+ \mbiu{E} & \mbiu{E} & \blue \textcolor{black}{\mbiu{E}}\\
+\hline
+\textsf{store[2]}  & \rightarrow &
+\green \textcolor{black}{\mbiu{W}} & \mbiu{W} & \mbiu{W} & 
+\green \textcolor{black}{\mbiu{W}} & \mbiu{W} & \mbiu{W} & 
+\green \textcolor{black}{\mbiu{W}} & \mbiu{W} & \mbiu{W} & 
+\green \textcolor{black}{\mbiu{W}} & \mbiu{W} & \mbiu{W}  \\
+\hline
+\textsf{store[3]} & \rightarrow &
+ \mbiu{N} & \mbiu{N} & \mbiu{N} & \mbiu{N} & \mbiu{N} & \mbiu{N} & \mbiu{N} & \mbiu{N} & \mbiu{N} &
+ \green \textcolor{black}{\mbiu{N}} & \green \textcolor{black}{\mbiu{N}} & \green \textcolor{black}{\mbiu{N}} \\
+\hline
+\textsf{store[4]} & \rightarrow &
+\green \textcolor{black}{\mbiu{S}} & \green \textcolor{black}{\mbiu{S}} & \green \textcolor{black}{\mbiu{S}} &  
+ \mbiu{S} & \mbiu{S} & \mbiu{S} & \mbiu{S} & \mbiu{S} & \mbiu{S} & \mbiu{S} & \mbiu{S} & \mbiu{S} \\
+\hline
+\hline
+& & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 \\
+\hline
+\end{array}
+\]
+\end{tiny}
+
+
+\end{frame}
+
+\begin{frame}{Mat-Vec Mult}
+
+\begin{columns}
+\begin{column}{0.25\textwidth}
+$$\includegraphics[width=3.0cm]{SubDomain_1_DVS_TUNAM.pdf}$$
+\end{column}
+\begin{column}{0.75\textwidth}
+\begin{tiny}
+\begin{equation*}
+\begin{array}{c||c|c|ccc|ccc|ccc|ccc|c|}
+\hline
+& i  &   & 1 & 2 & 3 & 1 & 2 & 3 & 1 & 2 & 3 & 1 & 2 & 3 & DP\\
+\hline
+&  & j & 1 & 1 & 1 & 2 & 2 & 2 & 3 & 3 & 3 & 4 & 4 & 4 &  \\
+\hline
+\red 0 & 1 & 1 & \mbiu{P} & \mbiu{E} &          & \mbiu{N} &          &          &  &  &  &  &  & & \pi \\
+\red 1 & 2 & 1 & \mbiu{W} & \mbiu{P} & \mbiu{E} &          & \mbiu{N} &          &  &  &  &  &  & & \Delta \\
+\red 2 & 3 & 1 &          & \mbiu{W} & \mbiu{P} &          &          & \mbiu{N} &  &  &  &  &  & & \pi \\
+\hline
+\red 3 & 1 & 2 & \mbiu{S} &          &          & \mbiu{P} & \mbiu{E} &          & \mbiu{N} &          &          &   &   &  & \Delta \\
+\red 4 & 2 & 2 &          & \mbiu{S} &          & \mbiu{W} & \mbiu{P} & \mbiu{E} &          & \mbiu{N} &          &   &   &  & I \\
+\red 5 & 3 & 2 &          &          & \mbiu{S} &          & \mbiu{W} & \mbiu{P} &          &          & \mbiu{N} &   &   &  & \Delta \\
+\hline
+\red 6 & 1 & 3 &   &   &   & \mbiu{S} &          &          & \mbiu{P} & \mbiu{E} &          & \mbiu{N} &          &  & \Delta  \\
+\red 7 & 2 & 3 &   &   &   &          & \mbiu{S} &          & \mbiu{W} & \mbiu{P} & \mbiu{E} &          & \mbiu{N} &  & I  \\
+\red 8 & 3 & 3 &   &   &   &          &          & \mbiu{S} &          & \mbiu{W} & \mbiu{P} &          &          & \mbiu{N} & \Delta\\
+\hline
+\red 9 & 1 & 4 &   &   &   &   &   &   & \mbiu{S} &          &          & \mbiu{P} & \mbiu{E} &          & \pi    \\
+\red 10 & 2 & 4 &   &   &   &   &   &   &          & \mbiu{S} &          & \mbiu{W} & \mbiu{P} & \mbiu{E} & \Delta \\
+\red 11 & 3 & 4 &   &   &   &   &   &   &          &          & \mbiu{S} &          & \mbiu{W} & \mbiu{P} & \pi \\
+\hline
+\hline
+ & & & \red 0 & \red 1 & \red 2 & \red 3 & \red 4 & \red 5 & \red 6 & \red 7 & \red 8 & \red 9 & \red 10 & \red 11 \\
+\end{array}
+\end{equation*}
+\end{tiny}
+\end{column}
+\end{columns}
+
+
+\begin{tiny}
+\begin{equation*}
+\begin{array}{|c|ccc|cccc|ccc|cccc|ccccc|cccc|c}
+    & \multicolumn{10}{c|}{0} & \multicolumn{10}{c|}{1} & \multicolumn{3}{c|}{2} \\ 
+\hline
+    & \blue \mathbf{0} & \blue 1 & \blue 2 & \blue \mathbf{3} & \blue 4 & \blue 5 & \blue 6 & \blue \mathbf{7} & \blue 8 & \blue 9 & \blue \mathbf{0} & \blue 1 & \blue 2 & \blue 3 & \blue \mathbf{4} & \blue 5 & \blue 6 & \blue 7 & \blue 8 & \blue \mathbf{9} & \blue 0 & \blue 1 & \blue 2 & \dots \\
+\hline
+val & \mbiu{P} & \mbiu{E} & \mbiu{N} & \mbiu{W} & \mbiu{P} & \mbiu{E} & \mbiu{N} & \mbiu{W} & \mbiu{P} & \mbiu{N} &
+\mbiu{S} & \mbiu{P} & \mbiu{E} & \mbiu{N} & \mbiu{S} & \mbiu{W} & \mbiu{P} & \mbiu{E} & \mbiu{N} & \mbiu{S} & \mbiu{W} & \mbiu{P} & \mbiu{N} & \dots \\
+\hline
+col & \red 0 & \red 1 & \red 3 & \red 0 & \red 1 & \red 2 & \red 4 & \red 1 & \red 2 & \red 5 & \red 0 & \red 3 & \red 4 & \red 6 & \red 1 & \red 3 & \red 4 & \red 5 & \red 7 & \red 2 & \red 4 & \red 5 & \red 8 & \dots \\
+\hline
+\end{array}
+\end{equation*}
+
+\begin{equation*}
+\begin{array}{|c|c|c|c|c|c|c|c|c|}
+\hline
+row\_ptr & 0 & 3 & 7 & 10 & 14 & 19 & \dots & \mathbf{46} \\
+\hline
+ \multicolumn{9}{r}{nnz} \\
+\end{array}
+\end{equation*}
+
+\end{tiny}
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]{TUNAM: example 1D}
+
+
+\begin{tiny}
+\begin{lstlisting}
+typedef float prec_t;
+typedef TunaArray<prec_t,1>::huge ScalarField1D;
+
+StructuredMesh<Uniform<prec_t, 1> > mesh(length_x, num_nodes_x);
+mesh.print();
+prec_t dx = mesh.getDelta(X);
+
+ScalarField1D T (mesh.getExtentVolumes());
+ScalarField1D Tn(mesh.getExtentNodes());
+    
+firstIndex i;
+Tn = 10 * cos (3 * PI * dx * i);
+NumUtils::interpolateToVolumes(T, Tn);
+InOut::writeToFile(Tn, 0, "./Data1D/temp.", dx);        
+\end{lstlisting}
+
+Output:
+
+\begin{verbatim}
+ +----- TUNA info -----+
+ | StructuredMesh<  Uniform < 1D > >
+ +-----+
+ | X-axis : length = 1; nodes = 4; volumes = 5; delta = 0.333333
+ +---------------------+
+\end{verbatim}
+\end{tiny}
+
+
+\end{frame}
+
+\begin{frame}[fragile]{TUNAM: exmaple 1D}
+
+\begin{tiny}
+\begin{lstlisting}
+SparseMatrix< Diagonal<prec_t, 1> > A(num_nodes_x); 
+ScalarField1D                      b(num_nodes_x); 
+
+ScalarEquation < LaplaceScheme<prec_t, 1> > laplace(T, A, b, mesh.getDeltas());
+laplace.setGamma(1.0);
+laplace.setDirichlet(LEFT_WALL);
+laplace.setDirichlet(RIGHT_WALL);
+laplace.print();
+laplace.calcCoefficients();
+\end{lstlisting}
+
+Ouput:
+
+\begin{verbatim}
+ +----- TUNA info -----+
+ | GeneralEquation< ScalarEquation  > 
+ +-----+
+ | bi = 1	 ei = 3
+ | bj = 0	 ej = 1
+ | bk = 0	 ek = 1
+ | dx = 0.333333	 dy = 1
+ | dz = 1	 dt = 1
+ +-----+
+ | Boundary conditions 
+ +-----+
+ | Dirichlet: Wall = LEFT
+ | Dirichlet: Wall = RIGHT
+ +-----+
+ | ScalarEquation<  LaplaceScheme < 1D  > >
+ +-----+
+ | Gamma = 1
+ +---------------------+
+\end{verbatim}
+\end{tiny}
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]{TUNAM: example 1D}
+
+\begin{tiny}
+
+\begin{lstlisting}
+cout << "\n ----- STORING WITH TUNAM ----- \n";
+cout << " Initital T = " << T << endl;
+cout << "\n aP = " << laplace.aP << endl; 
+cout << "\n aE = " << laplace.aE << endl; 
+cout << "\n aW = " << laplace.aW << endl; 
+cout << "\n b = " << b << endl;
+\end{lstlisting}
+
+Output:
+
+\begin{verbatim}
+ ----- STORING WITH TUNAM ----- 
+ Initital T = 5
+ [        10         0         0         0       -10  ]
+
+ aP = 4
+ [         0         9         6         9  ]
+
+ aE = 4
+ [         0         3         3         0  ]
+
+ aW = 4
+ [         0         0         3         3  ]
+
+ b = 4
+ [         0        60         0       -60  ]
+\end{verbatim}
+
+\end{tiny}
+
+\end{frame}
+
+\begin{frame}[fragile]{TUNAM: example 1D}
+
+\begin{tiny}
+
+\begin{lstlisting}
+extern int csr_from_cusp(int *, int *, prec_t *, prec_t *, prec_t *, int, int);
+
+void csr_1D(SparseMatrix< Diagonal<prec_t, 1> > &A, ScalarField1D &b, ScalarField1D & T, int n);
+		   
+csr_1D(A, b, T, num_nodes_x-1);	   
+\end{lstlisting}
+
+Output:
+
+\begin{columns}
+\begin{column}{0.35\textwidth}
+
+\begin{verbatim}
+ ----- CSR FORMAT IN TUNAM ----- 
+ val = 9  3  3  6  3  3  9  
+ col = 0  1  0  1  2  1  2  
+ row = 0  2  5  7  
+
+ b[0] = 60	 T[0] = 0
+ b[1] = 0	 T[1] = 0
+ b[2] = -60	 T[2] = 0
+\end{verbatim}
+
+\end{column}
+\begin{column}{0.55\textwidth}
+
+\begin{verbatim}
+
+----- CSR FORMAT IN CUSP ----- 
+sparse matrix <3, 3> with 7 entries
+              0              0              9
+              0              1              3
+              1              0              3
+              1              1              6
+              1              2              3
+              2              1              3
+              2              2              9
+ b[0] = 60	 x[0] = 0
+ b[1] = 0	 x[1] = 0
+ b[2] = -60	 x[2] = 0 
+\end{verbatim}
+
+\end{column}
+\end{columns}
+
+\end{tiny}
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]{TUNAM: interface to CUSP}
+
+
+\begin{tiny}
+
+\begin{lstlisting}
+//typedef cusp::device_memory MemorySpace;
+typedef cusp::host_memory MemorySpace;
+typedef float ValueType;
+
+int csr_from_cusp(int *h_rp, int *h_cj, float *h_va, float *h_b, float *h_T, int n, int nnz)
+{
+  // allocate storage for (n,n) matrix with nnz nonzeros in csr format
+  cusp::csr_matrix<int,ValueType,MemorySpace> A(n,n,nnz);    
+
+  // initialize row ptr array
+  for(int i = 0; i < n+1; i++) 
+    A.row_offsets[i] = h_rp[i];
+
+  // initialize column and value arrays
+  for(int i = 0; i < nnz; i++) {
+    A.column_indices[i] = h_cj[i];
+    A.values[i] = h_va[i];
+  }
+
+  // print matrix entries
+  cout << "\n ----- CSR FORMAT IN CUSP ----- \n";
+  cusp::print(A);
+
+  // allocate storage for solution (x) and right hand side (b)
+  cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
+  cusp::array1d<ValueType, MemorySpace> b(A.num_rows, 0);
+
+  return 0;
+}
+\end{lstlisting}
+\end{tiny}
+
+
+\end{frame}
+
+%%%%%%%%%%%%%%%555
+
+\begin{frame}{Mat-Vec Mult}
+
+\begin{columns}
+\begin{column}{0.25\textwidth}
+$$\includegraphics[width=2.0cm]{SubDomain_1_DVS_TUNAM.pdf}$$
+\end{column}
+\begin{column}{0.75\textwidth}
+\begin{tiny}
+\begin{equation*}
+\begin{array}{|c|c|ccc|ccc|ccc|ccc|c|}
+\hline
+i  &   & 1 & 2 & 3 & 1 & 2 & 3 & 1 & 2 & 3 & 1 & 2 & 3 & DP\\
+\hline
+   & j & 1 & 1 & 1 & 2 & 2 & 2 & 3 & 3 & 3 & 4 & 4 & 4 &  \\
+\hline
+1 & 1 & \mbiu{P} & \mbiu{E} &          & \mbiu{N} &          &          &  &  &  &  &  & & \pi \\
+2 & 1 & \mbiu{W} & \mbiu{P} & \mbiu{E} &          & \mbiu{N} &          &  &  &  &  &  & & \Delta \\
+3 & 1 &          & \mbiu{W} & \mbiu{P} &          &          & \mbiu{N} &  &  &  &  &  & & \pi \\
+\hline
+1 & 2 & \mbiu{S} &          &          & \mbiu{P} & \mbiu{E} &          & \mbiu{N} &          &          &   &   &  & \Delta \\
+2 & 2 &          & \mbiu{S} &          & \mbiu{W} & \mbiu{P} & \mbiu{E} &          & \mbiu{N} &          &   &   &  & I \\
+3 & 2 &          &          & \mbiu{S} &          & \mbiu{W} & \mbiu{P} &          &          & \mbiu{N} &   &   &  & \Delta \\
+\hline
+1 & 3 &   &   &   & \mbiu{S} &          &          & \mbiu{P} & \mbiu{E} &          & \mbiu{N} &          &  & \Delta  \\
+2 & 3 &   &   &   &          & \mbiu{S} &          & \mbiu{W} & \mbiu{P} & \mbiu{E} &          & \mbiu{N} &  & I  \\
+3 & 3 &   &   &   &          &          & \mbiu{S} &          & \mbiu{W} & \mbiu{P} &          &          & \mbiu{N} & \Delta\\
+\hline
+1 & 4 &   &   &   &   &   &   & \mbiu{S} &          &          & \mbiu{P} & \mbiu{E} &          & \pi    \\
+2 & 4 &   &   &   &   &   &   &          & \mbiu{S} &          & \mbiu{W} & \mbiu{P} & \mbiu{E} & \Delta \\
+3 & 4 &   &   &   &   &   &   &          &          & \mbiu{S} &          & \mbiu{W} & \mbiu{P} & \pi \\
+\hline
+\end{array}
+\end{equation*}
+\end{tiny}
+\end{column}
+\end{columns}
+
+\begin{columns}
+\begin{column}{0.25\textwidth}
+{\footnotesize{
+\[\left(
+\begin{array}{ccc}
+\Matriz{A}\SubScript{II} & \Matriz{A}\SubScript{I\Delta} & \Matriz{A}\SubScript{I\pi} \\
+\Matriz{A}\SubScript{\Delta I} & \Matriz{A}\SubScript{\Delta \Delta} & \Matriz{A}\SubScript{\Delta \pi} \\
+\Matriz{A}\SubScript{\pi I} & \Matriz{A}\SubScript{\pi \Delta} & \Matriz{A}\SubScript{\pi \pi} \\
+\end{array}\right) =
+\]
+}}
+\end{column}
+\begin{column}{0.75\textwidth}
+\begin{tiny}
+\begin{equation*}
+\begin{array}{|c|c|cc|cccccc|cccc|c|}
+\hline
+i  &   & 2 & 2 & 2 & 1 & 3 & 1 & 3 & 2 & 1 & 3 & 1 & 3 & DP\\
+\hline
+   & j & 2 & 3 & 1 & 2 & 2 & 3 & 3 & 4 & 1 & 1 & 4 & 4 & \\
+\hline
+2 & 2 & \mbiu{P} & \mbiu{N} & \mbiu{S} & \mbiu{W} & \mbiu{E} &  &  &  &  &  &  &  &I \\
+2 & 3 & \mbiu{S} & \mbiu{P} &          &          &          & \mbiu{W} & \mbiu{E} & \mbiu{N} &  &  &  &  & I \\
+\hline
+2 & 1 & \mbiu{N} &  & \mbiu{P} &  &          &  &  &  & \mbiu{W} & \mbiu{E} &  &  & \Delta \\
+1 & 2 & \mbiu{E} &  &  & \mbiu{P} &  & \mbiu{N} &  &  & \mbiu{S} &  &   &  & \Delta \\
+3 & 2 & \mbiu{W} &  &  &  & \mbiu{P} &  & \mbiu{N} &  &  & \mbiu{S} &   &  & \Delta \\
+1 & 3 &  & \mbiu{E} &  & \mbiu{S} &  & \mbiu{P} &  &  &  &  & \mbiu{N} &  & \Delta \\
+3 & 3 &  & \mbiu{W} &  &  & \mbiu{S} &  & \mbiu{P} &  &  &  &  & \mbiu{N} & \Delta  \\
+2 & 4 &  & \mbiu{S} &  &  &          &  &  & \mbiu{P} &  &  & \mbiu{W} & \mbiu{E} & \Delta  \\
+\hline
+1 & 1 &   &   & \mbiu{E} & \mbiu{N} &  &  &  &          & \mbiu{P} &  &  &  & \pi \\
+3 & 1 &   &   & \mbiu{W} &  & \mbiu{N} &  &  &          &  & \mbiu{P} &  &  & \pi \\
+1 & 4 &   &   &          &  &  & \mbiu{S} &  & \mbiu{E} &  &  & \mbiu{P} &  & \pi \\
+3 & 4 &   &   &          &  &  &  & \mbiu{S} & \mbiu{W} &  &  &  & \mbiu{P} & \pi \\
+\hline
+\end{array}
+\end{equation*}
+\end{tiny}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%5555555
+
+\begin{frame}{Mat-Vec: $\Matriz{A}\SubScript{\Sigma \Sigma} \times \Vector{u}\SubScript{\Sigma}$}
+
+\begin{tiny}
+\begin{equation*}
+\Matriz{A}\SubScript{\Sigma \Sigma} \times \Vector{u}\SubScript{\Sigma}= 
+\begin{array}{|c|c|cc|cccccc|c|}
+\hline
+i  &   & 2 & 2 & 2 & 1 & 3 & 1 & 3 & 2 & DP\\
+\hline
+   & j & 2 & 3 & 1 & 2 & 2 & 3 & 3 & 4 & \\
+\hline
+2 & 2 & \mbiu{P} & \mbiu{N} & \mbiu{S} & \mbiu{W} & \mbiu{E} &  &  &  & I \\
+2 & 3 & \mbiu{S} & \mbiu{P} &  &  &  & \mbiu{W} & \mbiu{E} & \mbiu{N} & I \\
+\hline
+2 & 1 & \mbiu{N} &  & \mbiu{P} &  &          &  &  &  & \Delta \\
+1 & 2 & \mbiu{E} &  &  & \mbiu{P} &  & \mbiu{N} &  &  & \Delta \\
+3 & 2 & \mbiu{W} &  &  &  & \mbiu{P} &  & \mbiu{N} &  & \Delta \\
+1 & 3 &  & \mbiu{E} &  & \mbiu{S} &  & \mbiu{P} &  &  & \Delta \\
+3 & 3 &  & \mbiu{W} &  &  & \mbiu{S} &  & \mbiu{P} &  & \Delta  \\
+2 & 4 &  & \mbiu{S} &  &  &          &  &  & \mbiu{P} & \Delta  \\
+\hline
+\end{array} \times
+\begin{array}{c}
+\\
+\\
+\mathsf{1} \\
+\mathsf{1} \\
+\mathsf{1} \\
+\mathsf{1} \\
+\mathsf{1} \\
+\mathsf{1} \\
+\mathsf{1} \\
+\mathsf{1} \\
+\end{array} =
+\begin{array}{c}
+\\
+\\
+\mbi{P} + \mbi{N} + \mbi{S} + \mbi{W} + \mbi{E}\\
+\mbi{S} + \mbi{P} + \mbi{W} + \mbi{E} + \mbi{N}\\
+\mbi{N} + \mbi{P}\\
+\mbi{E} + \mbi{P} + \mbi{N}\\
+\mbi{W} + \mbi{P} + \mbi{N} \\
+\mbi{E} + \mbi{S} + \mbi{P}\\
+\mbi{W} + \mbi{S} + \mbi{P}\\
+\mbi{S} + \mbi{P}\\
+\end{array}
+\end{equation*}
+\end{tiny}
+
+\begin{tiny}
+\begin{equation*}
+\begin{array}{|c|c|ccc|ccc|ccc|ccc|c|}
+\hline
+i  &   & 1 & 2 & 3 & 1 & 2 & 3 & 1 & 2 & 3 & 1 & 2 & 3 & DP\\
+\hline
+   & j & 1 & 1 & 1 & 2 & 2 & 2 & 3 & 3 & 3 & 4 & 4 & 4 &  \\
+\hline
+\red 1 & \red 1 & \red \mbiu{P} & \red \mbiu{E} & \red & \red \mbiu{N} & \red & \red & \red & \red & \red & \red & \red & \red & \red \pi = 0 \\
+2 & 1 & \red \mbiu{W} & \mbiu{P} & \red \mbiu{E} &          & \mbiu{N} &          &  &  &  & \red &  & \red & \Delta \\
+\red 3 & \red 1 & \red & \red \mbiu{W} & \red \mbiu{P} & \red & \red & \red \mbiu{N} & \red & \red & \red & \red & \red & \red & \red \pi = 0 \\
+\hline
+1 & 2 & \red \mbiu{S} &          & \red & \mbiu{P} & \mbiu{E} &          & \mbiu{N} &      &     & \red  &   & \red & \Delta \\
+2 & 2 & \red & \mbiu{S} & \red & \mbiu{W} & \mbiu{P} & \mbiu{E} &          & \mbiu{N} &          & \red  &   & \red & I \\
+3 & 2 & \red &          & \red \mbiu{S} &          & \mbiu{W} & \mbiu{P} &          &     & \mbiu{N} & \red &   & \red & \Delta \\
+\hline
+1 & 3 & \red &   & \red & \mbiu{S} &          &          & \mbiu{P} & \mbiu{E} &          & \red \mbiu{N} &  & \red & \Delta  \\
+2 & 3 & \red &   & \red &          & \mbiu{S} &          & \mbiu{W} & \mbiu{P} & \mbiu{E} & \red & \mbiu{N} & \red & I  \\
+3 & 3 & \red &   & \red &          &          & \mbiu{S} &          & \mbiu{W} & \mbiu{P} & \red &          & \red \mbiu{N} & \Delta\\
+\hline
+\red 1 & \red 4 & \red & \red & \red & \red & \red & \red & \red \mbiu{S} & \red & \red & \red \mbiu{P} & \red \mbiu{E} & \red & \red  \pi = 0    \\
+2 & 4 & \red &   & \red &   &   &   &          & \mbiu{S} &          & \red \mbiu{W} & \mbiu{P} & \red \mbiu{E} & \Delta \\
+\red 3 & \red 4 & \red & \red & \red & \red & \red & \red & \red & \red & \red \mbiu{S} & \red & \red \mbiu{W} & \red \mbiu{P} & \red  
+\pi = 0 \\
+\hline
+\end{array} =
+\begin{array}{c}
+\\
+\\
+\\
+\mbi{P} + \mbi{N} \\
+\\ 
+\mbi{P} + \mbi{E} + \mbi{N} \\
+\mbi{S} + \mbi{W} + \mbi{P} + \mbi{E} + \mbi{N} \\
+\mbi{W} + \mbi{P} + \mbi{N} \\
+\mbi{S} + \mbi{P} + \mbi{E} \\
+\mbi{S} + \mbi{W} + \mbi{P} + \mbi{E} + \mbi{N} \\
+\mbi{S} + \mbi{W} + \mbi{P} \\
+\\
+\mbi{S} + \mbi{P} \\
+\\
+\end{array}
+\end{equation*}
+\end{tiny}
+
+\end{frame}
+
+
+
+\section{Communications}
+
+
+\begin{frame}{Virtual topology}
+$$\includegraphics[width=12cm]{topovirtual.png}$$
+\end{frame}
+
+\begin{frame}{}
+$$\includegraphics[width=12cm]{SubDom.jpg}$$
+\end{frame}
+
+\begin{frame}{Application of average requires MPI communication}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+$$\includegraphics[width=5cm]{comm00.pdf}$$
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{itemize}
+\item Initial configuration.
+\end{itemize}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Average application. Communication : stage 1}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+$$\includegraphics[width=5cm]{comm01.pdf}$$
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{itemize}
+\item \textcolor{blue}{Send RIGHT, Recv LEFT.}
+\end{itemize}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Average application. Communication : stage 2}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+$$\includegraphics[width=5cm]{comm02.pdf}$$
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{itemize}
+\item Send RIGHT, Recv LEFT.
+\item \textcolor{blue}{Send LEFT, Recv RIGHT.}
+\end{itemize}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Average application. Communication : stage 3}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+$$\includegraphics[width=5cm]{comm03.pdf}$$
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{itemize}
+\item Send RIGHT, Recv LEFT.
+\item Send LEFT, Recv RIGHT.
+\item \textcolor{blue}{Send TOP, Recv DOWN.}
+\end{itemize}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Average application. Communication : stage 4}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+$$\includegraphics[width=5cm]{comm04.pdf}$$
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{itemize}
+\item Send RIGHT, Recv LEFT.
+\item Send LEFT, Recv RIGHT.
+\item Send TOP, Recv DOWN.
+\item \textcolor{blue}{Send DOWN, Recv TOP.}
+\end{itemize}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Average application}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+$$\includegraphics[width=5cm]{comm04.pdf}$$
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{itemize}
+\item Send RIGHT, Recv LEFT.
+\item Send LEFT, Recv RIGHT.
+\item Send TOP, Recv DOWN.
+\item Send DOWN, Recv TOP.
+\item \textcolor{blue}{Apply $\Matriz{a}$ on all walls.}
+\end{itemize}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+%\section{General Programming Approach}
+%
+%\begin{frame}{C++ template based implementation}
+%\begin{itemize}[<+->]
+%\item \textit{Metaprogramming} is applied.
+%\begin{itemize}
+%\item Computer programs that write or manipulate other programs or themselves.
+%\item It can minimize the number of lines of code to express a solution.
+%\item Provides static polymorphism and part of the work can be done at compile time.
+%\end{itemize}
+%
+%\item CRTP (Curiosly Recurrent Template Pattern)
+%
+%\begin{columns}
+%\begin{column}{0.45\textwidth}
+%$$\includegraphics[width=4cm]{CRTP.png}$$
+%\end{column}
+%\begin{column}{0.45\textwidth}
+%\begin{itemize}
+%\item Avoids dynamic polymorphism.
+%\item Allows static polymorphism.
+%\item A good organization of code is obtained.
+%\item Optimized code generation in compile time.
+%\vspace{2cm}
+%\end{itemize}
+%\end{column}
+%\end{columns}
+%
+%\end{itemize}
+%\end{frame}
+%
+%\subsection{Implementation}
+%
+%\begin{frame}{DVS software: UML description}
+%$$\includegraphics[width=8cm]{derivedVectorSpace.pdf}$$
+%\pause
+%$$\includegraphics[width=5cm]{generalSchur.pdf}$$
+%\end{frame}
+%
+%\begin{frame}{UML description}
+%$$\includegraphics[width=12cm]{dvsUML.pdf}$$
+%\end{frame}
+%
+%\begin{frame}[fragile]{DVS-BDDC Implementation}
+%
+%\begin{columns}
+%\begin{column}{0.5\textwidth}
+%\begin{exampleblock}{DVS-BDDC revisited}
+%\[
+%\Matriz{M} \, \VectorD{u} = \VectorD{b}
+%\] 
+%
+%$\boxed{\Matriz{M} \, \VectorD{u} = \Matriz{a} \, \InvSchur  \Matriz{a} \, \Schur \, \VectorD{u}}$
+%\begin{enumerate}
+%\item {\scriptsize{Apply Schur: $\VectorD{vec} \leftarrow \Schur \, \VectorD{u}$}}
+%\item {\scriptsize{Apply Average: $\VectorD{vec} \leftarrow \Matriz{a} \, \VectorD{vec}$}}
+%\item {\scriptsize{Apply Inverse of Schur: $\VectorD{vec} \leftarrow\InvSchur \VectorD{vec} $}}
+%\item {\scriptsize{Apply Average: $\VectorD{vec} \leftarrow \Matriz{a} \, \VectorD{vec}$}}
+%\end{enumerate}
+%$\boxed{\VectorD{b} = \Matriz{a} \, \InvSchur \VectorD{f}}$
+%
+%\begin{enumerate}
+%\item {\scriptsize{Apply Inverse of Schur: $\VectorD{vec} \leftarrow\InvSchur \VectorD{f} $}}
+%\item {\scriptsize{Apply Average: $\VectorD{vec} \leftarrow \Matriz{a} \, \VectorD{vec}$}}
+%\end{enumerate}
+%\end{exampleblock}
+%
+%\pause
+%
+%\end{column}
+%\begin{column}{0.45\textwidth}
+%\begin{alertblock}{Real code}
+%{\tiny{
+%\begin{verbatim}
+%template<Talgorithm>
+%class DerivedVectorSpace 
+%{
+%  GeneralSchur<Schur<TKrylov> > schur;
+%  GeneralSchur<InvSchur<TKrylov> > invschur;
+%  Average<Matrix, Vector> average;
+%  Jump<Matrix, Vector> jump;
+%};
+%
+%template<TKrylov>
+%class DVS_BDDC : 
+%   public DeriveVectorSpace<BDDC<TKrylov> >
+%{
+%Vector matVecMult(Vector &u){
+%  vec = schur.apply(u);
+%  vec = average.apply(vec);
+%  vec = invschur.apply(vec);
+%  vec = average.apply(vec);
+%  return vec;
+%}
+%
+%Vector rhs(Vector &u) {
+%  vec = invschur.apply(u);
+%  vec = average.apply(vec);
+%  return vec;
+%}
+%};
+%\end{verbatim}
+%}}
+%\end{alertblock}
+%\end{column}
+%\end{columns}
+%
+%\end{frame}
+
+\end{document}
