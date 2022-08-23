@@ -7,9 +7,9 @@
 #-----------------------------------------------------------
 # PARA DEFINIR EL PATH ABSOLUTO DE LOS MÓDULOS DE PYNOXTLI
 #
-import os, sys
-if not("pynoxtli/base" in sys.path[0][-13:]):
-    sys.path.insert(0, os.path.abspath('../../base'))
+#import os, sys
+#if not("pynoxtli/base" in sys.path[0][-13:]):
+#    sys.path.insert(0, os.path.abspath('../../base'))
 #-----------------------------------------------------------
 
 
@@ -17,11 +17,11 @@ import numpy as np
 #
 # Importar módulos de pynoxtli
 #
-from geo.rectangle import Rectangle
-from fvm.tAdvDiff import tAdvDiff2D
-from fvm.pde import PDE
-from utils.displayInfo import printInfo
-import vis.flowix as flx
+from macti.PyNoxtli.geo.rectangle import Rectangle
+from macti.PyNoxtli.fvm.tAdvDiff import tAdvDiff2D
+from macti.PyNoxtli.fvm.pde import PDE
+from macti.PyNoxtli.utils.displayInfo import printInfo
+import macti.PyNoxtli.vis.flowix as flx
 #
 # Función que ejecuta FuncAnimation() en cada paso de tiempo
 #
