@@ -27,7 +27,7 @@ class Ejercicio():
         return(pd.read_parquet(stream, columns=[num]))
         
     def responde(self, num, f = None):
-        answers = self.read(self.__topic + '__ans' + '', num)
+        answers = self.read(self.__topic + '/__ans' + '', num)
         
         if f:
             text = display(Latex(f'${f}$ = '))
