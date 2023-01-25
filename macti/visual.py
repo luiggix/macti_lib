@@ -1,3 +1,7 @@
+"""
+@author: Luis M. de la Cruz [Updated on mié 18 ene 2023 14:07:31 CST].
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -13,6 +17,7 @@ plt.style.use('seaborn-ticks')
 mpl.rcParams['figure.dpi'] = 80
 mpl.rcParams['figure.figsize'] = (6.4, 4.8)
 mpl.rcParams['font.weight'] = 'light'
+mpl.rcParams['font.size'] = 12
 mpl.rcParams['axes.facecolor'] = 'whitesmoke'
 mpl.rcParams['axes.edgecolor'] = 'gray'   # axes edge color
 mpl.rcParams['axes.linewidth'] = 0.8     # edge line width
