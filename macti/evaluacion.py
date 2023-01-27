@@ -27,8 +27,8 @@ class Ejercicio():
         return(pd.read_parquet(stream, columns=[num]))
         
     def responde(self, num, f = None):
-        answers = self.read(self.__topic + '/__ans' + '', num)
-        
+        answers = self.read(self.__topic + '/__ans.parquet.gz', num)
+                                
         if f:
             text = display(Latex(f'${f}$ = '))
         else:
@@ -45,7 +45,7 @@ class Ejercicio():
             print(Fore.RESET + 80*'-')  
             
     def verifica(self, num, x):
-        value = self.read(self.__topic + '__ans' + '', num)
+        value = self.read(self.__topic + '/__ans.parquet.gz', num)
         
         x = np.array(x)
         y = value[num][0]
