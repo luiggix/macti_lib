@@ -12,25 +12,34 @@ import os
 import pkg_resources
 from IPython.display import display, Latex
 
-class Ejercicio():
+class Quizz():
 
-    def __init__(self, topic, local=False):
+    def __init__(self, topic, subtopic, local = True):
         self.__topic = topic
-        self.local = local
+        self.__subtopic = subtopic
+        self.__local = local
+    
+    @property
+    def topic(self):
+        return self.__topic
 
-    def read(self, name, num):
-        if self.local:
-            stream = name
-            print(os.getcwd())
+    @property
+    def subtopic(self):
+        return self.__subtopic
+    
+    def read(self, qnum, enum):
+        filename = '.__ans_' + qnum
+        if self.__local:           
+            path = '../utils/data/'
+            stream = path + filename
         else:
-            print(os.getcwd())
-            filename = 'data/' + name
-            stream = pkg_resources.resource_stream('macti', filename) 
+            path = '/data/' + self.__topic + '/' + self.__subtopic + '/'
+            stream = pkg_resources.resource_stream('macti', path + filename) 
 
-        return(pd.read_parquet(stream, columns=[num]))
-        
-    def responde(self, num, f = None):
-        answers = self.read(self.__topic + '/__ans.parquet.gz', num)
+        return(pd.read_parquet(stream, columns=[enum]))
+       
+    def responde(self, qnum, enum, f = None):
+        answers = self.read(qnum, enum)
                                 
         if f:
             text = display(Latex(f'${f}$ = '))
@@ -38,7 +47,7 @@ class Ejercicio():
             text = "="
         ans = input(text)
         ans = ans.replace(" ","")
-        correcta = ans in answers[num][0]
+        correcta = ans in answers[enum][0]
 
         if correcta:
             print(Fore.GREEN + '¡Tu respuesta es correcta!')
@@ -47,11 +56,11 @@ class Ejercicio():
             print(Fore.RED + 'Cuidado: ocurrió un error en tus cálculos y/o en tu respuesta.')
             print(Fore.RESET + 80*'-')  
             
-    def verifica(self, num, x):
-        value = self.read(self.__topic + '/__ans.parquet.gz', num)
+    def verifica(self, qnum, enum, x):
+        value = self.read(qnum, enum)
         
         x = np.array(x)
-        y = value[num][0]
+        y = value[enum][0]
 
         try:
             assert_equal(list(x.flatten()), list(y.flatten()))
