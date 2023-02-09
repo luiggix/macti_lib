@@ -38,14 +38,14 @@ class Quizz():
 
         return(pd.read_parquet(stream, columns=[enum]))
        
-    def responde(self, qnum, enum, f = None):
+    def responde(self, qnum, enum, ans):
         answers = self.read(qnum, enum)
                                 
-        if f:
-            text = display(Latex(f'${f}$ = '))
-        else:
-            text = "="
-        ans = input(text)
+#        if f:
+#            text = display(Latex(f'${f}$ = '))
+#        else:
+#            text = "="
+#        ans = input(text)
         ans = ans.replace(" ","")
         correcta = ans in answers[enum][0]
 
