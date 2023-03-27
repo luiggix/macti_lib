@@ -68,6 +68,7 @@ class Quizz():
             print(Fore.RESET + 80*'-')
             print(Fore.RED + 'Cuidado: ocurrió un error en tus cálculos: \n {}'.format(info))
             print(Fore.RESET + 80*'-')
+            raise AssertionError
         else:
             print(Fore.GREEN + '¡Tu resultado es correcto!')
             
