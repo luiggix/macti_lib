@@ -24,8 +24,8 @@ class Quizz():
         self.__platform = platform.system()
         
         sep = '/'
-#        if self.__platform == 'Windows':
-#            sep = '\\'
+        if self.__platform == 'Windows':
+            sep = '\\'
 
         # Obtención del directorio del curso
         abs_path = os.getcwd().split(sep = sep)
