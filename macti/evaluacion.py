@@ -22,25 +22,25 @@ class Quizz():
         self.__topic = topic
         self.__server = server
         self.__platform = platform.system()
-        self.__dirsep = '/'
-        if self.__platform == 'Windows':
-            self.__dirsep = '\\'
-
-    @property
-    def course(self):
-        return self.__course
-    
-    @course.setter
-    def course(self, course):
-        self.__course = course
         
-    @property
-    def topic(self):
-        return self.__topic
-    
-    @topic.setter
-    def topic(self, topic):
-        self.__topic = topic
+        sep = '/'
+#        if self.__platform == 'Windows':
+#            sep = '\\'
+
+        # Obtención del directorio del curso
+        abs_path = os.getcwd().split(sep = sep)
+        index_co = abs_path.index(self.__course)
+        self.__course_path = ''
+        for i in abs_path[0:index_co+1]:
+            self.__course_path += i + sep
+
+        filetext = open(self.__course_path + 'README.md', 'r')
+        for i in filetext:
+            print(i)
+            
+        self.__course += sep  # Curso
+        self.__topic += sep   # Topico
+        self.__u_d = 'utils' + sep + 'data' + sep # utils/data
 
     @property
     def server(self):
@@ -51,34 +51,16 @@ class Quizz():
         self.__server = server
         
     def read(self, qnum, enum):
-        sep = self.__dirsep
         filename = '.__ans_' + qnum
-        co = self.__course + sep
-        to = self.__topic + sep
-        u_d = 'utils' + sep + 'data' + sep
-        print(self.__platform, self.__dirsep, u_d)
-        
-        abs_path = os.getcwd().split(sep = sep)
-        print(abs_path)
-        index_co = abs_path.index(self.__course)
-        course_path = ''
-        for i in abs_path[0:index_co+1]:
-            course_path += i + sep
 
-        print(course_path)
-        
-        filetest = open(course_path + 'README.md', 'r')
-        for i in filetest:
-            print(i)
-            
         if self.__server == 'local':
-            path = '../' + u_d
+            path = self.__course_path + self.__u_d + self.__topic
             stream = path + filename
         elif self.__server == 'hub':
-            path = '/srv/nbgrader/exchange/' + co + u_d + to
+            path = '/srv/nbgrader/exchange/' + self.__course + self.__u_d + self.__topic
             stream = path + filename 
         elif self.__server == 'macti':
-            path = '/data/' + to
+            path = '/data/' + self.__topic
             stream = path + filename
 #            stream = pkg_resources.resource_stream('macti', path + filename)
         else:
@@ -152,15 +134,14 @@ class Evalua():
 #----------------------- TEST OF THE MODULE ----------------------------------   
 if __name__ == '__main__':
 
-    q = Quizz('macti_lib', server = 'local')
-    q.topic = 'derivada'
+    q = Quizz('macti_lib', 'derivada', server = 'local')
     q.read('1','1')
 
-#    q.server = 'hub'
-#    q.read('1','1')
+    q.server = 'hub'
+    q.read('1','1')
 
-#    q.server = 'macti'
-#    q.read('1','1')    
+    q.server = 'macti'
+    q.read('1','1')    
 """
     e = Ejercicio('example', local=True)
     e.respuesta('1a')
