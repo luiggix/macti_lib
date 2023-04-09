@@ -58,11 +58,15 @@ class Quizz():
         u_d = 'utils' + sep + 'data' + sep
         print(self.__platform, self.__dirsep, u_d)
         
-#        abs_path = os.getcwd().split(sep = sep)
-#        print(abs_path)
-#        index_co = abs_path.index(self.__course)
-#        print(abs_path[0:index_co+1])
+        abs_path = os.getcwd().split(sep = sep)
+        print(abs_path)
+        index_co = abs_path.index(self.__course)
+        course_path = ''
+        for i in abs_path[0:index_co+1]:
+            course_path += i + sep
 
+        print(course_path)
+        
         if self.__server == 'local':
             path = '../' + u_d
             stream = path + filename
