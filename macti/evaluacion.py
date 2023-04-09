@@ -27,12 +27,13 @@ class Quizz():
         if self.__platform == 'Windows':
             sep = '\\'
 
-        # Obtención del directorio del curso
-        abs_path = os.getcwd().split(sep = sep)
-        index_co = abs_path.index(self.__course)
         self.__course_path = ''
-        for i in abs_path[0:index_co+1]:
-            self.__course_path += i + sep
+        if server == 'local':
+            # Obtención del directorio del curso
+            abs_path = os.getcwd().split(sep = sep)
+            index_co = abs_path.index(self.__course)
+            for i in abs_path[0:index_co+1]:
+                self.__course_path += i + sep
             
         self.__course += sep  # Curso
         self.__topic += sep   # Topico
