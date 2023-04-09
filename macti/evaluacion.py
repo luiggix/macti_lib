@@ -33,10 +33,6 @@ class Quizz():
         self.__course_path = ''
         for i in abs_path[0:index_co+1]:
             self.__course_path += i + sep
-
-        filetext = open(self.__course_path + 'README.md', 'r')
-        for i in filetext:
-            print(i)
             
         self.__course += sep  # Curso
         self.__topic += sep   # Topico
@@ -56,19 +52,16 @@ class Quizz():
         if self.__server == 'local':
             path = self.__course_path + self.__u_d + self.__topic
             stream = path + filename
-        elif self.__server == 'hub':
+        elif self.__server == 'hub': # Linux
             path = '/srv/nbgrader/exchange/' + self.__course + self.__u_d + self.__topic
             stream = path + filename 
         elif self.__server == 'macti':
             path = '/data/' + self.__topic
-            stream = path + filename
-#            stream = pkg_resources.resource_stream('macti', path + filename)
+            stream = pkg_resources.resource_stream('macti', path + filename)
         else:
             print('Invalid option: {}'.format(self.__server))
-            
-        print(stream)
-        
-#        return(pd.read_parquet(stream, columns=[enum]))
+                    
+        return(pd.read_parquet(stream, columns=[enum]))
        
     def responde(self, qnum, enum, ans):
         answers = self.read(qnum, enum)
@@ -134,14 +127,14 @@ class Evalua():
 #----------------------- TEST OF THE MODULE ----------------------------------   
 if __name__ == '__main__':
 
-    q = Quizz('macti_lib', 'derivada', server = 'local')
+    q = Quizz('macti_lib', 'Derivada', server = 'local')
     q.read('1','1')
 
-    q.server = 'hub'
-    q.read('1','1')
+#    q.server = 'hub'
+#    q.read('1','1')
 
-    q.server = 'macti'
-    q.read('1','1')    
+#    q.server = 'macti'
+#    q.read('1','1')    
 """
     e = Ejercicio('example', local=True)
     e.respuesta('1a')
