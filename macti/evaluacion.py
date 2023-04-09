@@ -7,36 +7,78 @@ from colorama import Fore
 from nose.tools import assert_equal
 import numpy as np
 import pandas as pd
-import os
+import os, sys, platform
 
 import pkg_resources
 from IPython.display import display, Latex
 
 class Quizz():
 
-    def __init__(self, topic, subtopic, local = True):
+    def __init__(self, 
+                 course = '', 
+                 topic = '', 
+                 server = 'hub'):
+        self.__course = course
         self.__topic = topic
-        self.__subtopic = subtopic
-        self.__local = local
+        self.__server = server
+        self.__platform = platform.system()
+        self.__dirsep = '/'
+        if self.__platform == 'Windows':
+            self.__dirsep = '\\'
+
+    @property
+    def course(self):
+        return self.__course
     
+    @course.setter
+    def course(self, course):
+        self.__course = course
+        
     @property
     def topic(self):
         return self.__topic
+    
+    @topic.setter
+    def topic(self, topic):
+        self.__topic = topic
 
     @property
-    def subtopic(self):
-        return self.__subtopic
+    def server(self):
+        return self.__server
     
+    @server.setter
+    def server(self, server):
+        self.__server = server
+        
     def read(self, qnum, enum):
+        sep = self.__dirsep
         filename = '.__ans_' + qnum
-        if self.__local:           
-            path = '../utils/data/'
-            stream = path + filename
-        else:
-            path = '/data/' + self.__topic + '/' + self.__subtopic + '/'
-            stream = pkg_resources.resource_stream('macti', path + filename) 
+        co = self.__course + sep
+        to = self.__topic + sep
+        u_d = 'utils' + sep + 'data' + sep
+        print(self.__platform, self.__dirsep, u_d)
+        
+#        abs_path = os.getcwd().split(sep = sep)
+#        print(abs_path)
+#        index_co = abs_path.index(self.__course)
+#        print(abs_path[0:index_co+1])
 
-        return(pd.read_parquet(stream, columns=[enum]))
+        if self.__server == 'local':
+            path = '../' + u_d
+            stream = path + filename
+        elif self.__server == 'hub':
+            path = '/srv/nbgrader/exchange/' + co + u_d + to
+            stream = path + filename 
+        elif self.__server == 'macti':
+            path = '/data/' + to
+            stream = path + filename
+#            stream = pkg_resources.resource_stream('macti', path + filename)
+        else:
+            print('Invalid option: {}'.format(self.__server))
+            
+        print(stream)
+        
+#        return(pd.read_parquet(stream, columns=[enum]))
        
     def responde(self, qnum, enum, ans):
         answers = self.read(qnum, enum)
@@ -101,11 +143,20 @@ class Evalua():
             
 #----------------------- TEST OF THE MODULE ----------------------------------   
 if __name__ == '__main__':
-    
+
+    q = Quizz('macti_lib', server = 'local')
+    q.topic = 'derivada'
+    q.read('1','1')
+
+    q.server = 'hub'
+    q.read('1','1')
+
+    q.server = 'macti'
+    q.read('1','1')    
+"""
     e = Ejercicio('example', local=True)
     e.respuesta('1a')
     
-"""
     x = np.linspace(0,1500,10)
     PA = 0.10 * x + 200
     PB = 0.35 * x + 20
