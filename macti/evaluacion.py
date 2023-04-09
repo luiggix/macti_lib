@@ -67,6 +67,10 @@ class Quizz():
 
         print(course_path)
         
+        filetest = open(course_path + 'README.md', 'r')
+        for i in filetest:
+            print(i)
+            
         if self.__server == 'local':
             path = '../' + u_d
             stream = path + filename
@@ -152,11 +156,11 @@ if __name__ == '__main__':
     q.topic = 'derivada'
     q.read('1','1')
 
-    q.server = 'hub'
-    q.read('1','1')
+#    q.server = 'hub'
+#    q.read('1','1')
 
-    q.server = 'macti'
-    q.read('1','1')    
+#    q.server = 'macti'
+#    q.read('1','1')    
 """
     e = Ejercicio('example', local=True)
     e.respuesta('1a')
