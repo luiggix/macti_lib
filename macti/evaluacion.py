@@ -7,6 +7,7 @@ from colorama import Fore
 from nose.tools import assert_equal
 import numpy as np
 import pandas as pd
+import sympy as sy
 import os, sys, platform
 
 import pkg_resources
@@ -22,23 +23,21 @@ class Quizz():
         self.__topic = topic
         self.__server = server
         self.__platform = platform.system()
-        
-        sep = '/'
-        if self.__platform == 'Windows':
-            sep = '\\'
-
+            
         self.__course_path = ''
         if server == 'local':
             # Obtención del directorio del curso
+            sep = '\\' if self.__platform == 'Windows' else '/'
             abs_path = os.getcwd().split(sep = sep)
             index_co = abs_path.index(self.__course)
             for i in abs_path[0:index_co+1]:
                 self.__course_path += i + sep
-            
+
+        sep = '\\' if self.__platform == 'Windows' else '/'
         self.__course += sep  # Curso
         self.__topic += sep   # Topico
         self.__u_d = 'utils' + sep + 'data' + sep # utils/data
-
+            
     @property
     def server(self):
         return self.__server
@@ -81,6 +80,24 @@ class Quizz():
             print(Fore.RESET + 80*'-')
             print(Fore.RED + 'Cuidado: ocurrió un error en tus cálculos y/o en tu respuesta.')
             print(Fore.RESET + 80*'-')  
+
+    def evalua_expr(self, qnum, enum, ans):
+        value = self.read(qnum, enum)
+        problema = sy.sympify(value[enum][0][0])
+        
+        if problema.equals(ans):
+            print(Fore.RESET + 80*'-')
+            print(Fore.GREEN + '¡Tu respuesta:')
+            display(ans)
+            print(Fore.GREEN + 'es correcta!')
+            print(Fore.RESET + 80*'-')
+        else:
+            print(Fore.RESET + 80*'-')
+            print(Fore.RED + 'Cuidado tu respuesta:')
+            display(ans)
+            print(Fore.RED + 'NO es correcta!')            
+            print(Fore.RESET + 80*'-')
+            raise AssertionError
             
     def verifica(self, qnum, enum, x):
         value = self.read(qnum, enum)
@@ -96,8 +113,10 @@ class Quizz():
             print(Fore.RESET + 80*'-')
             raise AssertionError
         else:
+            print(Fore.RESET + 80*'-')
             print(Fore.GREEN + '¡Tu resultado es correcto!')
-            
+            print(Fore.RESET + 80*'-')
+
 class Evalua():
     def __init__(self, topic, local=False):
         self.topic = topic
