@@ -19,6 +19,22 @@ class Quizz():
                  course = '', 
                  topic = '', 
                  server = 'hub'):
+        """
+        Clase para la creación de ejercicios.
+        
+        Parameters
+        ----------
+        course: string
+        Nombre o identificador del curso.
+        
+        topic: string
+        Tema del curso en el que se aplica el ejercicio.
+        
+        server: string
+        'local' cuando los datos se instalan en una computadora local.
+        'hub' cuando los datos se instalan en el Hub.
+        'macti' cuando los datos se instalan junto con la biblioteca.
+        """
         self.__course = course
         self.__topic = topic
         self.__server = server
@@ -64,6 +80,9 @@ class Quizz():
         return(pd.read_parquet(stream, columns=[enum]))
        
     def responde(self, qnum, enum, ans):
+        """
+        Esta función ha sido sustituida por evalua_opcion()
+        """
         answers = self.read(qnum, enum)
                                 
 #        if f:
@@ -81,7 +100,67 @@ class Quizz():
             print(Fore.RED + 'Cuidado: ocurrió un error en tus cálculos y/o en tu respuesta.')
             print(Fore.RESET + 80*'-')  
 
+    def verifica(self, qnum, enum, x):
+        value = self.read(qnum, enum)
+        
+        x = np.array(x)
+        y = value[enum][0]
+
+        try:
+            assert_equal(list(x.flatten()), list(y.flatten()))
+        except AssertionError as info:
+            print(Fore.RESET + 80*'-')
+            print(Fore.RED + 'Cuidado: ocurrió un error en tus cálculos: \n {}'.format(info))
+            print(Fore.RESET + 80*'-')
+            raise AssertionError
+        else:
+            print(Fore.RESET + 80*'-')
+            print(Fore.GREEN + '¡Tu resultado es correcto!')
+            print(Fore.RESET + 80*'-')
+            
+    def evalua_opcion(self, qnum, enum, ans):
+        """
+        Evalúa la respuesta entre varias opciones. Cuando la respuesta es incorrecta lanza un excepción.
+        
+        Parameters
+        ----------
+        qnum: string
+        Número de quizz.
+        
+        enum: string
+        Número de pregunta.
+        
+        ans: string
+        Respuesta del alumno.
+        """
+        answers = self.read(qnum, enum)
+        ans = ans.replace(" ","")
+        correcta = ans in answers[enum][0]
+
+        if correcta:
+            print(Fore.RESET + 80*'-')
+            print(Fore.GREEN + '¡Tu respuesta es correcta!')
+            print(Fore.RESET + 80*'-')
+        else:
+            print(Fore.RESET + 80*'-')
+            print(Fore.RED + 'Cuidado: revisa las otras opciones, tu respuesta no es correcta.')
+            print(Fore.RESET + 80*'-')          
+        
     def evalua_expr(self, qnum, enum, ans):
+        """
+        Evalúa una expresión simbólica escrita en formato Python.
+        
+        Parameters
+        ----------
+        qnum: string
+        Número de quizz.
+        
+        enum: string
+        Número de pregunta.
+        
+        ans: string
+        Respuesta del alumno.
+        """
         value = self.read(qnum, enum)
         problema = sy.sympify(value[enum][0][0])
         
@@ -99,7 +178,21 @@ class Quizz():
             print(Fore.RESET + 80*'-')
             raise AssertionError
             
-    def verifica(self, qnum, enum, x):
+    def evalua_num(self, qnum, enum, x):
+        """
+        Evalúa una respuesta numérica que puede estar dada en un arreglo de numpy.
+        
+        Parameters
+        ----------
+        qnum: string
+        Número de quizz.
+        
+        enum: string
+        Número de pregunta.
+        
+        ans: string
+        Respuesta del alumno.
+        """
         value = self.read(qnum, enum)
         
         x = np.array(x)
