@@ -178,8 +178,8 @@ class Plotter():
         ax = self.__ax[n-1]
         
         lmax = max(Lx,Ly)
-        offx = lmax * 0.01
-        offy = lmax * 0.01
+        offx = lmax * 0.0025
+        offy = lmax * 0.0025
         ax.set_xlim(-offx, Lx+offx)
         ax.set_ylim(-offy, Ly+offy)
         ax.grid(False)
