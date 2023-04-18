@@ -644,9 +644,9 @@ class Plotter():
         ax.set_yticks([])
         
         if par != None:
-            out = ax.streamplot(x, y, u, v, **par)
+            out = ax.streamplot(x.T, y.T, u.T, v.T, **par)
         else:
-            out = ax.streamplot(x, y, u, v)
+            out = ax.streamplot(x.T, y.T, u.T, v.T)
         return out
     
     def quiver(self, n, x, y, u, v, par=None):
@@ -852,8 +852,6 @@ def set_ticks(ax, xticks = [], yticks = [], trig = False):
         if len(yticks) != 0:
             ax.set_yticks(yticks)
             
-
-
 def calcOffset(xg, yg):
     Lx = xg[-1,0] - xg[0,0]
     Ly = yg[0,-1] - yg[0,0]
