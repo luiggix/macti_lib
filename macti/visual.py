@@ -178,8 +178,8 @@ class Plotter():
         ax = self.__ax[n-1]
         
         lmax = max(Lx,Ly)
-        offx = lmax * 0.0025
-        offy = lmax * 0.0025
+        offx = lmax * 0.010
+        offy = lmax * 0.010
         ax.set_xlim(-offx, Lx+offx)
         ax.set_ylim(-offy, Ly+offy)
         ax.grid(False)
@@ -195,6 +195,55 @@ class Plotter():
         cax.set_facecolor(facecolor)
     
         return cax
+
+    def format_func(self, value, tick_number):
+        # find number of multiples of pi/2
+        N = int(np.round(2 * value / np.pi))
+        if N == 0:
+            return "0"
+        elif N == 1:
+            return r"$\pi/2$"
+        elif N == 2:
+            return r"$\pi$"
+        elif N % 2 > 0:
+            return r"${0}\pi/2$".format(N)
+        else:
+            return r"${0}\pi$".format(N // 2)
+
+    def set_ticks(self, ax, xticks = [], yticks = [], trig = False):
+        if trig:
+            ax.xaxis.set_major_locator(plt.MultipleLocator(np.pi / 2))
+            ax.xaxis.set_minor_locator(plt.MultipleLocator(np.pi / 4))
+            ax.xaxis.set_major_formatter(plt.FuncFormatter(self.format_func))
+        else:        
+            if len(xticks) != 0:
+                ax.set_xticks(xticks)
+            if len(yticks) != 0:
+                ax.set_yticks(yticks)
+            
+    def set_coordsys(self, n, trig = False):
+        ax = self.__ax[n-1]
+        # Move the left and bottom spines to x = 0 and y = 0, respectively.
+        ax.spines[["left", "bottom"]].set_position(("data", 0))
+        # Hide the top and right spines.
+        ax.spines[["top", "right"]].set_visible(False)
+
+        # Draw arrows (as black triangles: ">k"/"^k") at the end of the axes.  In each
+        # case, one of the coordinates (0) is a data coordinate (i.e., y = 0 or x = 0,
+        # respectively) and the other one (1) is an axes coordinate (i.e., at the very
+        # right/top of the axes).  Also, disable clipping (clip_on=False) as the marker
+        # actually spills out of the axes.
+        ax.plot(1, 0, ">k", transform=ax.get_yaxis_transform(), clip_on=False)
+        ax.plot(0, 1, "^k", transform=ax.get_xaxis_transform(), clip_on=False)
+
+        ax.set_xlabel('$x$', labelpad=-35.0, x = 0.98)
+        ax.set_ylabel('$y$', loc = 'top', rotation=0, labelpad=-45.0)
+        ax.xaxis.set_tick_params(labelsize=8)
+        ax.yaxis.set_tick_params(labelsize=8)
+        xticks = ax.get_xticks()
+        yticks = ax.get_yticks()
+        self.set_ticks(ax, xticks, yticks, trig)
+        
     
 #
 #----------------------- Methods applied to all subplots  ----------------------------   
@@ -825,32 +874,6 @@ class Plotter():
                              repeat=True)   # Permite poner la animación en un ciclo        
         
         return anim
-    
-
-def format_func(value, tick_number):
-    # find number of multiples of pi/2
-    N = int(np.round(2 * value / np.pi))
-    if N == 0:
-        return "0"
-    elif N == 1:
-        return r"$\pi/2$"
-    elif N == 2:
-        return r"$\pi$"
-    elif N % 2 > 0:
-        return r"${0}\pi/2$".format(N)
-    else:
-        return r"${0}\pi$".format(N // 2)
-
-def set_ticks(ax, xticks = [], yticks = [], trig = False):
-    if trig:
-        ax.xaxis.set_major_locator(plt.MultipleLocator(np.pi / 2))
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(np.pi / 4))
-        ax.xaxis.set_major_formatter(plt.FuncFormatter(format_func))
-    else:        
-        if len(xticks) != 0:
-            ax.set_xticks(xticks)
-        if len(yticks) != 0:
-            ax.set_yticks(yticks)
             
 def calcOffset(xg, yg):
     Lx = xg[-1,0] - xg[0,0]
