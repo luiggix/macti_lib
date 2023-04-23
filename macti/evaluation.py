@@ -35,25 +35,22 @@ class Quizz():
         'hub' cuando los datos se instalan en el Hub.
         'macti' cuando los datos se instalan junto con la biblioteca.
         """
-        self.__course = course
-        self.__topic = topic
         self.__server = server
         self.__platform = platform.system()
         self.__course_path = ''
+        self.__course = course
         
         sep = '\\' if self.__platform == 'Windows' else '/'
         if server == 'local':
             # Obtención del directorio del curso
-#            sep = '\\' if self.__platform == 'Windows' else '/'
             abs_path = os.getcwd().split(sep = sep)
             index_co = abs_path.index(self.__course)
             for i in abs_path[0:index_co+1]:
                 self.__course_path += i + sep
 
-#        sep = '\\' if self.__platform == 'Windows' else '/'
-        self.__course += sep  # Curso
-        self.__topic += sep   # Topico
-        self.__u_a = 'utils' + sep + '.ans' + sep # utils/.ans
+        self.__course += sep  # Curso/
+        self.__topic = topic + sep   # Topico/
+        self.__u_a = 'utils' + sep + '.ans' + sep # utils/.ans/
             
     @property
     def server(self):
@@ -75,8 +72,7 @@ class Quizz():
             stream = path + filename 
         elif self.__server == 'macti':
             path = '/data/' + self.__topic
-            stream = path + filename             
-#            stream = pkg_resources.resource_stream('macti', path + filename)
+            stream = pkg_resources.resource_stream('macti', path + filename)
         else:
             print('Invalid option: {}'.format(self.__server))
 
@@ -176,8 +172,28 @@ class Quizz():
             print(Fore.RESET + 80*'-')
 
 class FileAnswer():
-    def __init__(self, qnum, server ='hub'):
-        self.__quizz_num = qnum
+    def __init__(self, 
+                 course = '', 
+                 topic = '', 
+                 server = 'hub'):
+    
+        self.__server = server
+        self.__platform = platform.system()
+        self.__course_path = ''
+        self.__course = course # Curso/
+        
+        sep = '\\' if self.__platform == 'Windows' else '/'
+        if server == 'local':
+            # Obtención del directorio del curso
+            abs_path = os.getcwd().split(sep = sep)
+            index_co = abs_path.index(self.__course)
+            for i in abs_path[0:index_co+1]:
+                self.__course_path += i + sep
+
+        self.__course += sep  # Curso/
+        self.__topic = topic + sep   # Topico/
+        self.__u_a = 'utils' + sep + '.ans' + sep # utils/.ans/
+
         self.__exernum = []
         self.__answers = []
         self.__feedback = []
@@ -188,25 +204,24 @@ class FileAnswer():
         self.__answer.append(ans)
         self.__feedback.append(feed)
     
-    def to_file(self):
-        ans_df = pd.DataFrame([self.__answer], columns=self.__exernum)
-        feed_df = pd.DataFrame([self.__feedback], columns=self.__exernum) 
-        ans_df.to_parquet('.__ans_' + q, compression='gzip')
-        feed_df.to_parquet('.__fee_' + q, compression='gzip')
+    def to_file(self, qnum):
+#        ans_df = pd.DataFrame([self.__answer], columns=self.__exernum)
+#        feed_df = pd.DataFrame([self.__feedback], columns=self.__exernum) 
 #-----------
+        filename = '.__ans_' + qnum
+
         if self.__server == 'local':
-            path = self.__course_path + self.__u_d + self.__topic
-            stream = path + filename
+            path = self.__course_path + self.__u_a + self.__topic
         elif self.__server == 'hub': # Linux
-            path = '/srv/nbgrader/exchange/' + self.__course + self.__u_d + self.__topic
-            stream = path + filename 
-        elif self.__server == 'macti':
-            path = '/data/' + self.__topic
-            stream = pkg_resources.resource_stream('macti', path + filename)
+            # '/usr/local/share/nbgrader/exchange/'
+            path = '/srv/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
         else:
             print('Invalid option: {}'.format(self.__server))
 #-----------
-       
+        print(path + '.__ans_' + qnum)
+        print(path + '.__fee_' + qnum)
+#        ans_df.to_parquet('.__ans_' + qnum, compression='gzip')
+#        feed_df.to_parquet('.__fee_' + qnum, compression='gzip')    
         
 class Evalua():
     def __init__(self, topic, local=False):
@@ -241,6 +256,9 @@ if __name__ == '__main__':
     q = Quizz('macti_lib', 'Derivada', server = 'local')
     print(q.read('1','1'))
 
+    f = FileAnswer('macti_lib', 'Derivada', server = 'local')
+    f.to_file('1')
+    
 #    q.server = 'hub'
 #    q.read('1','1')
 
