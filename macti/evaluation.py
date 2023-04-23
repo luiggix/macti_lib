@@ -39,20 +39,21 @@ class Quizz():
         self.__topic = topic
         self.__server = server
         self.__platform = platform.system()
-            
         self.__course_path = ''
+        
+        sep = '\\' if self.__platform == 'Windows' else '/'
         if server == 'local':
             # Obtención del directorio del curso
-            sep = '\\' if self.__platform == 'Windows' else '/'
+#            sep = '\\' if self.__platform == 'Windows' else '/'
             abs_path = os.getcwd().split(sep = sep)
             index_co = abs_path.index(self.__course)
             for i in abs_path[0:index_co+1]:
                 self.__course_path += i + sep
 
-        sep = '\\' if self.__platform == 'Windows' else '/'
+#        sep = '\\' if self.__platform == 'Windows' else '/'
         self.__course += sep  # Curso
         self.__topic += sep   # Topico
-        self.__u_d = 'utils' + sep + 'data' + sep # utils/data
+        self.__u_a = 'utils' + sep + '.ans' + sep # utils/.ans
             
     @property
     def server(self):
@@ -66,18 +67,21 @@ class Quizz():
         filename = '.__ans_' + qnum
 
         if self.__server == 'local':
-            path = self.__course_path + self.__u_d + self.__topic
+            path = self.__course_path + self.__u_a + self.__topic
             stream = path + filename
         elif self.__server == 'hub': # Linux
-            path = '/srv/nbgrader/exchange/' + self.__course + self.__u_d + self.__topic
+            # '/usr/local/share/nbgrader/exchange/'
+            path = '/srv/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
             stream = path + filename 
         elif self.__server == 'macti':
             path = '/data/' + self.__topic
-            stream = pkg_resources.resource_stream('macti', path + filename)
+            stream = path + filename             
+#            stream = pkg_resources.resource_stream('macti', path + filename)
         else:
             print('Invalid option: {}'.format(self.__server))
-                    
-        return(pd.read_parquet(stream, columns=[enum]))
+
+        return stream
+#        return(pd.read_parquet(stream, columns=[enum]))
             
     def eval_option(self, qnum, enum, ans):
         """
@@ -171,6 +175,39 @@ class Quizz():
             print(Fore.GREEN + '¡Tu resultado es correcto!')
             print(Fore.RESET + 80*'-')
 
+class FileAnswer():
+    def __init__(self, qnum, server ='hub'):
+        self.__quizz_num = qnum
+        self.__exernum = []
+        self.__answers = []
+        self.__feedback = []
+        self.__server = server
+        
+    def write(self, enum, ans, feed):
+        self.__exernum.append(enum)
+        self.__answer.append(ans)
+        self.__feedback.append(feed)
+    
+    def to_file(self):
+        ans_df = pd.DataFrame([self.__answer], columns=self.__exernum)
+        feed_df = pd.DataFrame([self.__feedback], columns=self.__exernum) 
+        ans_df.to_parquet('.__ans_' + q, compression='gzip')
+        feed_df.to_parquet('.__fee_' + q, compression='gzip')
+#-----------
+        if self.__server == 'local':
+            path = self.__course_path + self.__u_d + self.__topic
+            stream = path + filename
+        elif self.__server == 'hub': # Linux
+            path = '/srv/nbgrader/exchange/' + self.__course + self.__u_d + self.__topic
+            stream = path + filename 
+        elif self.__server == 'macti':
+            path = '/data/' + self.__topic
+            stream = pkg_resources.resource_stream('macti', path + filename)
+        else:
+            print('Invalid option: {}'.format(self.__server))
+#-----------
+       
+        
 class Evalua():
     def __init__(self, topic, local=False):
         self.topic = topic
@@ -202,7 +239,7 @@ class Evalua():
 if __name__ == '__main__':
 
     q = Quizz('macti_lib', 'Derivada', server = 'local')
-    q.read('1','1')
+    print(q.read('1','1'))
 
 #    q.server = 'hub'
 #    q.read('1','1')
