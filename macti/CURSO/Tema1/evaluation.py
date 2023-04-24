@@ -60,8 +60,8 @@ class Quizz():
     def server(self, server):
         self.__server = server
         
-    def read(self, qnum, enum):
-        filename = '.__ans_' + qnum
+    def read(self, qnum, enum, name = '.__ans_'):
+        filename = name + qnum
 
         if self.__server == 'local':
             path = self.__course_path + self.__u_a + self.__topic
@@ -97,16 +97,29 @@ class Quizz():
         answers = self.read(qnum, enum)
         ans = ans.replace(" ","")
         correcta = ans in answers[enum][0]
-
+        
         if correcta:
             print(Fore.RESET + 80*'-')
-            print(Fore.GREEN + '¡Tu respuesta es correcta!')
+            print(Fore.GREEN + 'Tu respuesta:', end = ' ')
+            print(Fore.RESET + ans, end = '')
+            print(Fore.GREEN + ', es correcta.')
             print(Fore.RESET + 80*'-')
         else:
             print(Fore.RESET + 80*'-')
-            print(Fore.RED + 'Cuidado: revisa las otras opciones, tu respuesta no es correcta.')
-            print(Fore.RESET + 80*'-')          
-        
+            print(Fore.RED + 'Tu respuesta:', end = ' ')
+            print(Fore.RESET + ans, end = '')
+            print(Fore.RED + ', es INCORRECTA.') 
+            print(Fore.RESET + 80*'-')
+            print(Fore.RED + 'Hint:', end = ' ')
+            feedback = self.read(qnum, enum, '.__fee_')
+            if feedback[enum][0] != None:
+                print(Fore.RED + feedback[enum][0])
+            else: 
+                print()
+            print(Fore.RESET + 80*'-')
+            
+            raise AssertionError
+
     def eval_expression(self, qnum, enum, ans):
         """
         Evalúa una expresión simbólica escrita en formato Python.
@@ -123,20 +136,27 @@ class Quizz():
         Respuesta del alumno.
         """
         value = self.read(qnum, enum)
-        problema = sy.sympify(value[enum][0][0])
-        
+        problema = sy.sympify(value[enum][0])
         if problema.equals(ans):
             print(Fore.RESET + 80*'-')
-            print(Fore.GREEN + '¡Tu respuesta:')
+            print(Fore.GREEN + 'Tu respuesta:')
             display(ans)
-            print(Fore.GREEN + 'es correcta!')
+            print(Fore.GREEN + 'es correcta.')
             print(Fore.RESET + 80*'-')
         else:
             print(Fore.RESET + 80*'-')
-            print(Fore.RED + 'Cuidado tu respuesta:')
+            print(Fore.RED + 'Tu respuesta:')
             display(ans)
-            print(Fore.RED + 'NO es correcta!')            
+            print(Fore.RED + 'NO es correcta.')
             print(Fore.RESET + 80*'-')
+            print(Fore.RED + 'Hint:', end = ' ')
+            feedback = self.read(qnum, enum, '.__fee_')            
+            if feedback[enum][0] != None:            
+                print(Fore.RED + feedback[enum][0])
+            else:
+                print()
+            print(Fore.RESET + 80*'-')
+            
             raise AssertionError
             
     def eval_numeric(self, qnum, enum, x):
@@ -163,7 +183,14 @@ class Quizz():
             assert_equal(list(x.flatten()), list(y.flatten()))
         except AssertionError as info:
             print(Fore.RESET + 80*'-')
-            print(Fore.RED + 'Cuidado: ocurrió un error en tus cálculos: \n {}'.format(info))
+            print(Fore.RED + 'Ocurrió un error en tus cálculos.')#: \n {}'.format(info))
+            print(Fore.RESET + 80*'-')
+            print(Fore.RED + 'Hint:', end = ' ')
+            feedback = self.read(qnum, enum, '.__fee_')            
+            if feedback[enum][0] != None:            
+                print(Fore.RED + feedback[enum][0])
+            else:
+                print()            
             print(Fore.RESET + 80*'-')
             raise AssertionError
         else:
@@ -207,7 +234,7 @@ class FileAnswer():
     def to_file(self, qnum):
         ans_df = pd.DataFrame([self.__answers], columns=self.__exernum)
         feed_df = pd.DataFrame([self.__feedback], columns=self.__exernum) 
-#-----------
+
         filename = '.__ans_' + qnum
 
         if self.__server == 'local':
@@ -217,9 +244,6 @@ class FileAnswer():
             path = '/srv/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
         else:
             print('Invalid option: {}'.format(self.__server))
-#-----------
-        print(path + '.__ans_' + qnum)
-        print(path + '.__fee_' + qnum)
         
         ans_df.to_parquet(path + '.__ans_' + qnum, compression='gzip')
         feed_df.to_parquet(path + '.__fee_' + qnum, compression='gzip')    
