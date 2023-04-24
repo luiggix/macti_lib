@@ -15,7 +15,8 @@ from IPython.display import display, Latex
 
 class Quizz():
 
-    def __init__(self, 
+    def __init__(self,
+                 qnum,
                  course = '', 
                  topic = '', 
                  server = 'hub'):
@@ -51,6 +52,7 @@ class Quizz():
         self.__course += sep  # Curso/
         self.__topic = topic + sep   # Topico/
         self.__u_a = 'utils' + sep + '.ans' + sep # utils/.ans/
+        self.__qnum = qnum # Número del quizz
             
     @property
     def server(self):
@@ -60,8 +62,8 @@ class Quizz():
     def server(self, server):
         self.__server = server
         
-    def read(self, qnum, enum):
-        filename = '.__ans_' + qnum
+    def read(self, qnum, enum, name = '.__ans_'):
+        filename = name + qnum
 
         if self.__server == 'local':
             path = self.__course_path + self.__u_a + self.__topic
@@ -79,97 +81,119 @@ class Quizz():
 #        return stream
         return(pd.read_parquet(stream, columns=[enum]))
             
-    def eval_option(self, qnum, enum, ans):
+    def eval_option(self, enum, ans):
         """
         Evalúa la respuesta entre varias opciones. Cuando la respuesta es incorrecta lanza un excepción.
         
         Parameters
         ----------
-        qnum: string
-        Número de quizz.
-        
         enum: string
         Número de pregunta.
         
         ans: string
         Respuesta del alumno.
         """
-        answers = self.read(qnum, enum)
+        answers = self.read(self.__qnum, enum)
         ans = ans.replace(" ","")
         correcta = ans in answers[enum][0]
-
+        
         if correcta:
             print(Fore.RESET + 80*'-')
-            print(Fore.GREEN + '¡Tu respuesta es correcta!')
+            print(Fore.GREEN + 'Tu respuesta:', end = ' ')
+            print(Fore.RESET + ans, end = '')
+            print(Fore.GREEN + ', es correcta.')
             print(Fore.RESET + 80*'-')
         else:
             print(Fore.RESET + 80*'-')
-            print(Fore.RED + 'Cuidado: revisa las otras opciones, tu respuesta no es correcta.')
-            print(Fore.RESET + 80*'-')          
-        
-    def eval_expression(self, qnum, enum, ans):
+            print(Fore.RED + 'Tu respuesta:', end = ' ')
+            print(Fore.RESET + ans, end = '')
+            print(Fore.RED + ', es INCORRECTA.') 
+            print(Fore.RESET + 80*'-')
+            print(Fore.RED + 'Hint:', end = ' ')
+            feedback = self.read(qnum, enum, '.__fee_')
+            if feedback[enum][0] != None:
+                print(Fore.RED + feedback[enum][0])
+            else: 
+                print()
+            print(Fore.RESET + 80*'-')
+            
+            raise AssertionError
+
+    def eval_expression(self, enum, ans):
         """
         Evalúa una expresión simbólica escrita en formato Python.
         
         Parameters
         ----------
-        qnum: string
-        Número de quizz.
-        
         enum: string
         Número de pregunta.
         
         ans: string
         Respuesta del alumno.
         """
-        value = self.read(qnum, enum)
-        problema = sy.sympify(value[enum][0][0])
-        
+        value = self.read(self.__qnum, enum)
+        problema = sy.sympify(value[enum][0])
         if problema.equals(ans):
             print(Fore.RESET + 80*'-')
-            print(Fore.GREEN + '¡Tu respuesta:')
+            print(Fore.GREEN + 'Tu respuesta:')
             display(ans)
-            print(Fore.GREEN + 'es correcta!')
+            print(Fore.GREEN + 'es correcta.')
             print(Fore.RESET + 80*'-')
         else:
             print(Fore.RESET + 80*'-')
-            print(Fore.RED + 'Cuidado tu respuesta:')
+            print(Fore.RED + 'Tu respuesta:')
             display(ans)
-            print(Fore.RED + 'NO es correcta!')            
+            print(Fore.RED + 'NO es correcta.')
             print(Fore.RESET + 80*'-')
+            print(Fore.RED + 'Hint:', end = ' ')
+            feedback = self.read(qnum, enum, '.__fee_')            
+            if feedback[enum][0] != None:            
+                print(Fore.RED + feedback[enum][0])
+            else:
+                print()
+            print(Fore.RESET + 80*'-')
+            
             raise AssertionError
             
-    def eval_numeric(self, qnum, enum, x):
+    def eval_numeric(self, enum, ans):
         """
         Evalúa una respuesta numérica que puede estar dada en un arreglo de numpy.
         
         Parameters
         ----------
-        qnum: string
-        Número de quizz.
-        
         enum: string
         Número de pregunta.
         
         ans: string
         Respuesta del alumno.
         """
-        value = self.read(qnum, enum)
-        
-        x = np.array(x)
-        y = value[enum][0]
+        value = self.read(self.__qnum, enum)        
+        correct = value[enum][0]
 
         try:
-            assert_equal(list(x.flatten()), list(y.flatten()))
+            if isinstance(ans, np.ndarray):
+                assert_equal(list(ans.flatten()), list(correct))
+            else:
+                assert_equal(ans, correct)
+                
         except AssertionError as info:
             print(Fore.RESET + 80*'-')
-            print(Fore.RED + 'Cuidado: ocurrió un error en tus cálculos: \n {}'.format(info))
+            print(Fore.RED + 'Ocurrió un error en tus cálculos.')
             print(Fore.RESET + 80*'-')
-            raise AssertionError
+            print(Fore.RED + 'Hint:', end = ' ')
+            feedback = self.read(qnum, enum, '.__fee_')            
+            if feedback[enum][0] != None:            
+                print(Fore.RED + feedback[enum][0])
+            else:
+                print()            
+            print(Fore.RESET + 80*'-')
+            
+            raise AssertionError            
         else:
             print(Fore.RESET + 80*'-')
-            print(Fore.GREEN + '¡Tu resultado es correcto!')
-            print(Fore.RESET + 80*'-')
+            print(Fore.GREEN + 'Tu resultado es correcto.')
+            print(Fore.RESET + 80*'-')            
+
 
 class FileAnswer():
     def __init__(self, 
@@ -200,14 +224,20 @@ class FileAnswer():
         self.__server = server
         
     def write(self, enum, ans, feed=None):
+        # Todos los arreglos de numpy se deben almacenar en formato unidimensional
+        if isinstance(ans, np.ndarray):
+            self.__answers.append(ans.flatten())
+        else:
+            self.__answers.append(ans)
+        
         self.__exernum.append(enum)
-        self.__answers.append(ans)
         self.__feedback.append(feed)
     
     def to_file(self, qnum):
         ans_df = pd.DataFrame([self.__answers], columns=self.__exernum)
         feed_df = pd.DataFrame([self.__feedback], columns=self.__exernum) 
-#-----------
+
+        
         filename = '.__ans_' + qnum
 
         if self.__server == 'local':
@@ -217,9 +247,6 @@ class FileAnswer():
             path = '/srv/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
         else:
             print('Invalid option: {}'.format(self.__server))
-#-----------
-        print(path + '.__ans_' + qnum)
-        print(path + '.__fee_' + qnum)
         
         ans_df.to_parquet(path + '.__ans_' + qnum, compression='gzip')
         feed_df.to_parquet(path + '.__fee_' + qnum, compression='gzip')    
