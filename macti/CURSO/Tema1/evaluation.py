@@ -110,7 +110,7 @@ class Quizz():
             print(Fore.RED + ', es INCORRECTA.') 
             print(Fore.RESET + 80*'-')
             print(Fore.RED + 'Hint:', end = ' ')
-            feedback = self.read(qnum, enum, '.__fee_')
+            feedback = self.read(self.__qnum, enum, '.__fee_')
             if feedback[enum][0] != None:
                 print(Fore.RED + feedback[enum][0])
             else: 
@@ -146,7 +146,7 @@ class Quizz():
             print(Fore.RED + 'NO es correcta.')
             print(Fore.RESET + 80*'-')
             print(Fore.RED + 'Hint:', end = ' ')
-            feedback = self.read(qnum, enum, '.__fee_')            
+            feedback = self.read(self.__qnum, enum, '.__fee_')            
             if feedback[enum][0] != None:            
                 print(Fore.RED + feedback[enum][0])
             else:
@@ -181,7 +181,7 @@ class Quizz():
             print(Fore.RED + 'Ocurrió un error en tus cálculos.')
             print(Fore.RESET + 80*'-')
             print(Fore.RED + 'Hint:', end = ' ')
-            feedback = self.read(qnum, enum, '.__fee_')            
+            feedback = self.read(self.__qnum, enum, '.__fee_')            
             if feedback[enum][0] != None:            
                 print(Fore.RED + feedback[enum][0])
             else:
