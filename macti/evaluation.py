@@ -25,6 +25,9 @@ class Quizz():
         
         Parameters
         ----------
+        qnum: string
+        Número de Quizz del Tema (topic).
+        
         course: string
         Nombre o identificador del curso.
         
@@ -93,20 +96,21 @@ class Quizz():
         ans: string
         Respuesta del alumno.
         """
-        answers = self.read(self.__qnum, enum)
+        answer = self.read(self.__qnum, enum)
         ans = ans.replace(" ","")
-        correcta = ans in answers[enum][0]
+        
+        correcta = ans.lower() == answer[enum][0].lower()
         
         if correcta:
             print(Fore.RESET + 80*'-')
             print(Fore.GREEN + 'Tu respuesta:', end = ' ')
-            print(Fore.RESET + ans, end = '')
+            print(Fore.RESET + '{}'.format(ans), end = '')
             print(Fore.GREEN + ', es correcta.')
             print(Fore.RESET + 80*'-')
         else:
             print(Fore.RESET + 80*'-')
             print(Fore.RED + 'Tu respuesta:', end = ' ')
-            print(Fore.RESET + ans, end = '')
+            print(Fore.RESET + '{}'.format(ans), end = '')
             print(Fore.RED + ', es INCORRECTA.') 
             print(Fore.RESET + 80*'-')
             print(Fore.RED + 'Hint:', end = ' ')
@@ -224,20 +228,30 @@ class FileAnswer():
         self.__server = server
         
     def write(self, enum, ans, feed=None):
-        # Todos los arreglos de numpy se deben almacenar en formato unidimensional
-        if isinstance(ans, np.ndarray):
-            self.__answers.append(ans.flatten())
-        else:
-            self.__answers.append(ans)
+        # Sustitución de una respuesta y de su retroalimentación
+        if enum in self.__exernum: # checamos si ya existe el número de ejercicio
+            index = self.__exernum.index(enum) # obtenemos el índice en la lista
+            if isinstance(ans, np.ndarray):
+                self.__answers[index] = ans.flatten() # almacenamos los arreglos de numpy en 1D
+            else:
+                self.__answers[index] = ans
+                
+            self.__feedback[index] = feed 
+            
+        else: # Si el ejercicio es nuevo, lo agregamos
+            # Todos los arreglos de numpy se deben almacenar en formato unidimensional
+            if isinstance(ans, np.ndarray):
+                self.__answers.append(ans.flatten()) # almacenamos los arreglos de numpy en 1D
+            else:
+                self.__answers.append(ans)
         
-        self.__exernum.append(enum)
-        self.__feedback.append(feed)
+            self.__exernum.append(enum)
+            self.__feedback.append(feed)
     
     def to_file(self, qnum):
         ans_df = pd.DataFrame([self.__answers], columns=self.__exernum)
         feed_df = pd.DataFrame([self.__feedback], columns=self.__exernum) 
 
-        
         filename = '.__ans_' + qnum
 
         if self.__server == 'local':
@@ -248,8 +262,15 @@ class FileAnswer():
         else:
             print('Invalid option: {}'.format(self.__server))
         
+        if not os.path.exists(path):
+            print('Creando el directorio :{}'.format(path))
+            os.makedirs(path, exist_ok=True)
+        else:
+            print('El directorio :{} ya existe'.format(path))
+        
         ans_df.to_parquet(path + '.__ans_' + qnum, compression='gzip')
-        feed_df.to_parquet(path + '.__fee_' + qnum, compression='gzip')    
+        feed_df.to_parquet(path + '.__fee_' + qnum, compression='gzip')
+        print('Respuestas y retroalimentación almacenadas.')
         
 class Evalua():
     def __init__(self, topic, local=False):
