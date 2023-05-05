@@ -265,10 +265,12 @@ class FileAnswer():
         if not os.path.exists(path):
             print('Creando el directorio :{}'.format(path))
             os.makedirs(path, exist_ok=True)
+        else:
+            print('El directorio :{} ya existe'.format(path))
         
         ans_df.to_parquet(path + '.__ans_' + qnum, compression='gzip')
         feed_df.to_parquet(path + '.__fee_' + qnum, compression='gzip')
-        print('Respuestas y retroalimentación almacenadas.'
+        print('Respuestas y retroalimentación almacenadas.')
         
 class Evalua():
     def __init__(self, topic, local=False):

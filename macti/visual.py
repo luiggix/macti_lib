@@ -222,6 +222,7 @@ class Plotter():
                 ax.set_yticks(yticks)
             
     def set_coordsys(self, n, 
+                     xlabel='$x$', ylabel='$y$',
                      xlabelsize=8, ylabelsize=8,
                      trig = False):
         ax = self.__ax[n-1]
@@ -238,8 +239,8 @@ class Plotter():
         ax.plot(1, 0, ">k", transform=ax.get_yaxis_transform(), clip_on=False)
         ax.plot(0, 1, "^k", transform=ax.get_xaxis_transform(), clip_on=False)
 
-        ax.set_xlabel('$x$', rotation=0, labelpad=-35.0, x = 0.98)
-        ax.set_ylabel('$y$', loc = 'top', rotation=0, labelpad=-45.0)
+        ax.set_xlabel(xlabel, rotation=0, labelpad=-35.0, x = 0.98)
+        ax.set_ylabel(ylabel, loc = 'top', rotation=0, labelpad=-45.0)
         ax.xaxis.set_tick_params(labelsize=xlabelsize)
         ax.yaxis.set_tick_params(labelsize=ylabelsize)
         xticks = ax.get_xticks()
