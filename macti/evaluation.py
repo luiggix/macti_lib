@@ -72,8 +72,8 @@ class Quizz():
             path = self.__course_path + self.__u_a + self.__topic
             stream = path + filename
         elif self.__server == 'hub': # Linux
-            # '/usr/local/share/nbgrader/exchange/'
-            path = '/srv/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
+            path = '/usr/local/share/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
+#            path = '/srv/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
             stream = path + filename 
         elif self.__server == 'macti':
             path = '/data/' + self.__topic
@@ -258,7 +258,8 @@ class FileAnswer():
             path = self.__course_path + self.__u_a + self.__topic
         elif self.__server == 'hub': # Linux
             # '/usr/local/share/nbgrader/exchange/'
-            path = '/srv/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
+            path = '/usr/local/share/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
+#            path = '/srv/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
         else:
             print('Invalid option: {}'.format(self.__server))
         
