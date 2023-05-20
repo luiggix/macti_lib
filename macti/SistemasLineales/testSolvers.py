@@ -15,7 +15,7 @@ Created on Mon Apr  9 11:58:12 2018
 
 import numpy as np
 import macti.SistemasLineales.statSolvers as sol
-from macti.visual import plotGrid, plotMalla, plotContornos
+import macti.visual as mvis
 
 import time
 from colorama import Fore
@@ -111,12 +111,20 @@ def solucion(B,T,L,R, metodo, N):
     y = np.linspace(0,Ly,Ny+2)
     xg, yg = np.meshgrid(x, y, indexing='ij', sparse=False)
     
-    fig = plt.figure(figsize=(10,4))
-    plt.subplot(1,2,1)
-    plotMalla(xg, yg, 'Malla (incógnitas:{}x{})'.format(N,N))
+
+    vis = mvis.Plotter(1,2, [dict(aspect = 'equal') for i in range(2)], dict(figsize=(10,4)))
     
-    plt.subplot(1,2,2)
-    plotContornos(xg, yg, u, 'Solución ({})'.format(metodo, ), 'box')
+    vis.set_canvas(1, Lx, Ly)
+    vis.plot_mesh2D(1, xg, yg, nodeson=True)
+    vis.plot_frame(2, xg, yg, ticks=False)
+    vis.axes(1).set_title('Malla (incógnitas:{}x{})'.format(N,N))
+
+    cax = vis.set_canvas(2, Lx, Ly)
+    c = vis.contourf(2, xg, yg, u, {'levels':50, 'cmap':'OrRd'})
+    vis.contour(2, xg, yg, u, {'levels':10, 'cmap':'gray', 'linewidths':0.5})
+    vis.fig.colorbar(c, cax=cax, ticks = [u.min(), u.max()], shrink=0.5, orientation='vertical')
+    vis.plot_frame(2, xg, yg, ticks=False)
+    vis.axes(2).set_title('Temperatura', fontsize=14)
     
     plt.show()
     
