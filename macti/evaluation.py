@@ -209,7 +209,7 @@ class FileAnswer():
         self.__platform = platform.system()
         self.__course_path = ''
         self.__course = course # Curso/
-        
+
         sep = '\\' if self.__platform == 'Windows' else '/'
         if server == 'local':
             # Obtención del directorio del curso
@@ -226,13 +226,23 @@ class FileAnswer():
         self.__answers = []
         self.__feedback = []
         self.__server = server
-        
+
+    @property
+    def answers(self):
+        return self.__answers
+    
+    @property
+    def feedback(self):
+        return self.__feedback
+    
     def write(self, enum, ans, feed=None):
         # Sustitución de una respuesta y de su retroalimentación
         if enum in self.__exernum: # checamos si ya existe el número de ejercicio
             index = self.__exernum.index(enum) # obtenemos el índice en la lista
             if isinstance(ans, np.ndarray):
                 self.__answers[index] = ans.flatten() # almacenamos los arreglos de numpy en 1D
+            elif isinstance(ans, np.float64):
+                self.__answers[index] = float(ans)
             else:
                 self.__answers[index] = ans
                 
@@ -242,16 +252,19 @@ class FileAnswer():
             # Todos los arreglos de numpy se deben almacenar en formato unidimensional
             if isinstance(ans, np.ndarray):
                 self.__answers.append(ans.flatten()) # almacenamos los arreglos de numpy en 1D
+            elif isinstance(ans, np.float64):
+                self.__answers.append(float(ans))            
             else:
                 self.__answers.append(ans)
         
             self.__exernum.append(enum)
             self.__feedback.append(feed)
     
+    
     def to_file(self, qnum):
         ans_df = pd.DataFrame([self.__answers], columns=self.__exernum)
         feed_df = pd.DataFrame([self.__feedback], columns=self.__exernum) 
-
+        
         filename = '.__ans_' + qnum
 
         if self.__server == 'local':

@@ -306,7 +306,7 @@ class Plotter():
             else:
                 [self.__ax[n].grid() for n in range(0,self.__nfigs)]
                 
-    def legend(self, nlist = [], par=None):
+    def legend(self, nlist = [], **par):
         """
         Muestra las leyendas de todos los subplots, si están definidos.
 
@@ -338,14 +338,12 @@ class Plotter():
                 else:
                     self.__ax[n-1].legend()
         else:
-            if par != None:   
-                [self.__ax[n].legend(**par) for n in range(0,self.__nfigs)]        
-            else:
-                [self.__ax[n].legend() for n in range(0,self.__nfigs)]        
+            [self.__ax[n].legend(**par) for n in range(0,self.__nfigs)]        
+      
 #
 #----------------------- Methods to draw a specific kind of plot -------------   
 #        
-    def plot(self, n, data1, data2, par=None):
+    def plot(self, n, data1, data2, **par):
         """
         Dibuja una línea que pasa a través de un conjunto de puntos en 2D.
 
@@ -361,8 +359,8 @@ class Plotter():
             Coordenadas x.
         data2 : array-like
             Coordenadas y.
-        par : dict, opcional
-            Parámetros para decorar la línea. The default is None.
+        **par : opcional
+            Parámetros para decorar la línea.
 
         Returns
         -------
@@ -377,13 +375,11 @@ class Plotter():
         assert (n >= 1 and n <= self.__nfigs), \
         "Plotter.plot(%d) out of bounds. Valid bounds : [1,%d]" % (n,self.__nfigs)
         
-        if par != None:
-            out = self.__ax[n-1].plot(data1, data2, **par)
-        else:
-            out = self.__ax[n-1].plot(data1, data2)            
+        out = self.__ax[n-1].plot(data1, data2, **par)
+          
         return out
 
-    def scatter(self, n, data1, data2, par=None):
+    def scatter(self, n, data1, data2, **par):
         """
         Dibuja puntos dispersos, no conectados.
         
@@ -398,8 +394,8 @@ class Plotter():
             Coordenadas x.
         data2 : array-like
             Coordenadas y.
-        par : dict, opcional
-            Parámetros para decorar los puntos. The default is None.
+        par : opcional
+            Parámetros para decorar los puntos. 
 
         Returns
         -------
@@ -413,10 +409,8 @@ class Plotter():
         assert (n >= 1 and n <= self.__nfigs), \
         "Plotter.scatter(%d) out of bounds. Valid bounds : [1,%d]" % (n,self.__nfigs)
         
-        if par != None:
-            out = self.__ax[n-1].scatter(data1, data2, **par)
-        else:
-            out = self.__ax[n-1].scatter(data1, data2)              
+        out = self.__ax[n-1].scatter(data1, data2, **par)
+        
         return out
 
     def draw_domain(self, n, xg, yg, lw = 0.5, color = 'k', fontsize=10):
@@ -523,7 +517,7 @@ class Plotter():
             # Dibujamos un punto en cada nodo de la malla
             ax.scatter(xg, yg, marker='.', color='darkgray')
                     
-    def imshow(self, n, dat, par=None):
+    def imshow(self, n, dat, **par):
         """
         Despliega datos usando un mapa de color.
 
@@ -548,13 +542,11 @@ class Plotter():
         assert (n >= 1 and n <= self.__nfigs), \
         "Plotter.imshow(%d) out of bounds. Valid bounds : [1,%d]" % (n,self.__nfigs)
         
-        if par != None:
-            out = self.__ax[n-1].imshow(dat, **par)
-        else:
-            out = self.__ax[n-1].imshow(dat)
+        out = self.__ax[n-1].imshow(dat, **par)
+
         return out
 
-    def colorbar(self, n, objeto, par=None):
+    def colorbar(self, n, objeto, **par):
         """
         Agrega una barra de color al subplot[n].
 
@@ -583,12 +575,12 @@ class Plotter():
 #                   )
 
 #        self.__fig.colorbar(objeto, ax=axins)
-        if par != None:
-            self.__fig.colorbar(objeto, ax=self.__ax[n-1], **par)
-        else:
-            self.__fig.colorbar(objeto, ax=self.__ax[n-1])
+
+        cbar = self.__fig.colorbar(objeto, ax=self.__ax[n-1], **par)
         
-    def contour(self, n, xg, yg, dat, par=None):
+        return cbar
+        
+    def contour(self, n, xg, yg, dat, **par):
         """
         Dibuja líneas que representan valores constantes de una variable.
 
@@ -600,8 +592,8 @@ class Plotter():
             Arreglo 2D con las coordenadas (x,y) donde se tiene un valor.
         dat : array-like
             Valores usados para calcular los contornos.
-        par : dict, optional
-            Parámetros para decorar los contornos. The default is None.
+        par : optional
+            Parámetros para decorar los contornos.
 
         Returns
         -------
@@ -619,13 +611,11 @@ class Plotter():
         ax.set_xticks([])
         ax.set_yticks([])
         
-        if par != None:
-            out = self.__ax[n-1].contour(xg, yg, dat, **par)
-        else:
-            out = self.__ax[n-1].contour(xg, yg, dat)
+        out = self.__ax[n-1].contour(xg, yg, dat, **par)
+
         return out        
  
-    def contourf(self, n, xg, yg, dat, par=None):
+    def contourf(self, n, xg, yg, dat, **par):
         """
         Dibuja zonas de color basadas en contornos.
 
@@ -637,8 +627,8 @@ class Plotter():
             Arreglo 2D con las coordenadas (x,y) donde se tiene un valor.
         dat : array-like
             Valores usados para calcular los contornos.
-        par : dict, optional
-            Parámetros para decorar las zonas de color. The default is None.
+        par : optional
+            Parámetros para decorar las zonas de color.
 
         Returns
         -------
@@ -656,13 +646,11 @@ class Plotter():
         ax.set_xticks([])
         ax.set_yticks([])
         
-        if par != None:
-            out = ax.contourf(xg, yg, dat, **par)
-        else:
-            out = ax.contourf(xg, yg, dat)
+        out = ax.contourf(xg, yg, dat, **par)
+
         return out  
 
-    def streamplot(self, n, x, y, u, v, par=None):
+    def streamplot(self, n, x, y, u, v, **par):
         """
         Dibuja líneas de corriente de un campo vectorial en 2D.
 
@@ -676,8 +664,8 @@ class Plotter():
             Arreglos 2D con los valores de la velocidad en dirección x.
         v : array-like
             Arreglos 2D con los valores de la velocidad en dirección y.
-        par : dict, optional
-            Parámetros para decorar las líneas de corriente. The default is None.
+        par : optional
+            Parámetros para decorar las líneas de corriente.
 
         Returns
         -------
@@ -695,13 +683,11 @@ class Plotter():
         ax.set_xticks([])
         ax.set_yticks([])
         
-        if par != None:
-            out = ax.streamplot(x.T, y.T, u.T, v.T, **par)
-        else:
-            out = ax.streamplot(x.T, y.T, u.T, v.T)
+        out = ax.streamplot(x.T, y.T, u.T, v.T, **par)
+
         return out
     
-    def quiver(self, n, x, y, u, v, par=None):
+    def quiver(self, n, x, y, u, v, **par):
         """
         Dibuja flecha para representar un campo vectorial en 2D.
         
@@ -715,8 +701,8 @@ class Plotter():
             Arreglos 2D con los valores de la velocidad en dirección x.
         v : array-like
             Arreglos 2D con los valores de la velocidad en dirección y.
-        par : dict, optional
-            Parámetros para decorar las flechas. The default is None.
+        par : optional
+            Parámetros para decorar las flechas.
 
         See Also
         --------
@@ -730,12 +716,11 @@ class Plotter():
         ax.set_xticks([])
         ax.set_yticks([])
         
-        if par != None:
-            ax.quiver(x, y, u, v, **par)
-        else:
-            ax.quiver(x, y, u, v)
+        out = ax.quiver(x, y, u, v, **par)
 
-    def plot_surface(self, n, x, y, z, par=None):
+        return out
+
+    def plot_surface(self, n, x, y, z, **par):
         """
         Dibuja una superficie.
 
@@ -745,8 +730,8 @@ class Plotter():
             Subplot donde se desplegará la superficie.
         x, y, z : array-like
             Coordenadas de la superficie, arreglos 2D. z representa las alturas.
-        par : dict, optional
-            Parámetros para decorar la superficie. The default is None.
+        par : optional
+            Parámetros para decorar la superficie.
 
         See Also
         --------
@@ -756,10 +741,8 @@ class Plotter():
         assert (n >= 1 and n <= self.__nfigs), \
         "Plotter.plot_surface(%d) out of bounds. Valid bounds : [1,%d]" % (n,self.__nfigs)
         
-        if par != None:
-            self.__ax[n-1].plot_surface(x, y, z, **par)
-        else:
-            self.__ax[n-1].plot_surface(x, y, z)
+        self.__ax[n-1].plot_surface(x, y, z, **par)
+
 
     def plot_mesh(self, n, mesh, vol='o', nod='P', label=False):
         """

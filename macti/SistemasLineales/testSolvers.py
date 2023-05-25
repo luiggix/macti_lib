@@ -15,6 +15,9 @@ Created on Mon Apr  9 11:58:12 2018
 
 import numpy as np
 import macti.SistemasLineales.statSolvers as sol
+import macti.SistemasLineales.KrylovSolvers as Ksol
+#import KrylovSolvers as Ksol
+
 import macti.visual as mvis
 
 import time
@@ -75,6 +78,15 @@ def solucion(B,T,L,R, metodo, N):
     max_iter = 200
     w = 1.5
 
+    # Arreglo para la solución
+    u = np.zeros((Ny+2, Nx+2))
+    
+    # Condiciones de frontera
+    u[Ny+1,:   ] = boundaries['RIGHT']
+    u[0   ,:   ] = boundaries['LEFT']
+    u[:   ,Nx+1] = boundaries['TOP']
+    u[:   ,0   ] = boundaries['BOT'] 
+    
     t1 = time.perf_counter()
     
     if metodo == 'linalg.solve':
@@ -87,6 +99,10 @@ def solucion(B,T,L,R, metodo, N):
         ut,error,it, ea = sol.gauss_seidel(A,b,tol,max_iter)
     elif metodo == 'SOR':
         ut,error,it, ea = sol.sor(A,b,tol,max_iter,w)
+    elif metodo == 'Steepest':
+        ut,error, it, ea = Ksol.steepestDescent(A,b,u[1:-1, 1:-1].flatten().T,tol,max_iter)
+    elif metodo == 'CGM':
+        ut,error, it, ea = Ksol.conjugateGradient(A,b,u[1:-1, 1:-1].flatten().T,tol,max_iter)
 
     t2 = time.perf_counter()
     te = t2 - t1
@@ -96,11 +112,6 @@ def solucion(B,T,L,R, metodo, N):
           Fore.RED   + " Error : {:5.4e} ".format(error) + 
           Fore.GREEN + " Iter : {} ".format(it))
 
-    u = np.zeros((Ny+2, Nx+2))
-    u[Ny+1,:   ] = boundaries['RIGHT']
-    u[0   ,:   ] = boundaries['LEFT']
-    u[:   ,Nx+1] = boundaries['TOP']
-    u[:   ,0   ] = boundaries['BOT'] 
     ut.shape = (Ny, Nx) # Regresamos el arreglo a formato bidimensional
     u[1:Ny+1,1:Nx+1] = ut
     
@@ -136,5 +147,8 @@ if __name__ == '__main__':
     B = 100 # Abajo
     
     N = 3 
-    m = 'Jacobi'
-    solucion(B,T,L,R,m,N)
+    metodos = {'1':'Jacobi', '2':'Gauss-Seidel', '3':'SOR', '4':'Steepest', '5':'CGM'}
+    print('Métodos disponibles')
+    _ = [print('{}) {}'.format(k, v)) for k,v in metodos.items()]
+    m = input('Método : ')
+    solucion(B,T,L,R,metodos[m],N)
