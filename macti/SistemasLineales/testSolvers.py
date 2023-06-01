@@ -131,8 +131,8 @@ def solucion(B,T,L,R, metodo, N):
     vis.axes(1).set_title('Malla (incógnitas:{}x{})'.format(N,N))
 
     cax = vis.set_canvas(2, Lx, Ly)
-    c = vis.contourf(2, xg, yg, u, {'levels':50, 'cmap':'OrRd'})
-    vis.contour(2, xg, yg, u, {'levels':10, 'cmap':'gray', 'linewidths':0.5})
+    c = vis.contourf(2, xg, yg, u, levels=50, cmap='OrRd')
+    vis.contour(2, xg, yg, u, levels=10, cmap='gray', linewidths=0.5)
     vis.fig.colorbar(c, cax=cax, ticks = [u.min(), u.max()], shrink=0.5, orientation='vertical')
     vis.plot_frame(2, xg, yg, ticks=False)
     vis.axes(2).set_title('Temperatura', fontsize=14)
