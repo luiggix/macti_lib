@@ -43,8 +43,14 @@ class Quizz():
         self.__platform = platform.system()
         self.__course_path = ''
         self.__course = course
+        self.__line_len = 40
         
+        # Cuando se usa la instalación local, se debe determinar
+        # si el sistema es tipo Windows o Linux, en cada caso el
+        # separador de la ruta es diferente.
         sep = '\\' if self.__platform == 'Windows' else '/'
+        
+        
         if server == 'local':
             # Obtención del directorio del curso
             abs_path = os.getcwd().split(sep = sep)
@@ -101,25 +107,26 @@ class Quizz():
         
         correcta = ans.lower() == answer[enum][0].lower()
         
+        
         if correcta:
-            print(Fore.RESET + 80*'-')
+            print(Fore.RESET + self.__line_len*'-')
             print(Fore.GREEN + 'Tu respuesta:', end = ' ')
             print(Fore.RESET + '{}'.format(ans), end = '')
             print(Fore.GREEN + ', es correcta.')
-            print(Fore.RESET + 80*'-')
+            print(Fore.RESET + self.__line_len*'-')
         else:
-            print(Fore.RESET + 80*'-')
+            print(Fore.RESET + self.__line_len*'-')
             print(Fore.RED + 'Tu respuesta:', end = ' ')
             print(Fore.RESET + '{}'.format(ans), end = '')
             print(Fore.RED + ', es INCORRECTA.') 
-            print(Fore.RESET + 80*'-')
+            print(Fore.RESET + self.__line_len*'-')
             print(Fore.RED + 'Hint:', end = ' ')
             feedback = self.read(self.__qnum, enum, '.__fee_')
             if feedback[enum][0] != None:
                 print(Fore.RED + feedback[enum][0])
             else: 
                 print()
-            print(Fore.RESET + 80*'-')
+            print(Fore.RESET + self.__line_len*'-')
             
             raise AssertionError
 
@@ -138,24 +145,24 @@ class Quizz():
         value = self.read(self.__qnum, enum)
         problema = sy.sympify(value[enum][0])
         if problema.equals(ans):
-            print(Fore.RESET + 80*'-')
+            print(Fore.RESET + self.__line_len*'-')
             print(Fore.GREEN + 'Tu respuesta:')
             display(ans)
             print(Fore.GREEN + 'es correcta.')
-            print(Fore.RESET + 80*'-')
+            print(Fore.RESET + self.__line_len*'-')
         else:
-            print(Fore.RESET + 80*'-')
+            print(Fore.RESET + self.__line_len*'-')
             print(Fore.RED + 'Tu respuesta:')
             display(ans)
             print(Fore.RED + 'NO es correcta.')
-            print(Fore.RESET + 80*'-')
+            print(Fore.RESET + self.__line_len*'-')
             print(Fore.RED + 'Hint:', end = ' ')
             feedback = self.read(self.__qnum, enum, '.__fee_')            
             if feedback[enum][0] != None:            
                 print(Fore.RED + feedback[enum][0])
             else:
                 print()
-            print(Fore.RESET + 80*'-')
+            print(Fore.RESET + self.__line_len*'-')
             
             raise AssertionError
             
@@ -176,27 +183,40 @@ class Quizz():
 
         try:
             if isinstance(ans, np.ndarray):
+                # Para comparar dos arreglos, debo hacerlo como si fueran listas
+                # para que la comparación sea elemento por elemento. Recordemos que 
+                # Parquet escribe listas y tuplas en forma de np.ndarray.
                 assert_equal(list(ans.flatten()), list(correct))
+            elif isinstance(ans, list):
+                assert_equal(ans, list(correct))
+            elif isinstance(ans, tuple):
+                assert_equal(ans, tuple(correct))
+            elif isinstance(ans, dict):
+                assert_equal(list(np.array([list(ans.keys()), list(ans.values())]).flatten()), list(correct))
+            elif isinstance(ans, set):
+                assert_equal(ans, set(correct))
+            elif isinstance(ans, complex):
+                assert_equal([ans.real, ans.imag], list(correct))
             else:
                 assert_equal(ans, correct)
                 
         except AssertionError as info:
-            print(Fore.RESET + 80*'-')
+            print(Fore.RESET + self.__line_len*'-')
             print(Fore.RED + 'Ocurrió un error en tus cálculos.')
-            print(Fore.RESET + 80*'-')
+            print(Fore.RESET + self.__line_len*'-')
             print(Fore.RED + 'Hint:', end = ' ')
             feedback = self.read(self.__qnum, enum, '.__fee_')            
             if feedback[enum][0] != None:            
                 print(Fore.RED + feedback[enum][0])
             else:
                 print()            
-            print(Fore.RESET + 80*'-')
+            print(Fore.RESET + self.__line_len*'-')
             
             raise AssertionError            
         else:
-            print(Fore.RESET + 80*'-')
+            print(Fore.RESET + self.__line_len*'-')
             print(Fore.GREEN + 'Tu resultado es correcto.')
-            print(Fore.RESET + 80*'-')            
+            print(Fore.RESET + self.__line_len*'-')            
 
 
 class FileAnswer():
@@ -241,8 +261,10 @@ class FileAnswer():
             index = self.__exernum.index(enum) # obtenemos el índice en la lista
             if isinstance(ans, np.ndarray):
                 self.__answers[index] = ans.flatten() # almacenamos los arreglos de numpy en 1D
-            elif isinstance(ans, np.float64):
-                self.__answers[index] = float(ans)
+            elif isinstance(ans, dict):
+                self.__answers[index] = np.array([list(ans.keys()), list(ans.values())]).flatten()
+            elif isinstance(ans, complex):
+                self.__answers[index] = [ans.real, ans.imag]
             else:
                 self.__answers[index] = ans
                 
@@ -252,8 +274,10 @@ class FileAnswer():
             # Todos los arreglos de numpy se deben almacenar en formato unidimensional
             if isinstance(ans, np.ndarray):
                 self.__answers.append(ans.flatten()) # almacenamos los arreglos de numpy en 1D
-            elif isinstance(ans, np.float64):
-                self.__answers.append(float(ans))            
+            elif isinstance(ans, dict):
+                self.__answers.append(np.array([list(ans.keys()), list(ans.values())]).flatten())
+            elif isinstance(ans, complex):
+                self.__answers.append([ans.real, ans.imag])      
             else:
                 self.__answers.append(ans)
         
@@ -316,42 +340,72 @@ class Evalua():
 #----------------------- TEST OF THE MODULE ----------------------------------   
 if __name__ == '__main__':
 
-#    q = Quizz('macti_lib', 'Derivada', server = 'local')
-#    print(q.read('1','1'))
-
-    f = FileAnswer('CURSO', 'Tema1', server = 'local')
-    f.write('1',3.141592,'Pi')
-    f.write('2a','C', 'La respuesta correcta es C')
-    f.write('2b',np.ones(5), 'El arreglo es de 5 unos')
-    f.to_file('1')
+    file_answer = FileAnswer('CURSO', 'Tema1', server = 'local')
+    quizz = Quizz('1', 'CURSO', 'Tema1', 'local')
     
-#    q.server = 'hub'
-#    q.read('1','1')
+    t = np.linspace(0,1,10)
+    w = np.sin(t)
+    opcion = 'c'
+    derivada = 'x**2'
+    matriz_np = np.array([[0.10, -1.],[0.30,-1.]] )
+    array_np = np.array([-200, 20])
+    flotante = 0.0
+    entero = 1
+    complejo = 1 + 5j
+    logico = True
+    lista = [0, 1, 3.4]
+    tupla = ('a', 'b', 'c')
+    diccionario = {1:'k1', 2:'2.0'}
+    conjunto = {4,1,8,0,4,20}
 
-#    q.server = 'macti'
-#    q.read('1','1')    
-"""
-    e = Ejercicio('example', local=True)
-    e.respuesta('1a')
-    
-    x = np.linspace(0,1500,10)
-    PA = 0.10 * x + 200
-    PB = 0.35 * x + 20
+    x = sy.Symbol('x')
+    y = sy.Symbol('y')
+    A, B, C = matriz_np, array_np, flotante
+    forma_cuadratica = 0.5 * A[0,0] * x**2 + 0.5 * A[1,1] * y**2 + 0.5 * (A[0,1]+A[1,0])* x * y - B[0] * x - B[1] * y + C
 
-    print('\n Global data')
-    d = Evalua('SistemasLineales')     
-    d.verifica(PA, 1)
-    d.verifica(PB, 2)
-    
-    print('Test')
-    np.save('sol01.npy', np.array(['4x^3','b',343.34]))
-    e = EvaluaEjercicio('',local=True)
-    e.ejercicio(1)
-    
+    file_answer.write('1a', t, 'Deberías checar ...')
+    file_answer.write('1b', w)
+    file_answer.write('2', opcion, 'Las opciones válidas son ...')
+    file_answer.write('3', derivada, 'Checa las reglas de derivación')
+    file_answer.write('4', matriz_np, 'Checa las entradas de la matriz A')
+    file_answer.write('5', array_np, 'Checa las entradas del vector B')
+    file_answer.write('6', flotante, 'Checa el valor de flotante')
+    file_answer.write('7', entero, 'Checa el valor de entero')
+    file_answer.write('8', complejo, 'Checa el valor de complejo')
+    file_answer.write('9', logico, 'Checa  logico')
+    file_answer.write('10', lista, 'Checa la lista')
+    file_answer.write('11', tupla, 'Checa la tupla')
+    file_answer.write('12', diccionario, 'Checa la diccionario')
+    file_answer.write('13', conjunto, 'Checa la conjunto')
+    file_answer.write('14', str(forma_cuadratica),'Revisa tus operaciones algebráicas para calcular f(x)')
+    file_answer.to_file('1')
 
-    print('\n Local data')
-    f = Evalua('./data/SistemasLineales/', local=True)
-    f.verifica(PA, 1)
-    f.verifica(PB, 2)
-"""
+    ans_df2 = pd.read_parquet('../utils/.ans/Tema1/.__ans_1') # Se lee en un DataFrame
+    print('-'*40)
+    for i in ans_df2.columns:
+        print("{} --> {}".format(i, ans_df2[i][0]))
+    print('-'*40)
+
+    
+    quizz.eval_numeric('1a', t)
+    quizz.eval_numeric('1b', w)
+    quizz.eval_option('2', 'c')
+    
+    x = sy.Symbol('x')
+    resultado = x*x
+    display(resultado)
+    quizz.eval_expression('3', resultado)
+    
+    quizz.eval_numeric('4', matriz_np)
+    quizz.eval_numeric('5', array_np)
+    quizz.eval_numeric('6', flotante)
+    quizz.eval_numeric('7', entero)
+    quizz.eval_numeric('8', complejo)
+    quizz.eval_numeric('9', logico)
+    quizz.eval_numeric('10', lista)
+    quizz.eval_numeric('11', tupla)
+    quizz.eval_numeric('12', diccionario)
+    quizz.eval_numeric('13', conjunto)
+    quizz.eval_expression('14', forma_cuadratica)
+    
 
