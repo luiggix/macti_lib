@@ -14,7 +14,7 @@ grey_label_color = 75/255
 grey_title_color = 25/255
 label_color = [grey_label_color, grey_label_color, grey_label_color]
 title_color = [grey_title_color, grey_title_color, grey_title_color]
-plt.style.use('seaborn-ticks')
+
 mpl.rcParams['figure.dpi'] = 80
 mpl.rcParams['figure.figsize'] = (6.4, 4.8)
 mpl.rcParams['font.weight'] = 'light'
@@ -28,22 +28,23 @@ mpl.rcParams['axes.spines.left'] = True  # display axis spines
 mpl.rcParams['axes.spines.bottom'] = True
 mpl.rcParams['axes.spines.top'] =   False
 mpl.rcParams['axes.spines.right'] = False
-mpl.rcParams['axes.grid'] = True
 mpl.rcParams['axes.titlelocation'] = 'left'
 mpl.rcParams['axes.titlesize'] = 14
 mpl.rcParams['axes.titlecolor'] = title_color
 mpl.rcParams['axes.titley'] = 1.02
-colors = [[0,0,0], 
-          [230/255,159/255,0],
-          [86/255,180/255,233/255], 
-          [0,158/255,115/255],
-          [240/255,228/255,66/255], 
-          [0,114/255,178/255],
-          [213/255,94/255,0], 
-          [204/255,121/255,167/255]
+colors = [[25/255, 118/255, 210/255], # blue
+          [245/255, 124/255, 0/255],  # orange
+          [56/255, 142/255, 60/255],  # green
+          [194/255, 24/255, 91/255],  # red
+          [123/255, 31/255, 162/255], # purple
+          [161/255, 136/255, 127/255],   # brown
+          [240/255, 98/255, 146/255], # pink
+          [97/255, 97/255, 97/255  ], # gray
+          [175/255, 180/255, 43/255], # olive
+          [79/255, 195/255, 247/255], # cyan  
         ]
 mpl.rcParams['axes.prop_cycle'] = cycler(color=colors)
-mpl.rcParams['lines.linewidth'] = 2
+mpl.rcParams['lines.linewidth'] = 1.5
 #-----------------------------------------
 
 class Plotter():
@@ -87,7 +88,10 @@ class Plotter():
     
     """
     
-    def __init__(self, rows = 1, cols = 1, par = None, par_fig={}, title='', par_title={}):
+    def __init__(self, rows = 1, cols = 1, 
+                 axis_par = None, 
+                 fig_par={}, 
+                 title_par={}, title = ''):
         """
         Crea e inicializa una figura de matplotlib.
 
@@ -97,29 +101,37 @@ class Plotter():
             Número de renglones del arreglo de subplots. The default is 1.
         cols : int, opcional
             Número de columnas del arreglo de subplots. The default is 1.
-        par : list of dicts, opcional
+        axis_par : list of dicts, opcional
             Lista de diccionarios; cada diccionario define los parámetros que 
             se usarán decorar los `Axes` de cada subplot. The default is None.
-        par_fig : dict, opcional
+        fig_par : dict, opcional
             Diccionario con los parámetros para decorar la figura. 
             The default is {}.
-        title: dict, opcional
+        title_par: dict, opcional
         Diccionario con los parámetros para el título de la figura.
 
         """
-        self.__fig = plt.figure(**par_fig)
-        self.__fig.suptitle(title, **par_title)
-        self.__nfigs =  rows *  cols
+        self.__fig = plt.figure(**fig_par)        
+        self.__fig.suptitle(title, **title_par)
+        self.__nfigs =  rows * cols
 
-        if par != None:
-            Nfill = self.__nfigs - len(par)
+        # Parametros para cada conjunto de ejes
+        if axis_par != None:
+            # Cuando se pasan parámetros para los ejes, checamos
+            # cuántos son y determinamos los que faltan (Nfill)
+            Nfill = self.__nfigs - len(axis_par)
         else:
+            # Cuando no se pasan parámetros solo tenemos una lista vacía.
             Nfill = self.__nfigs
-            par = [ ]
+            axis_par = [ ]
             
-        [par.append({}) for n in range(Nfill)]
+        # Al final de la lista axis_par agregamos los diccionarios que
+        # faltan (Nfill).
+        [axis_par.append({}) for n in range(Nfill)]
             
-        self.__ax = [plt.subplot(rows, cols, n, **par[n-1]) for n in range(1,self.__nfigs + 1)]
+        # Generamos las subgráficas con sus parámetros correspondientes.
+        self.__ax = [plt.subplot(rows, cols, n, **axis_par[n-1]) for n in range(1,self.__nfigs + 1)]
+        
         plt.tight_layout()
  
     @property
@@ -134,6 +146,21 @@ class Plotter():
             
         """
         return self.__fig
+    
+    def figtitle(self, title, title_par = {}):
+        """
+        Agrega un título para toda la figura.
+        
+        Parameters
+        ----------
+        title: string
+        Cadena del título.
+        
+        title_par: dict
+        Parámetros para el texto del título.
+        """
+        self.__fig.suptitle(title, **title_par)
+
     
     def axes(self, n = 1):
         """
@@ -202,13 +229,18 @@ class Plotter():
         if N == 0:
             return "0"
         elif N == 1:
-            return r"$\pi/2$"
+            return r"$\frac{\pi}{2}$"
         elif N == 2:
             return r"$\pi$"
         elif N % 2 > 0:
-            return r"${0}\pi/2$".format(N)
-        else:
-            return r"${0}\pi$".format(N // 2)
+            if N == -1:
+                return r"$-\frac{\pi}{2}$"
+            elif N == 1:
+                return r"$-\frac{\pi}{2}$"
+            else:
+                return r"${}$".format(N) + r"$\frac{\pi}{2}$"
+        else:          
+            return r"${}$".format(N // 2) + r"$\pi$"
 
     def set_ticks(self, ax, xticks = [], yticks = [], trig = False):
         if trig:
@@ -339,7 +371,7 @@ class Plotter():
                     self.__ax[n-1].legend()
         else:
             [self.__ax[n].legend(**par) for n in range(0,self.__nfigs)]        
-      
+            
 #
 #----------------------- Methods to draw a specific kind of plot -------------   
 #        
@@ -860,132 +892,228 @@ class Plotter():
                              repeat=True)   # Permite poner la animación en un ciclo        
         
         return anim
-            
-def calcOffset(xg, yg):
-    Lx = xg[-1,0] - xg[0,0]
-    Ly = yg[0,-1] - yg[0,0]
-    lmin = min(Lx, Ly)
-    offx = lmin * 0.1
-    offy = lmin * 0.1
-    return offx, offy, xg[0,0], xg[-1,0], yg[0,0], yg[0,-1]
 
-def plotMalla(xg, yg, title='', cbar = False, marker='.'):
-    plt.scatter(xg, yg, marker=marker, c='royalblue')
-    x = xg[:,0]
-    y = yg[0,:]
-    plt.xticks([x[0], x[-1]], labels=[x[0], x[-1]])
-    plt.yticks([y[0], y[-1]], labels=[y[0], y[-1]])
-    plt.xlabel(title)
-    offx, offy, ax, bx, ay, by = calcOffset(xg, yg)
-    plt.xlim(ax-offx, bx+offx)
-    plt.ylim(ay-offy, by+offy)
-    plotGrid(x, y)
-    ax = plt.gca()
-    ax.set_aspect('equal')
-    
-    if cbar:
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", "5%", pad="3%")
-        cax.set_xticks([])
-        cax.set_yticks([])
 
-def plotContornos(xg, yg, u, title='', frame = 'box', cbar = True):
-    cf = plt.contourf(xg, yg, u, levels = 50, alpha=.75, cmap="YlOrRd")
-    cl = plt.contour(xg, yg, u, levels = 10, colors='k', linewidths=0.5)
-    plt.clabel(cl, inline=True, fontsize=10.0)
-
-    x = xg[:,0]
-    y = yg[0,:]
-    plt.xticks([x[0], x[-1]], labels=[x[0], x[-1]])
-    plt.yticks([y[0], y[-1]], labels=[y[0], y[-1]])
-    plt.xlabel(title)
-    #plt.ylabel('$y$')
-    offx, offy, ax, bx, ay, by = calcOffset(xg, yg)
-    plt.xlim(ax-offx, bx+offx)
-    plt.ylim(ay-offy, by+offy)
-    plotGrid(x, y, frame)
-    ax = plt.gca()
-    ax.set_aspect('equal')
-
-    if cbar:
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", "5%", pad="3%")
-        cax.set_xticks([])
-        cax.set_yticks([])
-        fig = plt.gcf()
-        fig.colorbar(cf, cax=cax, orientation='vertical')
-    
-#    plt.suptitle(title, color='blue')
-
-def plotFlujo(xg, yg, u, v, kind='quiver', title='', frame = 'box', cbar=False):
-    """
-    """
-
-    x = xg[:,0]
-    y = yg[0,:]
-    plt.xticks([x[0], x[-1]], labels=[x[0], x[-1]])
-    plt.yticks([y[0], y[-1]], labels=[y[0], y[-1]])
-    plt.xlabel(title)
-    #plt.ylabel('$y$')
-    offx, offy, ax, bx, ay, by = calcOffset(xg, yg)
-    plt.xlim(ax-offx, bx+offx)
-    plt.ylim(ay-offy, by+offy)
-    
-    if kind == 'quiver':
-        plt.quiver(xg, yg, u(xg,yg), v(xg,yg), color='gray')
-    elif kind == 'stream':
-        xg, yg = np.meshgrid(x,y)
-        plt.streamplot(x, y, u(xg,yg), v(xg,yg), color='gray', linewidth=0.5)
-        
-    plotGrid(x, y, frame) 
-
-    ax = plt.gca()
-    ax.set_aspect('equal')
-    
-    if cbar:
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", "5%", pad="3%")
-        cax.set_xticks([])
-        cax.set_yticks([])
-    
 if __name__ == '__main__':
 
-    ax = -3.0
-    bx = 3.0
-    ay = -3.0
-    by = 3.0
-    Nx = 21
-    Ny = 21
+    v = Plotter()
+    x = np.linspace(0,2*np.pi)
+    for i in range(10):
+        y = np.cos(x+i*np.pi*0.1)
+        v.plot(1, x,y,label='{}'.format(i))
+        
+    v.legend()
+    v.show()
     
-    x = np.linspace(ax,bx,Nx+2)
-    y = np.linspace(ay,by,Ny+2)
-    plotGrid(x,y)
-    plt.show()
-    
-    xg, yg = np.meshgrid(x, y, indexing='ij', sparse=False)
-    plotMalla(xg, yg, 'Test ({}x{})'.format(Nx, Ny))
-    plt.show()
+    v = Plotter(1,2)
+    x = np.array([1,2,3])
+    y = np.array([1,2.718281828459045,3.141592653589793])
 
-    plotMalla(xg, yg, 'Test ({}x{})'.format(Nx, Ny), marker='')
-    plt.show()
-    
-    z = (1 - xg/2 + xg**5 + yg**3) * np.exp(-xg**2 - yg**2)
-    plotContornos(xg, yg, z, 'Hola', 'grid')
-    plt.show()
-    
-    u = lambda x,y : 1*((-1/2 + 5*x**4) - 2*x*(1-x/2+x**5+y**3)) * np.exp(-x**2-y**2)
-    v = lambda x,y : (3*y**2 - 2*x*(1-x/2+x**5+y**3)) * np.exp(-x**2-y**2)
-    plotFlujo(xg, yg, u, v, 'quiver', 'flujo', 'box')
-    plt.show()
+    # Las funciones de graficación son un subconjunto de las de matplotlib
+    v.plot(1, x, y)
 
-    Nx = 31
-    Ny = 11
-    x = np.linspace(0.0,3.0,Nx+2)
-    y = np.linspace(0.0,1.0,Ny+2)
-    xg, yg = np.meshgrid(x, y, indexing='ij', sparse=False)
+    # Se usan los mismos parámetros de las funciones de matplotlib, 
+    v.scatter(2, x, y, fc = 'blue', ec = 'gray')
+
+    # Puedo agregar un título a toda la gráfica.
+    v.figtitle('Hello')
+    # Se activa la grid en todas las subgráficas
+    v.grid()
+    v.show()
+    
+    
+    # Parámetros para la figura
+    fig_par ={'figsize':(8,5)}
+
+    # Parámetros para las subgráficas (lista de diccionarios)
+    ejes_par = [
+        # Subgráfica 1
+        {'title':'plot(x,y,par)', 'xlabel':'x', 'ylabel':'y'},
+        # Sibgráfica 2
+        {'title':'$Exponencial$', 'yscale':'log', 'xlabel':'$x$', 'ylabel':'$y$ [log]'},
+        # Subgráfica 3
+        dict(title='Random points', xlabel='n')]
+
+    # Parámetros para el título
+    titulo_par = dict(color='blue', fontsize=20)
+
+    # Se define un arreglo de (2 x 2) subgráficas
+    v = Plotter(2, 2, ejes_par, fig_par, titulo_par, "Probando visual")
+
+    x = np.linspace(0, 2 * np.pi, 50)
+    y = np.sin(x)
+    r = 0.9 * np.random.rand(len(x))
+
+    # Primera subgráfica
+    v.plot(1, x, y, marker = 'x', color='green', ls='--', label='y = sin(x)')
+
+    # Segunda subgráfica
+    v.plot(2, x, np.exp(x), ls='--', lw=3.0, label='$e^x$')
+    v.plot(2, x, np.exp(y), lw=2.0, label = '$e^y$')
+
+    # Tercera subgráfica
+    v.scatter(3, x, r, marker='.', label='random points')
+
+    # Cuarta subgráfica
+    v.scatter(4, x, r, s = x*5, c = y)
+    v.plot(4, x, y*y, color = 'r', ls = '-.', lw = 0.80, label = '$sin^2(x)$')
+
+    # Acciones sobre subconjuntos de subgráficas
+    v.grid([2,4]) # se activa la rejilla en las subgráficas 2 y 4
+    v.legend(frameon=True) # se activan las leyendas en todas las subgráficas
+    v.show() # similar a plt.show()
+    
+    
+    
+    v = Plotter(1,1)
+    x = np.linspace(-10.5, 10.5, 200)
+    v.plot(1, x, np.sin(x))
+
+    trig = True
+
+    ejes = True
+
+    if ejes:
+        v.set_coordsys(1, trig=trig)
+    else:
+        ax = v.axes(1)
+        xticks = ax.get_xticks()
+        yticks = ax.get_yticks()
+        v.set_ticks(ax, xticks, yticks, trig=trig)
+
+    v.grid()
+    v.show()
+    
+### Modelación computacional
+
+    # Tamaño del dominio
+    Lx = 2.0
+    Ly = 1.0
+
+    # Número de nodos en cada eje
+    Nx = 15
+    Ny = 8
+
+    # Tamaño de la malla en cada dirección
+    hx = Lx / (Nx+1)
+    hy = Ly / (Ny+1)
+
+    #print('hx = {}, hy = {}'.format(hx, hy))
+
+    # Número total de nodos incluyendo las fronteras
+    NxT = Nx + 2
+    NyT = Ny + 2
+
+    # Coordenadas de la malla
+    xn = np.linspace(0,Lx,NxT)
+    yn = np.linspace(0,Ly,NyT)
+    xg, yg = np.meshgrid(xn, yn, indexing='ij')
+
+    # Definición de un campo escalar en cada punto de la malla
+    T = np.zeros((NxT, NyT))
+
+    # Asignamos un valor a cada entrada del arreglo
+    for i in range(NxT):
+        for j in range(NyT):
+            T[i,j] = np.sin(np.pi*i/8) * np.cos(np.pi*j/8)
+
     A = 1.0
-    α = 1.0
-    u = lambda x, y: -A * np.cos(α * np.pi * y) * np.sin(α * np.pi * x) 
-    v = lambda x, y:  A * np.sin(α * np.pi * y) * np.cos(α * np.pi * x)    
-    plotFlujo(xg, yg, u, v, 'quiver', '', 'grid')
-    plt.show()
+    alpha = 1.25
+    U = -A * np.cos(np.pi * alpha * yg) * np.sin(np.pi * alpha * xg)
+    V =  A * np.sin(np.pi * alpha * yg) * np.cos(np.pi * alpha * xg)
+
+    a_p = dict(aspect = 'equal')
+    axis_par = [a_p for i in range(0,6)]
+    #axis_par.append(dict(projection='3d', aspect='equal'))
+
+    v = Plotter(3,2, axis_par, dict(figsize=(8,6)))
+
+    v.set_canvas(1, Lx, Ly)
+    v.draw_domain(1, xg, yg)
+    v.axes(1).set_title('Dominio de estudio', fontsize=10)
+
+    v.set_canvas(2, Lx, Ly)
+    v.plot_mesh2D(2, xg, yg, nodeson = True)
+    v.plot_frame(2, xg, yg, ticks=False)
+    v.axes(2).set_title('Malla del dominio', fontsize=10)
+
+    cax = v.set_canvas(3, Lx, Ly)
+    c = v.contourf(3, xg, yg, T, levels = 50, cmap = 'gist_earth')
+    v.fig.colorbar(c, cax=cax, ticks = [T.min(), T.max()], shrink=0.5, orientation='vertical')
+    v.plot_frame(3, xg, yg, ticks=False)
+    v.axes(3).set_title('Campo escalar', fontsize=10)
+
+    v.set_canvas(4, Lx, Ly)
+    v.quiver(4, xg, yg, U, V)
+    v.plot_frame(4, xg, yg, ticks=False)
+    v.axes(4).set_title('Campo vectorial', fontsize=10)
+
+    cax = v.set_canvas(5, Lx, Ly)
+
+    v.plot_frame(5, xg, yg, ticks=False)
+
+    c = v.contour(5, xg, yg, T, levels = 10, cmap = 'Greys')
+    v.fig.colorbar(c, cax=cax, ticks = [], shrink=0.5, orientation='vertical')
+    v.axes(3).set_title('Campo escalar', fontsize=10)
+
+    v.set_canvas(6, Lx, Ly)
+    v.streamplot(6, xg, yg, U, V)
+    v.plot_frame(6, xg, yg, ticks=False)
+    v.axes(6).set_title('Campo vectorial', fontsize=10)
+
+    v.fig.tight_layout(h_pad=0.5, w_pad=2.0)
+    v.show()
+
+### Modelación computacional, gráficos en 3D
+
+    # Tamaño del dominio
+    Lx = 1.0
+    Ly = 1.0
+
+    # Número de nodos en cada eje
+    Nx = 15
+    Ny = 8
+
+    # Tamaño de la malla en cada dirección
+    hx = Lx / (Nx+1)
+    hy = Ly / (Ny+1)
+
+    #print('hx = {}, hy = {}'.format(hx, hy))
+
+    # Número total de nodos incluyendo las fronteras
+    NxT = Nx + 2
+    NyT = Ny + 2
+
+    # Coordenadas de la malla
+    xn = np.linspace(0,Lx,NxT)
+    yn = np.linspace(0,Ly,NyT)
+    xg, yg = np.meshgrid(xn, yn, indexing='ij')
+
+    # Definición de un campo escalar en cada punto de la malla
+    T = np.zeros((NxT, NyT))
+
+    # Asignamos un valor a cada entrada del arreglo
+    for i in range(NxT):
+        for j in range(NyT):
+            T[i,j] = np.sin(np.pi*i/8) * np.cos(np.pi*j/8)
+
+    A = 1.0
+    alpha = 2.0
+    U = -A * np.cos(np.pi * alpha * yg) * np.sin(np.pi * alpha * xg)
+    V =  A * np.sin(np.pi * alpha * yg) * np.cos(np.pi * alpha * xg)
+
+    axis_par = [dict(aspect = 'equal'), dict(projection='3d', aspect='auto')]
+    v = Plotter(1,2, axis_par, dict(figsize=(8,6)))
+
+    cax = v.set_canvas(1, Lx, Ly)
+    c = v.contourf(1, xg, yg, U, levels = 100, cmap='viridis')
+    v.contour(1, xg, yg, U, levels=10, cmap='Greys')
+    v.fig.colorbar(c, cax=cax, ticks = [], shrink=0.5, orientation='vertical')
+    v.plot_frame(1, xg, yg, ticks=False)
+    v.axes(1).set_title('Campo escalar', fontsize=10)
+
+    v.plot_surface(2, xg, yg, U, cmap='viridis')
+    v.axes(2).set_title('Campo escalar', fontsize=10)
+
+    v.fig.tight_layout(h_pad=0.5, w_pad=2.0)
+    v.show()
