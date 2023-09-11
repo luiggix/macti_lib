@@ -186,19 +186,26 @@ class Quizz():
                 # Para comparar dos arreglos, debo hacerlo como si fueran listas
                 # para que la comparación sea elemento por elemento. Recordemos que 
                 # Parquet escribe listas y tuplas en forma de np.ndarray.
-                assert_equal(list(ans.flatten()), list(correct))
+                if not np.allclose(ans.flatten(), correct):
+                    assert_equal(list(ans.flatten()), list(correct))
             elif isinstance(ans, list):
-                assert_equal(ans, list(correct))
+                if not np.allclose(ans, list(correct)):
+                    assert_equal(ans, list(correct))
             elif isinstance(ans, tuple):
-                assert_equal(ans, tuple(correct))
+                if not np.allclose(ans, tuple(correct)):
+                    assert_equal(ans, tuple(correct))
             elif isinstance(ans, dict):
-                assert_equal(list(np.array([list(ans.keys()), list(ans.values())]).flatten()), list(correct))
+                if not np.allclose(list(np.array([list(ans.keys()), list(ans.values())]).flatten()), list(correct)):
+                    assert_equal(list(np.array([list(ans.keys()), list(ans.values())]).flatten()), list(correct))
             elif isinstance(ans, set):
-                assert_equal(ans, set(correct))
+                if not np.allclose(list(ans), list(correct)):
+                    assert_equal(ans, set(correct))
             elif isinstance(ans, complex):
-                assert_equal([ans.real, ans.imag], list(correct))
+                if not np.allclose([ans.real, ans.imag], list(correct)):
+                    assert_equal([ans.real, ans.imag], list(correct))
             else:
-                assert_equal(ans, correct)
+                if not np.allclose(ans, correct):
+                    assert_equal(ans, correct)
                 
         except AssertionError as info:
             print(Fore.RESET + self.__line_len*'-')
@@ -354,8 +361,11 @@ if __name__ == '__main__':
     complejo = 1 + 5j
     logico = True
     lista = [0, 1, 3.4]
-    tupla = ('a', 'b', 'c')
-    diccionario = {1:'k1', 2:'2.0'}
+#    tupla = ('a', 'b', 'c')
+    tupla = (1.2, 3.1416, np.pi)
+#    diccionario = {1:'k1', 2:'2.0'}
+    diccionario = {1:1.3, 2:3.14}
+
     conjunto = {4,1,8,0,4,20}
 
     x = sy.Symbol('x')
