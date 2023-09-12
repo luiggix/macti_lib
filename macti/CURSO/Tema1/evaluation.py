@@ -183,14 +183,18 @@ class Quizz():
 
         try:
             if isinstance(ans, np.ndarray):
+                print('new')
                 # Para comparar dos arreglos, debo hacerlo como si fueran listas
                 # para que la comparación sea elemento por elemento. Recordemos que 
                 # Parquet escribe listas y tuplas en forma de np.ndarray.
                 if not np.allclose(ans.flatten(), correct):
                     assert_equal(list(ans.flatten()), list(correct))
             elif isinstance(ans, list):
-                if not np.allclose(ans, list(correct)):
+                if isinstance(ans[0], str): 
                     assert_equal(ans, list(correct))
+                else:
+                    if not np.allclose(ans, list(correct)):
+                        assert_equal(ans, list(correct))                    
             elif isinstance(ans, tuple):
                 if not np.allclose(ans, tuple(correct)):
                     assert_equal(ans, tuple(correct))
