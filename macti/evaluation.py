@@ -190,8 +190,8 @@ class Quizz():
                 if not np.allclose(ans.flatten(), correct):
                     assert_equal(list(ans.flatten()), list(correct))
             elif isinstance(ans, list):
-                if not np.allclose(ans, list(correct)):
-                    assert_equal(ans, list(correct))
+#                if not np.allclose(ans, list(correct)):
+                assert_equal(ans, list(correct))
             elif isinstance(ans, tuple):
                 if not np.allclose(ans, tuple(correct)):
                     assert_equal(ans, tuple(correct))
