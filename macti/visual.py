@@ -874,7 +874,7 @@ class Plotter():
         Parameters
         ----------
         function : funct
-            Funciónque cambia los datos que se van desplegar.
+            Función que cambia los datos que se van desplegar.
         N : int
             Número de cuadros de la animación.
         interval : int, optional
@@ -893,6 +893,92 @@ class Plotter():
         
         return anim
 
+
+    def plot_vectors(self, n, vecs, lvecs = None, baseline = [], w = 0.01, aspect='equal', limit=True):
+        """
+        Dibuja vectores en el plano cartesiano.
+
+        Parameters
+        ----------
+        vecs: list
+        Lista de np.arrays de dimensión 2.
+
+        lvecs: list
+        Lista de etiquetas (str) para distinguir cada vector.
+
+        baseline: list
+        Lista de np.arrays para definir el inicio de cada vector.
+
+        w: float
+        Ancho de la línea de los vectores.
+
+        aspect: str
+        El aspecto del gráfico.
+
+        limit: bool
+        Se limita el máximo y mínimo de la gráfica.
+
+        Returns
+        -------
+        """
+        xmax, xmin = 0, 0
+        ymax, ymin = 0, 0
+        vxm, vym = [], []
+        
+        for i, x in enumerate(vecs):
+            color = 'C' + str(i)
+                        
+            if len(baseline) == 0:
+                x0, y0 = 0, 0
+            else:
+                x0 = baseline[i][0]
+                y0 = baseline[i][1]
+            
+            vxm.append(x0); vxm.append(x[0] + x0)
+            vym.append(y0); vym.append(x[1] + y0)
+            
+
+            
+            if lvecs != None:
+                self.__ax[n-1].quiver(x0, y0, x[0], x[1], angles='xy', scale_units='xy', scale=1, width=w, color=color, label=lvecs[i])
+            else:
+                self.__ax[n-1].quiver(x0, y0, x[0], x[1], angles='xy', scale_units='xy', scale=1, width=w, color=color)
+    
+        xmax = np.array(vxm).max()
+        xmin = np.array(vxm).min()
+        ymax = np.array(vym).max()
+        ymin = np.array(vym).min()
+    
+        if limit:
+            xoff = np.fabs(xmax - xmin) * 0.1
+            yoff = np.fabs(ymax - ymin) * 0.1
+            self.__ax[n-1].set_xlim(xmin-xoff, xmax+xoff)
+            self.__ax[n-1].set_ylim(ymin-yoff, ymax+yoff)
+
+        self.__ax[n-1].set_aspect(aspect)
+
+        if lvecs != None:
+            self.__ax[n-1].legend(loc='best', bbox_to_anchor=(0.75, 0., 0.5, 0.5))
+        
+            
+    def plot_vectors_sum(self, n, vecs, lvecs = None, baseline = [], w = 0.01, aspect='equal', limit=True):
+        v3 = vecs[0] + vecs[1]
+        vecs.append(v3)
+        lvecs.append('v1+v2')
+        self.plot_vectors(n, vecs, lvecs, baseline, w, aspect, limit)
+        self.__ax[n-1].plot([vecs[0][0], v3[0]], [vecs[0][1], v3[1]], lw=0.75, ls='--', c='C1')#'dimgrey')
+        self.__ax[n-1].plot([vecs[1][0], v3[0]], [vecs[1][1], v3[1]], lw=0.75, ls='--', c='C0')#'dimgrey')
+
+    def plot_vectors_subs(self, n, vecs, lvecs = None, baseline = [], w = 0.01, aspect='equal', limit=True):
+        v3 = vecs[0] - vecs[1]
+        v2 = vecs[1]
+        vecs.append(v3)
+        vecs.append(-v2)
+        lvecs.append('v1-v2')
+        lvecs.append('-v2')
+        self.plot_vectors(n, vecs, lvecs, baseline, w, aspect, limit)
+        self.__ax[n-1].plot([vecs[0][0], v3[0]], [vecs[0][1], v3[1]], lw=0.75, ls='--', c='C3')#'dimgrey')
+        self.__ax[n-1].plot([-v2[0], v3[0]], [-v2[1], v3[1]], lw=0.75, ls='--', c='C0')#'dimgrey')
 
 if __name__ == '__main__':
 
