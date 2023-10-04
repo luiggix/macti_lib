@@ -894,7 +894,7 @@ class Plotter():
         return anim
 
 
-    def plot_vectors(self, n, vecs, lvecs = None, baseline = [], w = 0.01, aspect='equal', limit=True):
+    def plot_vectors(self, n, vecs, lvecs = None, baseline = [], w = 0.01, aspect='equal', limit=True, ofx = 0.0):
         """
         Dibuja vectores en el plano cartesiano.
 
@@ -956,32 +956,23 @@ class Plotter():
         self.__ax[n-1].set_aspect(aspect)
 
         if lvecs != None:
-            self.__ax[n-1].legend(loc='best', bbox_to_anchor=(0.75, 0., 0.5, 0.5))
+            self.__ax[n-1].legend(ncol = 1, loc = 'best', bbox_to_anchor=(1.0+ofx, 0.5, 0.5, 0.5))
         
             
-    def plot_vectors_sum(self, n, vecs, lvecs = None, baseline = [], w = 0.01, aspect='equal', limit=True):
+    def plot_vectors_sum(self, n, vecs, lvecs = None, baseline = [], w = 0.01, aspect='equal', limit=True, ofx=0.0):
         suma = np.array([0, 0])
-        for vi in vecs:
-            suma += vi
-        vecs.append(suma)
         lsuma = ''
-        for vi in lvecs:
-            lsuma += vi + '+'
-        lvecs.append(lsuma[:-1])
-        self.plot_vectors(n, vecs, lvecs, baseline, w, aspect, limit)
-#        self.__ax[n-1].plot([vecs[0][0], v3[0]], [vecs[0][1], v3[1]], lw=0.75, ls='--', c='C1')#'dimgrey')
-#        self.__ax[n-1].plot([vecs[1][0], v3[0]], [vecs[1][1], v3[1]], lw=0.75, ls='--', c='C0')#'dimgrey')
+        for vi, li in zip(vecs, lvecs):
+            suma += vi
+            lsuma += li if li[0] == '-' else '+'+li
 
-    def plot_vectors_subs(self, n, vecs, lvecs = None, baseline = [], w = 0.01, aspect='equal', limit=True):
-        v3 = vecs[0] - vecs[1]
-        v2 = vecs[1]
-        vecs.append(v3)
-        vecs.append(-v2)
-        lvecs.append(lvecs[0] + '-' + lvecs[1])
-        lvecs.append('-' + lvecs[1])
-        self.plot_vectors(n, vecs, lvecs, baseline, w, aspect, limit)
-        self.__ax[n-1].plot([vecs[0][0], v3[0]], [vecs[0][1], v3[1]], lw=0.75, ls='--', c='C3')#'dimgrey')
-        self.__ax[n-1].plot([-v2[0], v3[0]], [-v2[1], v3[1]], lw=0.75, ls='--', c='C0')#'dimgrey')
+        lsuma = lsuma[1:] if lsuma[0] == '+' else lsuma
+        vecs.append(suma)
+        lvecs.append(lsuma)
+        self.plot_vectors(n, vecs, lvecs, baseline, w, aspect, limit, ofx)
+        if len(vecs) == 3:
+            self.__ax[n-1].plot([vecs[0][0], suma[0]], [vecs[0][1], suma[1]], lw=0.75, ls='--', c='dimgrey')
+            self.__ax[n-1].plot([vecs[1][0], suma[0]], [vecs[1][1], suma[1]], lw=0.75, ls='--', c='dimgrey')
 
 if __name__ == '__main__':
 
