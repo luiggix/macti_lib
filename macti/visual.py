@@ -960,12 +960,17 @@ class Plotter():
         
             
     def plot_vectors_sum(self, n, vecs, lvecs = None, baseline = [], w = 0.01, aspect='equal', limit=True):
-        v3 = vecs[0] + vecs[1]
-        vecs.append(v3)
-        lvecs.append(lvecs[0] + '+' + lvecs[1])
+        suma = np.array([0, 0])
+        for vi in vecs:
+            suma += vi
+        vecs.append(suma)
+        lsuma = ''
+        for vi in lvecs:
+            lsuma += vi + '+'
+        lvecs.append(lsuma[:-1])
         self.plot_vectors(n, vecs, lvecs, baseline, w, aspect, limit)
-        self.__ax[n-1].plot([vecs[0][0], v3[0]], [vecs[0][1], v3[1]], lw=0.75, ls='--', c='C1')#'dimgrey')
-        self.__ax[n-1].plot([vecs[1][0], v3[0]], [vecs[1][1], v3[1]], lw=0.75, ls='--', c='C0')#'dimgrey')
+#        self.__ax[n-1].plot([vecs[0][0], v3[0]], [vecs[0][1], v3[1]], lw=0.75, ls='--', c='C1')#'dimgrey')
+#        self.__ax[n-1].plot([vecs[1][0], v3[0]], [vecs[1][1], v3[1]], lw=0.75, ls='--', c='C0')#'dimgrey')
 
     def plot_vectors_subs(self, n, vecs, lvecs = None, baseline = [], w = 0.01, aspect='equal', limit=True):
         v3 = vecs[0] - vecs[1]
