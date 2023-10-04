@@ -937,8 +937,6 @@ class Plotter():
             vxm.append(x0); vxm.append(x[0] + x0)
             vym.append(y0); vym.append(x[1] + y0)
             
-
-            
             if lvecs != None:
                 self.__ax[n-1].quiver(x0, y0, x[0], x[1], angles='xy', scale_units='xy', scale=1, width=w, color=color, label=lvecs[i])
             else:
@@ -964,7 +962,7 @@ class Plotter():
     def plot_vectors_sum(self, n, vecs, lvecs = None, baseline = [], w = 0.01, aspect='equal', limit=True):
         v3 = vecs[0] + vecs[1]
         vecs.append(v3)
-        lvecs.append('v1+v2')
+        lvecs.append(lvecs[0] + '+' + lvecs[1])
         self.plot_vectors(n, vecs, lvecs, baseline, w, aspect, limit)
         self.__ax[n-1].plot([vecs[0][0], v3[0]], [vecs[0][1], v3[1]], lw=0.75, ls='--', c='C1')#'dimgrey')
         self.__ax[n-1].plot([vecs[1][0], v3[0]], [vecs[1][1], v3[1]], lw=0.75, ls='--', c='C0')#'dimgrey')
@@ -974,8 +972,8 @@ class Plotter():
         v2 = vecs[1]
         vecs.append(v3)
         vecs.append(-v2)
-        lvecs.append('v1-v2')
-        lvecs.append('-v2')
+        lvecs.append(lvecs[0] + '-' + lvecs[1])
+        lvecs.append('-' + lvecs[1])
         self.plot_vectors(n, vecs, lvecs, baseline, w, aspect, limit)
         self.__ax[n-1].plot([vecs[0][0], v3[0]], [vecs[0][1], v3[1]], lw=0.75, ls='--', c='C3')#'dimgrey')
         self.__ax[n-1].plot([-v2[0], v3[0]], [-v2[1], v3[1]], lw=0.75, ls='--', c='C0')#'dimgrey')
