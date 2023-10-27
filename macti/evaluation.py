@@ -183,7 +183,6 @@ class Quizz():
 
         try:
             if isinstance(ans, np.ndarray):
-                print('new')
                 # Para comparar dos arreglos, debo hacerlo como si fueran listas
                 # para que la comparación sea elemento por elemento. Recordemos que 
                 # Parquet escribe listas y tuplas en forma de np.ndarray.
