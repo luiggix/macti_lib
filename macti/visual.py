@@ -618,7 +618,7 @@ class Plotter():
         
         return cbar
         
-    def contour(self, n, xg, yg, dat, **par):
+    def contour(self, n, xg, yg, dat, ticks = True, **par):
         """
         Dibuja líneas que representan valores constantes de una variable.
 
@@ -646,14 +646,15 @@ class Plotter():
         "Plotter.contour(%d) out of bounds. Valid bounds : [1,%d]" % (n,self.__nfigs)
 
         ax = self.__ax[n-1]
-        ax.set_xticks([])
-        ax.set_yticks([])
+        if not ticks:
+            ax.set_xticks([])
+            ax.set_yticks([])
         
         out = self.__ax[n-1].contour(xg, yg, dat, **par)
 
         return out        
  
-    def contourf(self, n, xg, yg, dat, **par):
+    def contourf(self, n, xg, yg, dat, ticks = True, **par):
         """
         Dibuja zonas de color basadas en contornos.
 
@@ -681,14 +682,15 @@ class Plotter():
         "Plotter.contourf(%d) out of bounds. Valid bounds : [1,%d]" % (n,self.__nfigs)
 
         ax = self.__ax[n-1]
-        ax.set_xticks([])
-        ax.set_yticks([])
+        if not ticks:
+            ax.set_xticks([])
+            ax.set_yticks([])
         
         out = ax.contourf(xg, yg, dat, **par)
 
         return out  
 
-    def streamplot(self, n, x, y, u, v, **par):
+    def streamplot(self, n, x, y, u, v, ticks = True, **par):
         """
         Dibuja líneas de corriente de un campo vectorial en 2D.
 
@@ -718,14 +720,15 @@ class Plotter():
         "Plotter.streamplot(%d) out of bounds. Valid bounds : [1,%d]" % (n,self.__nfigs)
 
         ax = self.__ax[n-1]
-        ax.set_xticks([])
-        ax.set_yticks([])
+        if not ticks:
+            ax.set_xticks([])
+            ax.set_yticks([])
         
         out = ax.streamplot(x.T, y.T, u.T, v.T, **par)
 
         return out
     
-    def quiver(self, n, x, y, u, v, **par):
+    def quiver(self, n, x, y, u, v, ticks = True, **par):
         """
         Dibuja flecha para representar un campo vectorial en 2D.
         
@@ -751,8 +754,9 @@ class Plotter():
         "Plotter.quiver(%d) out of bounds. Valid bounds : [1,%d]" % (n,self.__nfigs)
 
         ax = self.__ax[n-1]
-        ax.set_xticks([])
-        ax.set_yticks([])
+        if not ticks:
+            ax.set_xticks([])
+            ax.set_yticks([])
         
         out = ax.quiver(x, y, u, v, **par)
 
