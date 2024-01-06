@@ -67,7 +67,7 @@ class Quizz():
         self.__qnum = qnum # Número del quizz
 
         # Verbosity
-        self.__verb = self.read('0')['0'][0]
+        self.__verb = self.read('0', verb = True)['0'][0]
 
     @property
     def verb(self):
@@ -81,7 +81,7 @@ class Quizz():
     def server(self, server):
         self.__server = server
         
-    def read(self, enum, name = '.__ans_'):
+    def read(self, enum, name = '.__ans_', verb = False):
         """
         Lectura de la respuesta del ejercicio con número enum. Esta lectura
         se realiza del archivo en donde se encuentran las respuestas de todo el quizz.
@@ -95,33 +95,45 @@ class Quizz():
         
         name: string
         Nombre del archivo donde se guardan las respuestas, por omisión es: ".__ans_".
+
+        verb: bool
+        Es False siempre, excepto cuando se lee la verbosidad.
         
         Returns
         -------
-        
+        Regresa la respuesta correcta al ejercicio enum almacenada en el archivo.
         """
-        # Se agrega el número del quizz correspondiente al nombre del archivo de respuestas. 
-        filename = name + self.__qnum
+        try:
+            # Solo se permite enum == '0' cuando se lee la verbosidad (verb == True)
+            if enum == '0' and not verb:
+                raise ValueError from None
 
-        if self.__server == 'local':
-            path = self.__course_path + self.__u_a + self.__topic
-            stream = path + filename
-            
-        elif self.__server == 'hub': 
-            # Directorio global en el hub
-            path = '/usr/local/share/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
-            stream = path + filename 
-            
-        elif self.__server == 'macti':
-            # Se utiliza pkg_resources para obtener el directorio de instalación de la biblioteca.
-            path = '/data/' + self.__topic
-            stream = pkg_resources.resource_stream('macti', path + filename)
-            
-        else:
-            print('Invalid option: {}'.format(self.__server))
+        except ValueError:
+            print('NO EXISTE LA RESPUESTA. No está permitido usar \'{}\' para identificar un ejercicio \n'.format(enum))
+        else:   
+            # Se agrega el número del quizz correspondiente al nombre del archivo de respuestas. 
+            filename = name + self.__qnum
+    
+            if self.__server == 'local':
+                path = self.__course_path + self.__u_a + self.__topic
+                stream = path + filename
+                
+            elif self.__server == 'hub': 
+                # Directorio global en el hub
+                path = '/usr/local/share/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
+                stream = path + filename 
+                
+    #        elif self.__server == 'macti':
+                # Se utiliza pkg_resources para obtener el directorio de instalación de la biblioteca.
+                # /opt/conda/lib/python3.11/site-packages/macti/data/course/utils/.ans/topic/
+    #            path = '/data/' + self.__course + self.__u_a + self.__topic
+    #            stream = pkg_resources.resource_stream('macti', path + filename)
+                
+            else:
+                print('Invalid option: {}'.format(self.__server))
 
-        # Lectura del archivo en formato parquet, se regresa en un DataFrame.
-        return(pd.read_parquet(stream, columns=[enum]))
+            # Lectura del archivo en formato parquet, se regresa en un DataFrame.
+            return(pd.read_parquet(stream, columns=[enum]))
             
     def eval_option(self, enum, ans):
         """
@@ -253,7 +265,7 @@ class Quizz():
                     
             elif isinstance(ans, list):
                 if not np.allclose(list(correct), ans):
-                    assert_equal(list(correct), list(ans.flatten()))
+                    assert_equal(list(correct), ans)
                         
             elif isinstance(ans, tuple):
                 if not np.allclose(tuple(correct), ans):
@@ -380,7 +392,34 @@ class FileAnswer():
                  course = '', 
                  topic = '', 
                  server = 'hub'):
-    
+        """
+        Clase para la escritura de las respuestas a los ejercicios.
+        
+        Parameters
+        ----------
+        course: string
+        Nombre o identificador del curso.
+        
+        topic: string
+        Tema del curso en el que se aplica el quizz.
+        
+        server: string
+        Ruta para buscar los archivos con la información de las respuestas. En todos
+        los casos course y topic se sustituyen por las cadenas que se pasen como argumentos.
+        
+        'local' : los datos (answers & feedback) se almacenan en un directorio local.
+                  La ruta a los archivos se construye como : $HOME/course/utils/.ans/topic/
+        
+        'hub' : los datos (answers & feedback) se almacenan en un directorio global del hub.
+                  La ruta a los archivos se construye como : 
+                  DIR_EXCHANGE_NBGRADER/course_nbg/utils/.ans/topic/
+
+        NO YET IMPLEMENTED----------------------
+        'macti' : los datos (answers & feedback) se almacenan en el directorio de instalación de la biblioteca.
+                  La ruta a los archivos se construye como : 
+                  DIR_PYTHON_LIB_INSTALLATION/course/utils/.ans/topic/
+        
+        """
         self.__server = server
         self.__platform = platform.system()
         self.__course_path = ''
@@ -402,7 +441,9 @@ class FileAnswer():
         self.__answers = []
         self.__feedback = []
         self.__server = server
-        self.__verb = 0
+
+        # Por omisión la verbosidad es igual a 2, es decir toda la ayuda posible al alumno
+        self.__verb = 2
 
     @property
     def answers(self):
@@ -420,39 +461,79 @@ class FileAnswer():
     def verb(self, verb):
         self.__verb = verb
              
-    def write(self, enum, ans, feed=None):
-        # Sustitución de una respuesta y de su retroalimentación
-        if enum in self.__exernum: # checamos si ya existe el número de ejercicio
-            index = self.__exernum.index(enum) # obtenemos el índice en la lista
-            if isinstance(ans, np.ndarray):
-                self.__answers[index] = ans.flatten() # almacenamos los arreglos de numpy en 1D
-            elif isinstance(ans, dict):
-                self.__answers[index] = np.array([list(ans.keys()), list(ans.values())]).flatten()
-            elif isinstance(ans, complex):
-                self.__answers[index] = [ans.real, ans.imag]
-            else:
-                self.__answers[index] = ans
-                
-            self.__feedback[index] = feed 
+    def write(self, enum, ans, feed=None, verb = False):
+        """
+        Esta función escribe una respuesta en una lista (self.__answer) y la retroalimentación de 
+        esta respuesta en otra lista (self.__feedback). El número del ejercicio se almacena en 
+        otra lista (self.__exernum). Si la respuesta es nueva, se agrega un elemento a la lista, 
+        si el ejercicio ya existía entonces se sustituye.
+
+        Parameters
+        ----------
+        enum: string
+        Cadena con el identificador del ejercicio. Este parámetro no puede ser '0' debido
+        a que ese identificador está destinado a almacenar la verbosidad de la retroalimentación.
+
+        ans: 
+        Objeto que contiene la respuesta, puede ser de cualquier tipo soportado por la
+        biblioteca (str, float, int, complex, boolean, ndarray, list, tuple, dict
+
+        feed: string
+        Cadena con la retroalimentación del ejercicio. Por omisión está vacía.
+
+        verb: bool
+        Es False siempre, excepto cuando se escribe la verbosidad.
+        """
+        try:
+            # Solo se permite enum == '0' cuando se almacena la verbosidad (verb == True)
+            if enum == '0' and not verb:
+                raise ValueError from None
+
+        except ValueError:
+            print('RESPUESTA NO ALMACENADA. No está permitido usar el valor \'{}\' para identificar un ejercicio.\n'.format(enum))
             
-        else: # Si el ejercicio es nuevo, lo agregamos
-            # Todos los arreglos de numpy se deben almacenar en formato unidimensional
-            if isinstance(ans, np.ndarray):
-                self.__answers.append(ans.flatten()) # almacenamos los arreglos de numpy en 1D
-            elif isinstance(ans, dict):
-                self.__answers.append(np.array([list(ans.keys()), list(ans.values())]).flatten())
-            elif isinstance(ans, complex):
-                self.__answers.append([ans.real, ans.imag])      
-            else:
-                self.__answers.append(ans)
-        
-            self.__exernum.append(enum)
-            self.__feedback.append(feed)
+        else:
+            # Sustitución de una respuesta y de su retroalimentación
+            if enum in self.__exernum: # checamos si ya existe el número de ejercicio
+                index = self.__exernum.index(enum) # obtenemos el índice en la lista
+                if isinstance(ans, np.ndarray):
+                    self.__answers[index] = ans.flatten() # almacenamos los arreglos de numpy en 1D
+                elif isinstance(ans, dict):
+                    self.__answers[index] = np.array([list(ans.keys()), list(ans.values())]).flatten()
+                elif isinstance(ans, complex):
+                    self.__answers[index] = [ans.real, ans.imag]
+                else:
+                    self.__answers[index] = ans
+                    
+                self.__feedback[index] = feed 
+                
+            else: # Si el ejercicio es nuevo, lo agregamos
+                # Todos los arreglos de numpy se deben almacenar en formato unidimensional
+                if isinstance(ans, np.ndarray):
+                    self.__answers.append(ans.flatten()) # almacenamos los arreglos de numpy en 1D
+                elif isinstance(ans, dict):
+                    self.__answers.append(np.array([list(ans.keys()), list(ans.values())]).flatten())
+                elif isinstance(ans, complex):
+                    self.__answers.append([ans.real, ans.imag])      
+                else:
+                    self.__answers.append(ans)
+            
+                self.__exernum.append(enum)
+                self.__feedback.append(feed)
     
     
     def to_file(self, qnum):
+        """
+        Escribe las respuestas y la retroalimentación en un archivo tipo parquet.
 
-        self.write('0', self.__verb)
+        Parameters
+        ----------
+        qnum: string
+        Es una cadena que proporciona el número del quizz. La cadena debe ser un
+        número entero: '1', '2', ...
+        """
+        # Se define la verbosidad de la retroalimentación de cada respuesta. 
+        self.write('0', self.__verb, verb = True)
         
         ans_df = pd.DataFrame([self.__answers], columns=self.__exernum)
         feed_df = pd.DataFrame([self.__feedback], columns=self.__exernum) 
@@ -464,7 +545,9 @@ class FileAnswer():
         elif self.__server == 'hub': # Linux
             # '/usr/local/share/nbgrader/exchange/'
             path = '/usr/local/share/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
-#            path = '/srv/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
+#        elif self.__server == 'macti': 
+#            path = /opt/conda/lib/python3.11/site-packages/macti/data/course/utils/.ans/topic/
+
         else:
             print('Invalid option: {}'.format(self.__server))
         
@@ -477,41 +560,14 @@ class FileAnswer():
         ans_df.to_parquet(path + '.__ans_' + qnum, compression='gzip')
         feed_df.to_parquet(path + '.__fee_' + qnum, compression='gzip')
         print('Respuestas y retroalimentación almacenadas.')
-        
-class Evalua():
-    def __init__(self, topic, local=False):
-        self.topic = topic
-        self.local = local 
-
-    def verifica(self, x, i):
-        """
-        Permite comparar el contenido de x con el de y. Si se encuentra una diferencia entonces emite una alerta.
-        """
-
-        if self.local:
-            stream = self.topic + '/sol{:02d}.npy'.format(i)
-        else:
-            filename = 'data/' + self.topic + '/sol{:02d}.npy'.format(i)
-            stream = pkg_resources.resource_stream('macti', filename)
-        y = np.load(stream)
-    
-        try:
-            assert_equal(list(x.flatten()), list(y.flatten()))
-        except AssertionError as info:
-            print(Fore.RESET + 80*'-')
-            print(Fore.RED + 'Cuidado: ocurrió un error en tus cálculos: \n {}'.format(info))
-            print(Fore.RESET + 80*'-')
-        else:
-            print(Fore.GREEN + '¡Tu resultado es correcto!')
-          
             
 #----------------------- TEST OF THE MODULE ----------------------------------   
 if __name__ == '__main__':
 
     #---------------------- CREACIÓN DEL ARCHIVO DE RESPUESTAS
     print()
-    file_answer = FileAnswer('CURSO', 'Tema1', server = 'local')
-    file_answer.verb = 2
+    file_answer = FileAnswer('macti_lib', 'macti', server = 'local')
+#    file_answer.verb = 0
 
     #---------------------- CONSTRUCCIÓN DE RESPUESTAS
     opcion = 'c'
@@ -546,6 +602,9 @@ if __name__ == '__main__':
     forma_cuadratica = 0.5 * A[0,0] * x**2 + 0.5 * A[1,1] * y**2 + 0.5 * (A[0,1]+A[1,0])* x * y - B[0] * x - B[1] * y + C
 
     #---------------------- ALMACENAMIENTO DE RESPUESTAS
+
+    file_answer.write('0', 'a', 'Opción inválida')
+
     file_answer.write('1', opcion, 'Las opciones válidas son ...')
     file_answer.write('2', derivada, 'Checa las reglas de derivación')
     
@@ -577,21 +636,24 @@ if __name__ == '__main__':
     file_answer.to_file('1')
 
     #---------------------- MOSTRAMOS EL ARCHIVO DE RESPUESTAS
-    ans_df2 = pd.read_parquet('../utils/.ans/Tema1/.__ans_1') # Se lee en un DataFrame
+    ans_df2 = pd.read_parquet('../utils/.ans/macti/.__ans_1') # Se lee en un DataFrame
     print('-'*40)
     for i in ans_df2.columns:
         print("{} --> {}".format(i, ans_df2[i][0]))
     print('-'*40)
 
-    fee_df2 = pd.read_parquet('../utils/.ans/Tema1/.__fee_1') # Se lee en un DataFrame
+    fee_df2 = pd.read_parquet('../utils/.ans/macti/.__fee_1') # Se lee en un DataFrame
     fee_df2
     print('-'*40)
 
     #---------------------- EVALUACIÓN DE LAS RESPUESTAS
-    quizz = Quizz('1', 'CURSO', 'Tema1', 'local')
+    quizz = Quizz('1', 'macti_lib', 'macti', 'local')
 
     print('\nVerbosidad de la ayuda : {} \n'.format(quizz.verb))
 
+#    print('¿qué pasa si uso enum == 0?')
+#    quizz.eval_datastruct('0', 'a')
+    
     print('Opción')
     quizz.eval_option('1', 'c')
     

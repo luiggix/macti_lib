@@ -243,6 +243,24 @@ class Plotter():
             return r"${}$".format(N // 2) + r"$\pi$"
 
     def set_ticks(self, ax, xticks = [], yticks = [], trig = False):
+        """
+        Define los ticks para las gráficas. En caso de funciones trigonométricas
+        puede poner el eje x en términos de pi.
+
+        Parameters
+        ----------
+        ax: axis
+        Son los ejes que se van a configurar.
+
+        xticks: list, ndarray
+        ticks en el eje x
+
+        yticks: list,ndarray
+        ticks en el eje y
+
+        trig: boolean
+        Cuando es True se ponen los ticks en términos de pi.
+        """
         if trig:
             ax.xaxis.set_major_locator(plt.MultipleLocator(np.pi / 2))
             ax.xaxis.set_minor_locator(plt.MultipleLocator(np.pi / 4))
@@ -255,9 +273,26 @@ class Plotter():
             
     def set_coordsys(self, n = 1, 
                      xlabel='$x$', ylabel='$y$',
-                     xlabelsize=8, ylabelsize=8,
+                     xlabelsize=8, ylabelsize=8)
 #                     xtuple = None, ytuple = None,
-                     trig = False):
+#                     trig = False):
+        """
+        Configura los ejes.
+
+        Parameters
+        ----------
+        xlabel: string
+        Etiqueta del eje x.
+
+        ylabel: string
+        Etiqueta del eje y.
+
+        xlabelsize: int
+        Tamaño del texto de la etiqueta en el eje x.
+
+        ylabelsize: int
+        Tamaño del texto de la etiqueta en el eje y.
+        """
         ax = self.__ax[n-1]
         # Move the left and bottom spines to x = 0 and y = 0, respectively.
         ax.spines[["left", "bottom"]].set_position(("data", 0))
@@ -910,6 +945,9 @@ class Plotter():
 
         Parameters
         ----------
+        n : int
+        Subplot donde se desplegarán los vectores.
+        
         vecs: list
         Lista de np.arrays de dimensión 2.
 
@@ -927,6 +965,9 @@ class Plotter():
 
         limit: bool
         Se limita el máximo y mínimo de la gráfica.
+
+        ofx: float
+        Offset en dirección x para la legenda.
 
         Returns
         -------
@@ -970,6 +1011,38 @@ class Plotter():
         
             
     def plot_vectors_sum(self, n, vecs, lvecs = None, baseline = [], w = 0.01, aspect='equal', limit=True, ofx=0.0):
+        """
+        Dibuja la suma de vectores en el plano cartesiano.
+
+        Parameters
+        ----------
+        n : int
+        Subplot donde se desplegarán los vectores.
+            
+        vecs: list
+        Lista de np.arrays de dimensión 2.
+
+        lvecs: list
+        Lista de etiquetas (str) para distinguir cada vector.
+
+        baseline: list
+        Lista de np.arrays para definir el inicio de cada vector.
+
+        w: float
+        Ancho de la línea de los vectores.
+
+        aspect: str
+        El aspecto del gráfico.
+
+        limit: bool
+        Se limita el máximo y mínimo de la gráfica.
+
+        ofx: float
+        Offset en dirección x para la legenda.
+
+        Returns
+        -------
+        """        
         suma = np.array([0.0, 0.0])
         lsuma = ''
         for vi, li in zip(vecs, lvecs):
