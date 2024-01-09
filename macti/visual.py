@@ -273,7 +273,7 @@ class Plotter():
             
     def set_coordsys(self, n = 1, 
                      xlabel='$x$', ylabel='$y$',
-                     xlabelsize=8, ylabelsize=8)
+                     xlabelsize=8, ylabelsize=8):
 #                     xtuple = None, ytuple = None,
 #                     trig = False):
         """

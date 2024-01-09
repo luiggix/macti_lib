@@ -16,9 +16,8 @@ from IPython.display import display, Latex
 class Quizz():
     def __init__(self,
                  qnum,
-                 course = '', 
-                 topic = '', 
-                 server = 'hub'):
+                 server = 'hub',
+                 path_from_read = None):
         """
         Clase para la evaluación de ejercicios.
         
@@ -27,28 +26,31 @@ class Quizz():
         qnum: string
         Número de quizz del tema (topic). Puede haber varios quizzes para un solo tema.
         
-        course: string
-        Nombre o identificador del curso.
-        
-        topic: string
-        Tema del curso en el que se aplica el quizz.
-        
         server: string
         'local' cuando los datos (answers & feedback) se almacenan en un directorio local.
         'hub' cuando los datos (answers & feedback) se almacenan en un directorio global del hub.
-        'macti' cuando los datos (answers & feedback) se almacenan en el directorio de instalación de la biblioteca.
+
+        path_from_read: string
+        Ruta de donde leerán las respuestas y la retroalimentación. 
+        NOTA: Esta es una característica en proceso de desarrollo.
         """
         self.__server = server
+        self.__path_from_read = path_from_read
+        self.__course_path = ''
+
+        # Separador dependiendo de la plataforma
         self.__platform = platform.system()
-        self.__course_path = ''  # Ruta del curso
-        self.__course = course   # Nombre de curso
-        self.__line_len = 40
-        
-        # Cuando se usa la instalación local, se debe determinar
-        # si el sistema es tipo Windows o Linux, en cada caso el
-        # separador de la ruta es diferente.
         sep = '\\' if self.__platform == 'Windows' else '/'
         
+        # Obtenemos el nombre a partir del path actual
+        # Se asume que se ejecuta dentro de course/topic/
+        self.__path = os.getcwd()
+        self.__course = self.__path.split('/')[-2] # sin separador
+        self.__topic = self.__path.split('/')[-1] + sep
+
+        print('curso = ', self.__course)
+        print('tema = ', self.__topic)
+
         if server == 'local':
             # Construcción de una lista con los componentes de la ruta absoluta
             # a partir de donde se ejecuta la notebook
@@ -61,13 +63,16 @@ class Quizz():
             for i in abs_path[0:index_co+1]:
                 self.__course_path += i + sep
 
-        self.__course += sep  # Curso/
-        self.__topic = topic + sep   # Topico/
-        self.__u_a = 'utils' + sep + '.ans' + sep # utils/.ans/
+        print(self.__course_path)
+        
+        self.__course += sep  # Agregamos el separador
+        self.__ans = '.ans' + sep # .ans/
         self.__qnum = qnum # Número del quizz
 
         # Verbosity
         self.__verb = self.read('0', verb = True)['0'][0]
+
+        self.__line_len = 40
 
     @property
     def verb(self):
@@ -113,24 +118,29 @@ class Quizz():
         else:   
             # Se agrega el número del quizz correspondiente al nombre del archivo de respuestas. 
             filename = name + self.__qnum
-    
-            if self.__server == 'local':
-                path = self.__course_path + self.__u_a + self.__topic
+
+            if self.__server == 'local' and self.__path_from_read == None:
+                path = self.__course_path + self.__ans + self.__topic
+                print(path)
                 stream = path + filename
                 
-            elif self.__server == 'hub': 
+            elif self.__server == 'hub' and self.__path_from_read == None: 
                 # Directorio global en el hub
-                path = '/usr/local/share/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
+                path = '/usr/local/share/nbgrader/exchange/' + self.__course + self.__ans + self.__topic
+                print(path)
                 stream = path + filename 
+                
+            elif self.__path_from_read != None:
+                path = self.__path_from_read + sep + self.__topic
                 
     #        elif self.__server == 'macti':
                 # Se utiliza pkg_resources para obtener el directorio de instalación de la biblioteca.
-                # /opt/conda/lib/python3.11/site-packages/macti/data/course/utils/.ans/topic/
-    #            path = '/data/' + self.__course + self.__u_a + self.__topic
+                # /opt/conda/lib/python3.11/site-packages/macti/data/course/.ans/topic/
+    #            path = '/data/' + self.__course + self.__ans + self.__topic
     #            stream = pkg_resources.resource_stream('macti', path + filename)
                 
             else:
-                print('Invalid option: {}'.format(self.__server))
+                print('Opciones inválidas. Revisa la declaración de Quizz()')
 
             # Lectura del archivo en formato parquet, se regresa en un DataFrame.
             return(pd.read_parquet(stream, columns=[enum]))
@@ -389,58 +399,51 @@ class Quizz():
             
 class FileAnswer():
     def __init__(self, 
-                 course = '', 
-                 topic = '', 
-                 server = 'hub'):
+                 path_to_store = None):
         """
         Clase para la escritura de las respuestas a los ejercicios.
+        Se asume que se ejecuta dentro del directorio de un tema del curso:
+        course/topic.
         
         Parameters
         ----------
-        course: string
-        Nombre o identificador del curso.
-        
-        topic: string
-        Tema del curso en el que se aplica el quizz.
-        
-        server: string
-        Ruta para buscar los archivos con la información de las respuestas. En todos
-        los casos course y topic se sustituyen por las cadenas que se pasen como argumentos.
-        
-        'local' : los datos (answers & feedback) se almacenan en un directorio local.
-                  La ruta a los archivos se construye como : $HOME/course/utils/.ans/topic/
-        
-        'hub' : los datos (answers & feedback) se almacenan en un directorio global del hub.
-                  La ruta a los archivos se construye como : 
-                  DIR_EXCHANGE_NBGRADER/course_nbg/utils/.ans/topic/
-
-        NO YET IMPLEMENTED----------------------
-        'macti' : los datos (answers & feedback) se almacenan en el directorio de instalación de la biblioteca.
-                  La ruta a los archivos se construye como : 
-                  DIR_PYTHON_LIB_INSTALLATION/course/utils/.ans/topic/
+        path_to_store: string
+        Ruta donde se guardarán las respuestas y la retroalimentación.
+        Por omisión, los datos (answers & feedback) se almacenan en el directorio:.
+        $PWD/course/.ans/topic/. Las respuestas/retroalimentación para cada quizz 
+        se almacenan en archivos diferentes, veáse la función to_file().
         
         """
-        self.__server = server
+        self.__path_to_store = path_to_store
         self.__platform = platform.system()
         self.__course_path = ''
-        self.__course = course # Curso/
 
+        # Separador dependiendo de la plataforma
         sep = '\\' if self.__platform == 'Windows' else '/'
-        if server == 'local':
-            # Obtención del directorio del curso
-            abs_path = os.getcwd().split(sep = sep)
-            index_co = abs_path.index(self.__course)
-            for i in abs_path[0:index_co+1]:
-                self.__course_path += i + sep
+        
+        # Obtenemos el nombre a partir del path actual
+        # Se asume que se ejecuta dentro de course/topic/
+        self.__path = os.getcwd()
+        self.__course = self.__path.split('/')[-2] # sin separador
+        self.__topic = self.__path.split('/')[-1] + sep
 
-        self.__course += sep  # Curso/
-        self.__topic = topic + sep   # Topico/
-        self.__u_a = 'utils' + sep + '.ans' + sep # utils/.ans/
+        print('curso = ', self.__course)
+        print('tema = ', self.__topic)
+        #course # Curso/
 
+        # Obtención del directorio del curso
+        abs_path = os.getcwd().split(sep = sep)
+        index_co = abs_path.index(self.__course)
+        for i in abs_path[0:index_co+1]:
+            self.__course_path += i + sep
+        print('source path = ', self.__course_path)
+  
+        self.__course += sep  # Agregamos el separador
+        self.__ans = '.ans' + sep # .ans/
+        
         self.__exernum = []
         self.__answers = []
         self.__feedback = []
-        self.__server = server
 
         # Por omisión la verbosidad es igual a 2, es decir toda la ayuda posible al alumno
         self.__verb = 2
@@ -529,8 +532,8 @@ class FileAnswer():
         Parameters
         ----------
         qnum: string
-        Es una cadena que proporciona el número del quizz. La cadena debe ser un
-        número entero: '1', '2', ...
+        Es una cadena que proporciona el número del quizz. La cadena debe ser una
+        cadena, se recomienta usar: '1', '2', ...
         """
         # Se define la verbosidad de la retroalimentación de cada respuesta. 
         self.write('0', self.__verb, verb = True)
@@ -540,16 +543,12 @@ class FileAnswer():
         
         filename = '.__ans_' + qnum
 
-        if self.__server == 'local':
-            path = self.__course_path + self.__u_a + self.__topic
-        elif self.__server == 'hub': # Linux
-            # '/usr/local/share/nbgrader/exchange/'
-            path = '/usr/local/share/nbgrader/exchange/' + self.__course + self.__u_a + self.__topic
-#        elif self.__server == 'macti': 
-#            path = /opt/conda/lib/python3.11/site-packages/macti/data/course/utils/.ans/topic/
-
+        if self.__path_to_store == None:
+            # Se almacena en el directorio course/.ans/topic
+            path = self.__course_path + self.__ans + self.__topic
         else:
-            print('Invalid option: {}'.format(self.__server))
+            # Se almacena en el directorio course/topic
+            path = self.__path_to_store + sep + self.__topic
         
         if not os.path.exists(path):
             print('Creando el directorio :{}'.format(path))
@@ -566,7 +565,7 @@ if __name__ == '__main__':
 
     #---------------------- CREACIÓN DEL ARCHIVO DE RESPUESTAS
     print()
-    file_answer = FileAnswer('macti_lib', 'macti', server = 'local')
+    file_answer = FileAnswer()
 #    file_answer.verb = 0
 
     #---------------------- CONSTRUCCIÓN DE RESPUESTAS
