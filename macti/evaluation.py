@@ -16,6 +16,7 @@ from IPython.display import display, Latex
 class Quizz():
     def __init__(self,
                  qnum,
+                 course,
                  server = 'hub',
                  path_from_read = None):
         """
@@ -45,7 +46,7 @@ class Quizz():
         # Obtenemos el nombre a partir del path actual
         # Se asume que se ejecuta dentro de course/topic/
         self.__path = os.getcwd()
-        self.__course = self.__path.split('/')[-2] # sin separador
+        self.__course = course # sin separador
         self.__topic = self.__path.split('/')[-1] + sep
 
         print('curso = ', self.__course)
