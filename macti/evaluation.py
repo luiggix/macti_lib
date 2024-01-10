@@ -49,9 +49,6 @@ class Quizz():
         self.__course = course # sin separador
         self.__topic = self.__path.split('/')[-1] + sep
 
-        print('curso = ', self.__course)
-        print('tema = ', self.__topic)
-
         if server == 'local':
             # Construcción de una lista con los componentes de la ruta absoluta
             # a partir de donde se ejecuta la notebook
@@ -63,8 +60,6 @@ class Quizz():
             # Construcción del path del curso
             for i in abs_path[0:index_co+1]:
                 self.__course_path += i + sep
-
-        print(self.__course_path)
         
         self.__course += sep  # Agregamos el separador
         self.__ans = '.ans' + sep # .ans/
@@ -122,13 +117,13 @@ class Quizz():
 
             if self.__server == 'local' and self.__path_from_read == None:
                 path = self.__course_path + self.__ans + self.__topic
-                print(path)
+#                print(path)
                 stream = path + filename
                 
             elif self.__server == 'hub' and self.__path_from_read == None: 
                 # Directorio global en el hub
                 path = '/usr/local/share/nbgrader/exchange/' + self.__course + self.__ans + self.__topic
-                print(path)
+#                print(path)
                 stream = path + filename 
                 
             elif self.__path_from_read != None:
@@ -428,16 +423,11 @@ class FileAnswer():
         self.__course = self.__path.split('/')[-2] # sin separador
         self.__topic = self.__path.split('/')[-1] + sep
 
-        print('curso = ', self.__course)
-        print('tema = ', self.__topic)
-        #course # Curso/
-
         # Obtención del directorio del curso
         abs_path = os.getcwd().split(sep = sep)
         index_co = abs_path.index(self.__course)
         for i in abs_path[0:index_co+1]:
             self.__course_path += i + sep
-        print('source path = ', self.__course_path)
   
         self.__course += sep  # Agregamos el separador
         self.__ans = '.ans' + sep # .ans/
