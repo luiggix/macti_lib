@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 setup(
     name='macti',
-    packages=find_packages()#(include=['macti', 'macti.fdm', 'macti.PyNoxtli']),
+    packages=find_packages(include=['macti', 'macti.fdm', 'macti.PyNoxtli']),
     include_package_data=True,
     package_data={'':['data/resources/*']},
     version='2.0',
