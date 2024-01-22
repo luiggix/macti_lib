@@ -146,7 +146,7 @@ else:
 
 #-------- SE COMIENZA LA COPIA DE ARCHIVOS --------
 
-print_macti_info('Copiando información de' + Style.BRIGHT + ' {} '.format(c_name) + Style.NORMAL + 'a' + Style.BRIGHT + ' {} '.format(c_name_nbg))
+print_macti_info('Copia de' + Style.BRIGHT + ' {} '.format(c_name) + Style.NORMAL + 'a' + Style.BRIGHT + ' {} '.format(c_name_nbg))
 print()
 
 # Se recorren los topicos/temas (que son las columnas del DataFrame topic_list)
@@ -176,10 +176,26 @@ for topic in topic_list:
 
     # Se copian los archivos de respuestas y de retroalimentación
     path_ans_src = path_c_name + '/.ans/' + topic
-    path_ans_dst = '/usr/local/share/nbgrader/exchange/' + c_name + '/.ans/' + topic
-    print(path_ans_src)
-    print(path_ans_dst)
-    print_macti_info('Copiando respuestas y retroalimentación de los quizzes: ' + Style.BRIGHT + topic)
-    shutil.copytree(path_ans_src, path_ans_dst, dirs_exist_ok=True)
-    print()
+
+    # Leemos el path del directorio exchange
+    with open('.nbgex', 'r') as f:
+        path_nbgex = f.readline()[:-1]
+            
+    path_ans_dst = path_nbgex + c_name + '/.ans/' + topic
+        
+    print_macti_info('Copiando respuestas y retroalimentación a:')
+    print_macti_info(Style.BRIGHT + '  {}  '.format(path_ans_dst))
+
+    # Realizamos la copia, siempre y cuando exista el archivo fuente
+    try:
+        shutil.copytree(path_ans_src, path_ans_dst, dirs_exist_ok=True)
+    except FileNotFoundError:
+        print_macti_info(Fore.RED + 'Archivo fuente' + Fore.RESET + Style.BRIGHT + ' {}'.format(path_ans_src))
+        print_macti_info(Fore.RED + '  No existe. No se hizo la copia.' + Style.RESET_ALL)
+    else:
+        print()
+
+print()
+print_macti_info(Style.BRIGHT + '¡Procesamiento exitoso con NBGRADER!' + Style.RESET_ALL)
+
     
