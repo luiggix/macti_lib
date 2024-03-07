@@ -637,7 +637,7 @@ if __name__ == '__main__':
     print('-'*40)
 
     #---------------------- EVALUACIÓN DE LAS RESPUESTAS
-    quizz = Quizz('1', 'macti_lib', 'macti', 'local')
+    quizz = Quizz('1', 'macti_lib', 'local')
 
     print('\nVerbosidad de la ayuda : {} \n'.format(quizz.verb))
 
