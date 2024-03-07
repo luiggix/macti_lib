@@ -292,7 +292,7 @@ class Quizz():
                 
         except AssertionError as info:
             print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + 'Ocurrió un error en tus cálculos.')
+            print(Fore.RED + enum + ' | Ocurrió un error en tus cálculos.')
             print(Fore.RESET + self.__line_len*'-')
             print(Fore.RED + 'Hint:', end = ' ')
 
@@ -316,7 +316,7 @@ class Quizz():
             
         else:
             print(Fore.RESET + self.__line_len*'-')
-            print(Fore.GREEN + 'Tu resultado es correcto.')
+            print(Fore.GREEN + enum + ' | Tu resultado es correcto.')
             print(Fore.RESET + self.__line_len*'-')            
 
     def eval_datastruct(self, enum, ans):
