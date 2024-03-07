@@ -163,13 +163,13 @@ class Quizz():
         
         if correcta:
             print(Fore.RESET + self.__line_len*'-')
-            print(Fore.GREEN + 'Tu respuesta:', end = ' ')
+            print(Fore.GREEN + enum + ' | Tu respuesta:', end = ' ')
             print(Fore.RESET + '{}'.format(ans), end = '')
             print(Fore.GREEN + ', es correcta.')
             print(Fore.RESET + self.__line_len*'-')
         else:
             print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + 'Tu respuesta:', end = ' ')
+            print(Fore.RED + enum + ' | Tu respuesta:', end = ' ')
             print(Fore.RESET + '{}'.format(ans), end = '')
             print(Fore.RED + ', es INCORRECTA.') 
             print(Fore.RESET + self.__line_len*'-')
@@ -211,13 +211,13 @@ class Quizz():
         # del alumno (ans) usando la función equals().
         if problema.equals(ans):
             print(Fore.RESET + self.__line_len*'-')
-            print(Fore.GREEN + 'Tu respuesta:')
+            print(Fore.GREEN + enum + ' | Tu respuesta:')
             display(ans)
             print(Fore.GREEN + 'es correcta.')
             print(Fore.RESET + self.__line_len*'-')
         else:
             print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + 'Tu respuesta:')
+            print(Fore.RED + enum + ' | Tu respuesta:')
             display(ans)
             print(Fore.RED + 'NO es correcta.')
             print(Fore.RESET + self.__line_len*'-')
@@ -285,7 +285,7 @@ class Quizz():
                 if not np.allclose(correct, ans):
                     assert_equal(correct, ans)
             else:
-                print('Respuesta inválida: {} es de tipo {}'.format(ans, type(ans)))
+                print(enum + ' | Respuesta inválida: {} es de tipo {}'.format(ans, type(ans)))
 
                 # Se lanza la excepción para que sea detectada por NBGrader
                 raise AssertionError from None
@@ -366,7 +366,7 @@ class Quizz():
             
         except AssertionError as info:
             print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + 'Ocurrió un error.')
+            print(Fore.RED + enum + ' | Ocurrió un error.')
             print(Fore.RESET + self.__line_len*'-')
             print(Fore.RED + 'Hint:', end = ' ')
 
@@ -390,7 +390,7 @@ class Quizz():
             
         else:
             print(Fore.RESET + self.__line_len*'-')
-            print(Fore.GREEN + 'Tu resultado es correcto.')
+            print(Fore.GREEN + enum + ' | Tu resultado es correcto.')
             print(Fore.RESET + self.__line_len*'-') 
             
 class FileAnswer():
