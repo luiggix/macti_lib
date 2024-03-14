@@ -912,7 +912,7 @@ class Plotter():
 #        self.__ax[n-1].legend(**{'loc':'upper center', 'ncol':2})
         self.__ax[n-1].grid(linestyle='--', linewidth=0.5)
 
-    def animate(self, function, N, interval = 500):
+    def animate(self, function, frames, interval, repeat, *args):
         """
         Realiza una animación de una serie de tiempo.
 
@@ -932,9 +932,10 @@ class Plotter():
         """
         anim = FuncAnimation(self.__fig,            # La figura
                              function, # la función que cambia los datos
+                             fargs = args,
                              interval=interval,     # Intervalo entre cuadros en milisegundos
-                             frames=N+1,   # Cuadros
-                             repeat=True)   # Permite poner la animación en un ciclo        
+                             frames=frames+1,   # Cuadros
+                             repeat=repeat)   # Permite poner la animación en un ciclo        
         
         return anim
 
