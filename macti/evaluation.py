@@ -344,7 +344,10 @@ class Quizz():
                 # La función assert_equal() requiere de listas.
                 assert_equal(set(correct), set(ans.flatten()))
 
-            elif isinstance(ans, str) or isinstance(ans, list) or isinstance(ans, tuple) or isinstance(ans, set):
+            elif isinstance(ans, str):
+                assert_equal(correct, ans)
+
+            elif isinstance(ans, list) or isinstance(ans, tuple) or isinstance(ans, set):
                 assert_equal(set(correct), set(ans))
                 
             elif isinstance(ans, dict):
