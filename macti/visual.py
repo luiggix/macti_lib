@@ -1018,7 +1018,7 @@ class Plotter():
             self.__ax[n-1].legend(ncol = 1, loc = 'best', bbox_to_anchor=(1.0+ofx, 0.5, 0.5, 0.5))
         
             
-    def plot_vectors_sum(self, n, vecs, lvecs = None, baseline = [], w = 0.01, aspect='equal', limit=True, ofx=0.0):
+    def plot_vectors_sum(self, n, vecs, lvecs = [], baseline = [], w = 0.01, aspect='equal', limit=True, ofx=0.0):
         """
         Dibuja la suma de vectores en el plano cartesiano.
 
