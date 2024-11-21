@@ -979,14 +979,13 @@ class Plotter():
         xmax, xmin = 0, 0
         ymax, ymin = 0, 0
         vxm, vym = [], []
-        color = []
         
         for i, x in enumerate(vecs):
 
             if len(colors) == 0:
-                color.append('C' + str(i))
+                color = 'C' + str(i))
             else:
-                color.append(lcolors[i])
+                color = lcolors[i]
                         
             if len(baseline) == 0:
                 x0, y0 = 0, 0
