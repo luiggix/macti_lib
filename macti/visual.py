@@ -940,7 +940,7 @@ class Plotter():
         return anim
 
 
-    def plot_vectors(self, n, vecs, lvecs = None, baseline = [], w = 0.01, aspect='equal', limit=True, ofx = 0.0):
+    def plot_vectors(self, n, vecs, lvecs = [], lcolors = [], baseline = [], w = 0.01, aspect='equal', limit=True, ofx = 0.0):
         """
         Dibuja vectores en el plano cartesiano.
 
@@ -955,6 +955,9 @@ class Plotter():
         lvecs: list
         Lista de etiquetas (str) para distinguir cada vector.
 
+        lcolors: list
+        Lista de colores (str) para distinguir cada vector.
+        
         baseline: list
         Lista de np.arrays para definir el inicio de cada vector.
 
@@ -968,7 +971,7 @@ class Plotter():
         Se limita el máximo y mínimo de la gráfica.
 
         ofx: float
-        Offset en dirección x para la legenda.
+        Offset en dirección x para la leyenda.
 
         Returns
         -------
@@ -976,23 +979,28 @@ class Plotter():
         xmax, xmin = 0, 0
         ymax, ymin = 0, 0
         vxm, vym = [], []
+        color = []
         
         for i, x in enumerate(vecs):
-            color = 'C' + str(i)
+
+            if len(colors) == 0:
+                color.append('C' + str(i))
+            else:
+                color.append(lcolors[i])
                         
             if len(baseline) == 0:
                 x0, y0 = 0, 0
             else:
                 x0 = baseline[i][0]
                 y0 = baseline[i][1]
-            
+
             vxm.append(x0); vxm.append(x[0] + x0)
             vym.append(y0); vym.append(x[1] + y0)
             
-            if lvecs != None:
-                self.__ax[n-1].quiver(x0, y0, x[0], x[1], angles='xy', scale_units='xy', scale=1, width=w, color=color, label=lvecs[i])
-            else:
+            if len(lvecs) == 0:
                 self.__ax[n-1].quiver(x0, y0, x[0], x[1], angles='xy', scale_units='xy', scale=1, width=w, color=color)
+            else:
+                self.__ax[n-1].quiver(x0, y0, x[0], x[1], angles='xy', scale_units='xy', scale=1, width=w, color=color, label=lvecs[i])                
     
         xmax = np.array(vxm).max()
         xmin = np.array(vxm).min()
