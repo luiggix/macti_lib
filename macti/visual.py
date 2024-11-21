@@ -983,7 +983,7 @@ class Plotter():
         for i, x in enumerate(vecs):
 
             if len(colors) == 0:
-                color = 'C' + str(i))
+                color = 'C' + str(i)
             else:
                 color = lcolors[i]
                         
