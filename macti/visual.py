@@ -1062,7 +1062,7 @@ class Plotter():
         lsuma = lsuma[1:] if lsuma[0] == '+' else lsuma
         vecs.append(suma)
         lvecs.append(lsuma)
-        self.plot_vectors(n, vecs, lvecs, baseline, w, aspect, limit, ofx)
+        self.plot_vectors(n, vecs = vecs, lvecs = lvecs, baseline = baseline, w = w, aspect = aspect, limit = limit, ofx = ofx)
         if len(vecs) == 3:
             self.__ax[n-1].plot([vecs[0][0], suma[0]], [vecs[0][1], suma[1]], lw=0.75, ls='--', c='dimgrey')
             self.__ax[n-1].plot([vecs[1][0], suma[0]], [vecs[1][1], suma[1]], lw=0.75, ls='--', c='dimgrey')
