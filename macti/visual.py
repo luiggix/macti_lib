@@ -940,7 +940,7 @@ class Plotter():
         return anim
 
 
-    def plot_vectors(self, n, vecs, lvecs = [], lcolors = [], baseline = [], w = 0.01, aspect='equal', limit=True, ofx = 0.0):
+    def plot_vectors(self, n, vecs, lvecs = [], lcolors = [], baseline = [], w = [], aspect='equal', ofx = 0.0):
         """
         Dibuja vectores en el plano cartesiano.
 
@@ -967,9 +967,6 @@ class Plotter():
         aspect: str
         El aspecto del gráfico.
 
-        limit: bool
-        Se limita el máximo y mínimo de la gráfica.
-
         ofx: float
         Offset en dirección x para la leyenda.
 
@@ -995,30 +992,38 @@ class Plotter():
 
             vxm.append(x0); vxm.append(x[0] + x0)
             vym.append(y0); vym.append(x[1] + y0)
+
+            if len(w) == 0:
+                w = [0.01 for i in range(len(vecs))]
             
             if len(lvecs) == 0:
-                self.__ax[n-1].quiver(x0, y0, x[0], x[1], angles='xy', scale_units='xy', scale=1, width=w, color=color)
+                self.__ax[n-1].quiver(x0, y0, x[0], x[1], angles='xy', scale_units='xy', scale=1, width=w[i], color=color)
             else:
-                self.__ax[n-1].quiver(x0, y0, x[0], x[1], angles='xy', scale_units='xy', scale=1, width=w, color=color, label=lvecs[i])                
-    
+                self.__ax[n-1].quiver(x0, y0, x[0], x[1], angles='xy', scale_units='xy', scale=1, width=w[i], color=color, label=lvecs[i])                
+
+        # Ajuste de los límites de la gráfica
         xmax = np.array(vxm).max()
         xmin = np.array(vxm).min()
         ymax = np.array(vym).max()
         ymin = np.array(vym).min()
-    
-        if limit:
-            xoff = np.fabs(xmax - xmin) * 0.1
-            yoff = np.fabs(ymax - ymin) * 0.1
-            self.__ax[n-1].set_xlim(xmin-xoff, xmax+xoff)
-            self.__ax[n-1].set_ylim(ymin-yoff, ymax+yoff)
+
+        xoff = np.fabs(xmax - xmin) * 0.1
+        yoff = np.fabs(ymax - ymin) * 0.1
+        self.__ax[n-1].set_xlim(xmin-xoff, xmax+xoff)
+        self.__ax[n-1].set_ylim(ymin-yoff, ymax+yoff)
 
         self.__ax[n-1].set_aspect(aspect)
 
-        if lvecs != None:
+        if len(lvecs) != 0:
             self.__ax[n-1].legend(ncol = 1, loc = 'best', bbox_to_anchor=(1.0+ofx, 0.5, 0.5, 0.5))
-        
+
+
+#limit=True,
+#        limit: bool
+#        Se limita el máximo y mínimo de la gráfica.
+#        if limit:
             
-    def plot_vectors_sum(self, n, vecs, lvecs = [], baseline = [], w = 0.01, aspect='equal', limit=True, ofx=0.0):
+    def plot_vectors_sum(self, n, vecs, lvecs = [], baseline = [], w = [], aspect='equal', ofx=0.0):
         """
         Dibuja la suma de vectores en el plano cartesiano.
 
@@ -1042,9 +1047,6 @@ class Plotter():
         aspect: str
         El aspecto del gráfico.
 
-        limit: bool
-        Se limita el máximo y mínimo de la gráfica.
-
         ofx: float
         Offset en dirección x para la legenda.
 
@@ -1062,7 +1064,7 @@ class Plotter():
         lsuma = lsuma[1:] if lsuma[0] == '+' else lsuma
         vecs.append(suma)
         lvecs.append(lsuma)
-        self.plot_vectors(n, vecs = vecs, lvecs = lvecs, baseline = baseline, w = w, aspect = aspect, limit = limit, ofx = ofx)
+        self.plot_vectors(n, vecs = vecs, lvecs = lvecs, baseline = baseline, w = w, aspect = aspect, ofx = ofx)
         if len(vecs) == 3:
             self.__ax[n-1].plot([vecs[0][0], suma[0]], [vecs[0][1], suma[1]], lw=0.75, ls='--', c='dimgrey')
             self.__ax[n-1].plot([vecs[1][0], suma[0]], [vecs[1][1], suma[1]], lw=0.75, ls='--', c='dimgrey')
