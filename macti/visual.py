@@ -973,56 +973,61 @@ class Plotter():
         Returns
         -------
         """
-        xmax, xmin = 0, 0
-        ymax, ymin = 0, 0
-        vxm, vym = [], []
-        
-        for i, x in enumerate(vecs):
-
-            if len(lcolors) == 0:
-                color = 'C' + str(i)
-            else:
-                color = lcolors[i]
-                        
-            if len(baseline) == 0:
-                x0, y0 = 0, 0
-            else:
-                x0 = baseline[i][0]
-                y0 = baseline[i][1]
-
-            vxm.append(x0); vxm.append(x[0] + x0)
-            vym.append(y0); vym.append(x[1] + y0)
-
-            if len(w) == 0:
-                w = [0.01 for i in range(len(vecs))]
+        # Definir el punto origen de cada vector.
+        if len(baseline) == 0:
+            baseline = np.zeros((len(vecs), 2))
             
+        # Calcular el máximo en 'x' y en 'y' de los vectores
+        xcoords = [v[0] for v in vecs]
+        ycoords = [v[1] for v in vecs]
+        for b in baseline:
+            xcoords.append(b[0])
+            ycoords.append(b[1])
+
+        xmax = np.array(xcoords).max()
+        xmin = np.array(xcoords).min()
+        ymax = np.array(ycoords).max()
+        ymin = np.array(ycoords).min()
+
+        # Longitud del canvas
+        lx = np.fabs(xmax - xmin)
+        ly = np.fabs(ymax - ymin)
+
+        # Definir el ancho de cada vector
+        if len(w) == 0:
+             w = [0.01 for i in range(len(vecs))]
+
+        # Definir los colores de cada vector
+        if len(lcolors) == 0:
+            lcolors = ['C' + str(i) for i in range(len(vecs))] 
+
+        # Graficar los vectores, one by one.
+        for i, x in enumerate(vecs):            
             if len(lvecs) == 0:
-                self.__ax[n-1].quiver(x0, y0, x[0], x[1], angles='xy', scale_units='xy', scale=1, width=w[i], color=color)
+                self.__ax[n-1].quiver(baseline[i][0], baseline[i][1], x[0], x[1], 
+                                      angles='xy', scale_units='xy', scale=1,
+                                      width=w[i], color=lcolors[i])
             else:
-                self.__ax[n-1].quiver(x0, y0, x[0], x[1], angles='xy', scale_units='xy', scale=1, width=w[i], color=color, label=lvecs[i])                
+                self.__ax[n-1].quiver(baseline[i][0], baseline[i][1], x[0], x[1], 
+                                      angles='xy', scale_units='xy', scale=1, 
+                                      width=w[i], color=lcolors[i], label=lvecs[i])                
 
         # Ajuste de los límites de la gráfica
-        xmax = np.array(vxm).max()
-        xmin = np.array(vxm).min()
-        ymax = np.array(vym).max()
-        ymin = np.array(vym).min()
+        if lx > 0.0:
+            xoff = lx * 0.1
+            self.__ax[n-1].set_xlim(xmin-xoff, xmax+xoff)
 
-        xoff = np.fabs(xmax - xmin) * 0.1
-        yoff = np.fabs(ymax - ymin) * 0.1
-        self.__ax[n-1].set_xlim(xmin-xoff, xmax+xoff)
-        self.__ax[n-1].set_ylim(ymin-yoff, ymax+yoff)
+        if ly > 0.0:
+            yoff = ly * 0.1
+            self.__ax[n-1].set_ylim(ymin-yoff, ymax+yoff)
 
+        # Ajuste de la razón de aspecto de la gráfica
         self.__ax[n-1].set_aspect(aspect)
 
+        # Ubicación de la leyenda
         if len(lvecs) != 0:
             self.__ax[n-1].legend(ncol = 1, loc = 'best', bbox_to_anchor=(1.0+ofx, 0.5, 0.5, 0.5))
 
-
-#limit=True,
-#        limit: bool
-#        Se limita el máximo y mínimo de la gráfica.
-#        if limit:
-            
     def plot_vectors_sum(self, n, vecs, lvecs = [], baseline = [], w = [], aspect='equal', ofx=0.0):
         """
         Dibuja la suma de vectores en el plano cartesiano.
@@ -1056,15 +1061,21 @@ class Plotter():
         suma = np.array([0.0, 0.0])
         lsuma = ''
         for vi, li in zip(vecs, lvecs):
-#            suma += vi
+            # Suma de cada vector
             suma = np.add(suma, vi, out=suma, casting="unsafe")
-#            print('vi = {} \t suma = {}'.format(vi, suma))
-            lsuma += li if li[0] == '-' else '+'+li
+            lsuma += li if li[0] == '-' else '+' + li
 
+        # Etiqueta de la suma
         lsuma = lsuma[1:] if lsuma[0] == '+' else lsuma
+
+        # Agrega la suma a vecs y lvecs
         vecs.append(suma)
         lvecs.append(lsuma)
+
+        # Dibuja los vectores y la suma.
         self.plot_vectors(n, vecs = vecs, lvecs = lvecs, baseline = baseline, w = w, aspect = aspect, ofx = ofx)
+
+        # Dibuja líneas punteadas
         if len(vecs) == 3:
             self.__ax[n-1].plot([vecs[0][0], suma[0]], [vecs[0][1], suma[1]], lw=0.75, ls='--', c='dimgrey')
             self.__ax[n-1].plot([vecs[1][0], suma[0]], [vecs[1][1], suma[1]], lw=0.75, ls='--', c='dimgrey')
