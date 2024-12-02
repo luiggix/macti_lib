@@ -1,5 +1,5 @@
 """
-@author: Luis M. de la Cruz [Updated on mié 18 ene 2023 14:07:31 CST].
+@author: Luis M. de la Cruz [Updated on Sun Dec  1 07:14:02 PM UTC 2024].
 """
 
 import numpy as np
@@ -51,17 +51,17 @@ class Plotter():
     """
     Gestor de figuras y despliegue.
     
-    Crea una figura de matplotlib y en ella agrega subplots ordenados en un
+    Crea una figura de matplotlib y en ella agrega subgráficas (subplots) ordenadas en un
     arreglo de tamaño rows x cols.
     
     Attributes
     ----------
-    __fig : Figure
-        La figura 
-    __ax : Axes list
-        Lista de ejes de cada subplot.
+    __fig : figure
+        La figura.
+    __ax : axes list
+        Lista de ejes de cada subgráfica.
     __nfigs : int
-        Número total de subplots.
+        Número total de subgráficas.
     
     Methods
     -------
@@ -85,6 +85,9 @@ class Plotter():
         Despliega una malla en 1D y 2D.
     animate()
         Realiza animaciones.
+    plot_vectors()
+
+    plot_vectors_sum()
     
     """
     
@@ -98,18 +101,19 @@ class Plotter():
         Parameters
         ----------
         rows : int, opcional
-            Número de renglones del arreglo de subplots. The default is 1.
+            Número de renglones del arreglo de subgráficas. El valor por omisión es 1.
         cols : int, opcional
-            Número de columnas del arreglo de subplots. The default is 1.
+            Número de columnas del arreglo de subgráficas. El valor por omisión es 1.
         axis_par : list of dicts, opcional
-            Lista de diccionarios; cada diccionario define los parámetros que 
-            se usarán decorar los `Axes` de cada subplot. The default is None.
+            Lista de diccionarios. Cada diccionario define los parámetros que 
+            se usarán para decorar los `Axes` de cada subgráfica. El valor por omisión es None.
         fig_par : dict, opcional
             Diccionario con los parámetros para decorar la figura. 
-            The default is {}.
+            El valor por omisión es {}.
         title_par: dict, opcional
-        Diccionario con los parámetros para el título de la figura.
-
+            Diccionario con los parámetros para el título de la figura.
+        title: str, opcional
+            Cadena para definir el título de la figura. El valor por omisión es ''.
         """
         self.__fig = plt.figure(**fig_par)        
         self.__fig.suptitle(title, **title_par)
@@ -125,15 +129,18 @@ class Plotter():
             Nfill = self.__nfigs
             axis_par = [ ]
             
-        # Al final de la lista axis_par agregamos los diccionarios que
-        # faltan (Nfill).
+        # Al final de la lista axis_par agregamos diccionarios vacíos para los 
+        # que faltan (Nfill).
         [axis_par.append({}) for n in range(Nfill)]
             
         # Generamos las subgráficas con sus parámetros correspondientes.
         self.__ax = [plt.subplot(rows, cols, n, **axis_par[n-1]) for n in range(1,self.__nfigs + 1)]
-        
+
+        # Ajustamos las subgráficas.
         plt.tight_layout()
- 
+#
+#----------------------- Methods applied to the figure  ----------------------------   
+#
     @property
     def fig(self):
         """
@@ -149,7 +156,7 @@ class Plotter():
     
     def figtitle(self, title, title_par = {}):
         """
-        Agrega un título para toda la figura.
+        Agrega un título para la figura.
         
         Parameters
         ----------
@@ -157,11 +164,34 @@ class Plotter():
         Cadena del título.
         
         title_par: dict
-        Parámetros para el texto del título.
+        Parámetros para el texto del título. El valor por omisión es {}.
         """
         self.__fig.suptitle(title, **title_par)
 
-    
+    def tight_layout(self, pad=1.08, h_pad=None, w_pad=None, rect=None):
+        """
+        Ejecuta la función matplotlib.pyplot.tight_layout.
+
+        See Also
+        --------
+        matplotlib.pyplot.tight_layout().
+
+        """
+        plt.tight_layout(pad, h_pad, w_pad, rect = rect)
+        
+    def show(self, close=None, block=None):
+        """
+        Ejecuta la función matplotlin.pyplot.show().
+        
+        See Also
+        --------
+        matplotlib.pyplot.show().
+        
+        """
+        plt.show(close, block)
+#
+#----------------------- Methods for axis configuration ----------------------------   
+#
     def axes(self, n = 1):
         """
         Regresa un objeto de tipo `Axes` que son los ejes del subplot[n].
@@ -169,13 +199,12 @@ class Plotter():
         Parameters
         ----------
         n : int, opcional
-            Número del subplot que se desea obtener (1, nfigs). The default is 1.
+            Número del subplot que se desea obtener (1, nfigs). El valor por omisión es 1.
 
         Returns
         -------
         Axes
             Los ejes del subplot[n].
-
         """
         assert (n >= 1 and n <= self.__nfigs), \
         "Plotter.axes(%d) out of bounds. Valid bounds : [1,%d]" % (n,self.__nfigs)
@@ -188,9 +217,9 @@ class Plotter():
 
         Parameters
         ----------
-        ax: axis
-        Son los ejes que se van a configurar.
-
+        n: int
+        Índice de los ejes que se van a configurar.
+        
         Lx: float
         Tamaño del dominio en dirección x.
 
@@ -200,52 +229,37 @@ class Plotter():
         Returns
         -------
         cax: axis
-        Eje donde se dibuja el mapa de color.
+        Ejes donde se dibuja el colorbar.
         """
+        # Obtenemos los ejes que se van a configurar.
         ax = self.__ax[n-1]
-        
+
+        # Ajuste de los límites de los ejes en cada dirección.
         lmax = max(Lx,Ly)
         offx = lmax * 0.010
         offy = lmax * 0.010
         ax.set_xlim(-offx, Lx+offx)
         ax.set_ylim(-offy, Ly+offy)
         ax.grid(False)
+
+        # Se eliminan los spines (marco de la gráfica).
         ax.spines[:].set_visible(False)
 
-        facecolor = self.__fig.get_facecolor()
+        # Configuramos un espacio para un colorbar
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", "5%", pad="3%")
         cax.set_xticks([])
         cax.set_yticks([])
         cax.spines['bottom'].set_visible(False)
         cax.spines['left'].set_visible(False)
-        cax.set_facecolor(facecolor)
+        cax.set_facecolor(self.__fig.get_facecolor())
     
         return cax
 
-    def format_func(self, value, tick_number):
-        # find number of multiples of pi/2
-        N = int(np.round(2 * value / np.pi))
-        if N == 0:
-            return "0"
-        elif N == 1:
-            return r"$\frac{\pi}{2}$"
-        elif N == 2:
-            return r"$\pi$"
-        elif N % 2 > 0:
-            if N == -1:
-                return r"$-\frac{\pi}{2}$"
-            elif N == 1:
-                return r"$-\frac{\pi}{2}$"
-            else:
-                return r"${}$".format(N) + r"$\frac{\pi}{2}$"
-        else:          
-            return r"${}$".format(N // 2) + r"$\pi$"
-
-    def set_ticks(self, ax, xticks = [], yticks = [], trig = False):
+    def set_ticks(self, ax, xticks = [], yticks = [], PI = False):
         """
         Define los ticks para las gráficas. En caso de funciones trigonométricas
-        puede poner el eje x en términos de pi.
+        puede poner el eje x en términos de 𝜋.
 
         Parameters
         ----------
@@ -258,13 +272,35 @@ class Plotter():
         yticks: list,ndarray
         ticks en el eje y
 
-        trig: boolean
-        Cuando es True se ponen los ticks en términos de pi.
+        PI: boolean
+        Cuando es True se ponen los ticks en términos de 𝜋.
         """
-        if trig:
+        def format_func(value, tick_number):
+            """
+            Definición de las marcas como múltiplos de 𝜋.
+            """
+            # find number of multiples of pi/2
+            N = int(np.round(2 * value / np.pi))
+            if N == 0:
+                return "0"
+            elif N == 1:
+                return r"$\frac{\pi}{2}$"
+            elif N == 2:
+                return r"$\pi$"
+            elif N % 2 > 0:
+                if N == -1:
+                    return r"$-\frac{\pi}{2}$"
+                elif N == 1:
+                    return r"$-\frac{\pi}{2}$"
+                else:
+                    return r"${}$".format(N) + r"$\frac{\pi}{2}$"
+            else:          
+                return r"${}$".format(N // 2) + r"$\pi$"
+                
+        if PI:
             ax.xaxis.set_major_locator(plt.MultipleLocator(np.pi / 2))
             ax.xaxis.set_minor_locator(plt.MultipleLocator(np.pi / 4))
-            ax.xaxis.set_major_formatter(plt.FuncFormatter(self.format_func))
+            ax.xaxis.set_major_formatter(plt.FuncFormatter(format_func))
         else:        
             if len(xticks) != 0:
                 ax.set_xticks(xticks)
@@ -274,24 +310,25 @@ class Plotter():
     def set_coordsys(self, n = 1, 
                      xlabel='$x$', ylabel='$y$',
                      xlabelsize=8, ylabelsize=8):
-#                     xtuple = None, ytuple = None,
-#                     trig = False):
         """
         Configura los ejes.
 
         Parameters
         ----------
+        n: int
+        Índice de los ejes que se van a configurar. El valor por omisión es 1.
+        
         xlabel: string
-        Etiqueta del eje x.
+        Etiqueta del eje x. El valor por omisión es '$x$'.
 
         ylabel: string
-        Etiqueta del eje y.
+        Etiqueta del eje y. El valor por omisión es '$y$'.
 
         xlabelsize: int
-        Tamaño del texto de la etiqueta en el eje x.
+        Tamaño del texto de la etiqueta en el eje x. El valor por omisión es 8.
 
         ylabelsize: int
-        Tamaño del texto de la etiqueta en el eje y.
+        Tamaño del texto de la etiqueta en el eje y. El valor por omisión es 8.
         """
         ax = self.__ax[n-1]
         # Move the left and bottom spines to x = 0 and y = 0, respectively.
@@ -311,42 +348,9 @@ class Plotter():
         ax.set_ylabel(ylabel, loc = 'top', rotation=0, labelpad=-45.0)
         ax.xaxis.set_tick_params(labelsize=xlabelsize)
         ax.yaxis.set_tick_params(labelsize=ylabelsize)
-        
-#        if isinstance(xtuple, tuple) and isinstance(ytuple, tuple):
-#            xticks = np.linspace(xtuple[0],xtuple[1],xtuple[2]) 
-#            yticks = np.linspace(ytuple[0],ytuple[1],ytuple[2]) 
-#        else:
-#            xticks = ax.get_xticks()
-#            yticks = ax.get_yticks()
-#        self.set_ticks(ax, xticks, yticks, trig)
-        
-    
 #
 #----------------------- Methods applied to all subplots  ----------------------------   
-#
-    def tight_layout(pad=1.08, h_pad=None, w_pad=None, rect=None):
-        """
-        Ejecuta la función matplotlib.pyplot.tight_layout.
-
-        See Also
-        --------
-        matplotlib.pyplot.tight_layout().
-
-        """
-        plt.tight_layout()#pad, h_pad, w_pad, rect = None)
-        
-    def show(self):
-        """
-        Muestra las gráficas de cada subplot.
-        
-        See Also
-        --------
-        matplotlib.pyplot.show().
-        
-        """
-        plt.show()
-    
-        
+#       
     def grid(self, nlist = [], par = None):
         """
         Despliega el grid de uno o todos los subplots.
@@ -358,7 +362,7 @@ class Plotter():
             subplots. Si se da una lista, sus valores deben estar en (1,nfigs) y
             se mostrará el grid de cada subplot[n].
         par : dict, opcional
-            Diccionario con los parámetros para decorar el grid. The default is None.
+            Diccionario con los parámetros para decorar el grid. El valor por omisión es None.
 
         See Also
         --------
@@ -381,7 +385,7 @@ class Plotter():
                 
     def legend(self, nlist = [], **par):
         """
-        Muestra las leyendas de todos los subplots, si están definidos.
+        Muestra las leyendas de todos los subplots que las tienen definidas.
 
         Parameters
         ----------
@@ -391,7 +395,7 @@ class Plotter():
             se mostrarán las leyendas de cada subplot[n].        
         par : dict, opcional
             Diccionario con los parámetros para decorar las leyendas. 
-            The default is None.
+            El valor por omisión es None.
 
         Returns
         -------
@@ -412,9 +416,8 @@ class Plotter():
                     self.__ax[n-1].legend()
         else:
             [self.__ax[n].legend(**par) for n in range(0,self.__nfigs)]        
-            
 #
-#----------------------- Methods to draw a specific kind of plot -------------   
+#----------------------- Methods to draw XY plots (plot, scatter) -------------   
 #        
     def plot(self, n, data1, data2, **par):
         """
@@ -427,7 +430,7 @@ class Plotter():
         Parameters
         ----------
         n : int
-            Subplot donde se dibujará la línea.
+            Subgráfica donde se dibujará la línea y los puntos.
         data1 : array-like
             Coordenadas x.
         data2 : array-like
@@ -437,7 +440,7 @@ class Plotter():
 
         Returns
         -------
-        out : list of Linea2D
+        out : list of Line2D
             Lista de objetos de tipo `Line2D` que representan la línea.
 
         See Also
@@ -462,7 +465,7 @@ class Plotter():
         Parameters
         ----------
         n : int
-            Subplot donde se dibujará los puntos.
+            Subgráfica donde se dibujarán los puntos.
         data1 : array-like
             Coordenadas x.
         data2 : array-like
@@ -485,21 +488,35 @@ class Plotter():
         out = self.__ax[n-1].scatter(data1, data2, **par)
         
         return out
-
+#
+#----------------------- Methods to draw skectches of numerical simulations -------------   
+# 
     def draw_domain(self, n, xg, yg, lw = 0.5, color = 'k', fontsize=10):
         """
-        Dibuja el recuadro de la malla.
+        Dibuja el dominio de simulación con los textos correspondientes.
 
         Parameters
         ---------
+        n : int
+        Subgráfica donde se dibujará el dominio.
+            
         ax: axis
         Son los ejes donde se dibujará la malla.
 
-        xn: np.array
+        xg: np.array
         Coordenadas en x de la malla.
 
-        yn: np.array
+        yg: np.array
         Coordenadas en y de la malla.
+
+        lw: float
+        Ancho de la línea del dominio.
+
+        color: str
+        Color de la línea del dominio.
+
+        fontsize: int
+        Tamaño del font.
         """
         ax = self.__ax[n-1]
 
@@ -507,7 +524,8 @@ class Plotter():
         yn = yg[0,:]
 
         self.plot_frame(n, xg, yg, lw = 0.5, color = 'k')
-            
+
+        # Se determina el offset para ubicar los textos.
         Lx = xn[-1] - xn[0]
         Ly = yn[-1] - yn[0]
         xoffset = Lx * 0.2
@@ -528,6 +546,9 @@ class Plotter():
 
         Paramters
         ---------
+        n : int
+        Subgráfica donde se dibujará el dominio.
+        
         ax: axis
         Son los ejes donde se dibujará la malla.
 
@@ -560,14 +581,23 @@ class Plotter():
     
         Parameters
         ---------
+        n : int
+        Subgráfica donde se dibujará el dominio.
+        
         ax: axis
         Son los ejes donde se dibujará la malla.
     
-        xn: np.array
+        xg: np.array
         Coordenadas en x de la malla.
     
-        yn: np.array
+        yg: np.array
         Coordenadas en y de la malla.
+
+        meshon: boolean
+        Cuando es verdadero se dibuja la malla.
+
+        nodeson: boolean
+        Cuando es verdadero se dibujan los nodos.
         """
         ax = self.__ax[n-1]
 
@@ -589,7 +619,98 @@ class Plotter():
         if nodeson:
             # Dibujamos un punto en cada nodo de la malla
             ax.scatter(xg, yg, marker='.', color='darkgray')
-                    
+
+    def plot_mesh(self, n, mesh, vol='o', nod='P', label=False):
+        """
+        Dibuja la malla de un dominio donde se resolverá una EDP.
+
+        Parameters
+        ----------
+        n : int
+            Subplot donde se desplegará la superficie.
+        mesh : Mesh
+            Malla con la información necesaria para hacer el dibujo.
+        vol : str, optional
+            Tipo de marcador para los centros de los volúmenes. The default is 'o'.
+        nod : TYPE, optional
+            Tipo de marcador para los nodos de la malla. The default is 'x'.
+            
+        See Also
+        --------
+        Esta función es similar a Mesh.plot().
+
+        """
+        if mesh.dim == '1D':
+            
+            # Construye los nodos para la malla de FDM
+            mesh.coordinatesMeshFDM() 
+            yg = np.zeros(mesh.nx)
+
+            #print(mesh.x, yg)
+            # Visualiza las líneas de la malla de FDM.
+            self.__ax[n-1].plot(mesh.x, yg, **{'color':'k', 'ls':'-', 'lw':1.5})
+            # Grafica los nodos de la malla de FDM
+            if label:
+                par = {'s':30, 'marker':nod, 'color':'k', 'label':'FDM nodes'}
+            else:
+                par = {'s':30, 'marker':nod, 'color':'k'}
+            self.__ax[n-1].scatter(mesh.x, yg, **par)
+
+            # Construye los nodos para la malla de FVM
+            x, _, _ = mesh.coordinatesMeshFVM()
+            yg = np.zeros(mesh.vx)
+            # Grafica los nodos de la malla de FVM 
+            if label:
+                par = {'s':30, 'marker':vol, 'color':'darkblue', 'label':'FVM nodes'}
+            else:
+                par = {'s':30, 'marker':vol, 'color':'darkblue'}
+            self.__ax[n-1].scatter(x[1:-1], yg, **par)
+
+            ylim = 1.0
+            self.__ax[n-1].set_ylim(-ylim, ylim)  
+            self.__ax[n-1].set_xlim(-mesh.lx * 0.05, mesh.lx * 1.05)  
+
+        if mesh.dim == '2D':
+
+            # Construye los nodos para la malla de FDM
+            mesh.coordinatesMeshFDM() 
+
+            # Visualiza las líneas de la malla de FDM.
+            for yv in mesh.y:
+                ym = np.zeros(mesh.nx)
+                ym[:] = yv
+                self.__ax[n-1].plot(mesh.x, ym, **{'color':'k','ls':'-', 'lw':1.5})
+            for xv in mesh.x:
+                xm = np.zeros(mesh.ny)
+                xm[:] = xv
+                self.__ax[n-1].plot(xm, mesh.y, **{'color':'k','ls':'-', 'lw':1.5})
+
+            # Visualiza los nodos de la malla de FDM.
+            xg_d, yg_d = np.meshgrid(mesh.x, mesh.y)            
+            
+            # Grafica los nodos de la malla de FDM       
+            if label:
+                par = {'s':30, 'marker':nod, 'color':'k', 'label':'FDM nodes'}
+            else:
+                par = {'s':30, 'marker':nod, 'color':'k'}                
+            self.__ax[n-1].scatter(xg_d, yg_d, **par)
+            
+            # Construye los nodos para la malla de FVM
+            x, y, _ = mesh.coordinatesMeshFVM() 
+            xg_v, yg_v = np.meshgrid(x[1:-1], y[1:-1]) 
+            # Grafica los nodos de la malla de FVM
+            if label:               
+                par = {'s':30, 'marker':vol, 'c':'darkblue', 'label':'FVM nodes'}
+            else:
+                par = {'s':30, 'marker':vol, 'c':'darkblue'}               
+            self.__ax[n-1].scatter(xg_v, yg_v, **par)
+            
+            self.__ax[n-1].set_xlim(-mesh.lx * 0.05, mesh.lx * 1.05)
+            self.__ax[n-1].set_ylim(-mesh.ly * 0.05, mesh.ly * 1.05)   
+
+#        self.__ax[n-1].legend(**{'loc':'upper center', 'ncol':2})
+        self.__ax[n-1].grid(linestyle='--', linewidth=0.5)
+        
     def imshow(self, n, dat, **par):
         """
         Despliega datos usando un mapa de color.
@@ -820,98 +941,6 @@ class Plotter():
         
         self.__ax[n-1].plot_surface(x, y, z, **par)
 
-
-    def plot_mesh(self, n, mesh, vol='o', nod='P', label=False):
-        """
-        Dibuja la malla de un dominio donde se resolverá una EDP.
-
-        Parameters
-        ----------
-        n : int
-            Subplot donde se desplegará la superficie.
-        mesh : Mesh
-            Malla con la información necesaria para hacer el dibujo.
-        vol : str, optional
-            Tipo de marcador para los centros de los volúmenes. The default is 'o'.
-        nod : TYPE, optional
-            Tipo de marcador para los nodos de la malla. The default is 'x'.
-            
-        See Also
-        --------
-        Esta función es similar a Mesh.plot().
-
-        """
-        if mesh.dim == '1D':
-            
-            # Construye los nodos para la malla de FDM
-            mesh.coordinatesMeshFDM() 
-            yg = np.zeros(mesh.nx)
-
-            #print(mesh.x, yg)
-            # Visualiza las líneas de la malla de FDM.
-            self.__ax[n-1].plot(mesh.x, yg, **{'color':'k', 'ls':'-', 'lw':1.5})
-            # Grafica los nodos de la malla de FDM
-            if label:
-                par = {'s':30, 'marker':nod, 'color':'k', 'label':'FDM nodes'}
-            else:
-                par = {'s':30, 'marker':nod, 'color':'k'}
-            self.__ax[n-1].scatter(mesh.x, yg, **par)
-
-            # Construye los nodos para la malla de FVM
-            x, _, _ = mesh.coordinatesMeshFVM()
-            yg = np.zeros(mesh.vx)
-            # Grafica los nodos de la malla de FVM 
-            if label:
-                par = {'s':30, 'marker':vol, 'color':'darkblue', 'label':'FVM nodes'}
-            else:
-                par = {'s':30, 'marker':vol, 'color':'darkblue'}
-            self.__ax[n-1].scatter(x[1:-1], yg, **par)
-
-            ylim = 1.0
-            self.__ax[n-1].set_ylim(-ylim, ylim)  
-            self.__ax[n-1].set_xlim(-mesh.lx * 0.05, mesh.lx * 1.05)  
-
-        if mesh.dim == '2D':
-
-            # Construye los nodos para la malla de FDM
-            mesh.coordinatesMeshFDM() 
-
-            # Visualiza las líneas de la malla de FDM.
-            for yv in mesh.y:
-                ym = np.zeros(mesh.nx)
-                ym[:] = yv
-                self.__ax[n-1].plot(mesh.x, ym, **{'color':'k','ls':'-', 'lw':1.5})
-            for xv in mesh.x:
-                xm = np.zeros(mesh.ny)
-                xm[:] = xv
-                self.__ax[n-1].plot(xm, mesh.y, **{'color':'k','ls':'-', 'lw':1.5})
-
-            # Visualiza los nodos de la malla de FDM.
-            xg_d, yg_d = np.meshgrid(mesh.x, mesh.y)            
-            
-            # Grafica los nodos de la malla de FDM       
-            if label:
-                par = {'s':30, 'marker':nod, 'color':'k', 'label':'FDM nodes'}
-            else:
-                par = {'s':30, 'marker':nod, 'color':'k'}                
-            self.__ax[n-1].scatter(xg_d, yg_d, **par)
-            
-            # Construye los nodos para la malla de FVM
-            x, y, _ = mesh.coordinatesMeshFVM() 
-            xg_v, yg_v = np.meshgrid(x[1:-1], y[1:-1]) 
-            # Grafica los nodos de la malla de FVM
-            if label:               
-                par = {'s':30, 'marker':vol, 'c':'darkblue', 'label':'FVM nodes'}
-            else:
-                par = {'s':30, 'marker':vol, 'c':'darkblue'}               
-            self.__ax[n-1].scatter(xg_v, yg_v, **par)
-            
-            self.__ax[n-1].set_xlim(-mesh.lx * 0.05, mesh.lx * 1.05)
-            self.__ax[n-1].set_ylim(-mesh.ly * 0.05, mesh.ly * 1.05)   
-
-#        self.__ax[n-1].legend(**{'loc':'upper center', 'ncol':2})
-        self.__ax[n-1].grid(linestyle='--', linewidth=0.5)
-
     def animate(self, function, frames, interval, repeat, *args):
         """
         Realiza una animación de una serie de tiempo.
@@ -938,8 +967,9 @@ class Plotter():
                              repeat=repeat)   # Permite poner la animación en un ciclo        
         
         return anim
-
-
+#
+#----------------------- Methods to draw vectors for linear algebra examples -------------   
+# 
     def plot_vectors(self, n, vecs, lvecs = [], lcolors = [], baseline = [], w = [], aspect='equal', ofx = 0.0):
         """
         Dibuja vectores en el plano cartesiano.
