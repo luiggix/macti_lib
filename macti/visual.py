@@ -65,30 +65,32 @@ class Plotter():
     
     Methods
     -------
-    colorbar()
-        Crea una barra de color.
+    fig() : property
+    figtitle()
+    tight_layout()
+    show()
+    axes()
+    set_canvas()
+    set_ticks()
+    set_coordsys()
+    grid()
+    legend()
     plot()
-        Crea gráficas XY.
     scatter()
-        Despliega puntos dispersos.
-    imshow()
-        Despliega un mapa de color.
-    contour()
-        Despliega líneas de contornos.
-    contourf()
-        Despliega contornos llenos.
-    streamplot()
-        Despliega líneas de corriente.
-    quiver()
-        Despliega flechas de un campo vectorial.
+    draw_domain()
+    plot_frame()
+    plot_mesh2D()
     plot_mesh()
-        Despliega una malla en 1D y 2D.
+    imshow()
+    colorbar()
+    contour()
+    contourf()
+    streamplot()
+    quiver()
+    plot_surface()
     animate()
-        Realiza animaciones.
     plot_vectors()
-
     plot_vectors_sum()
-    
     """
     
     def __init__(self, rows = 1, cols = 1, 
