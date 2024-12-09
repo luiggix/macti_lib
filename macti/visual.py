@@ -310,8 +310,8 @@ class Plotter():
                 ax.set_yticks(yticks)
             
     def set_coordsys(self, n = 1, 
-                     xlabel='$x$', ylabel='$y$',
-                     xlabelsize=8, ylabelsize=8):
+                     xlabel='$x$', xlabelsize=8, 
+                     ylabel='$y$', ylabelsize=8, yha=-20.0):
         """
         Configura los ejes.
 
@@ -323,14 +323,17 @@ class Plotter():
         xlabel: string
         Etiqueta del eje x. El valor por omisión es '$x$'.
 
-        ylabel: string
-        Etiqueta del eje y. El valor por omisión es '$y$'.
-
         xlabelsize: int
         Tamaño del texto de la etiqueta en el eje x. El valor por omisión es 8.
 
+        ylabel: string
+        Etiqueta del eje y. El valor por omisión es '$y$'.
+        
         ylabelsize: int
         Tamaño del texto de la etiqueta en el eje y. El valor por omisión es 8.
+        
+        yha: float
+        Alienación horizontal de la etiqueta del eje 'y'.
         """
         ax = self.__ax[n-1]
         # Move the left and bottom spines to x = 0 and y = 0, respectively.
@@ -346,8 +349,8 @@ class Plotter():
         ax.plot(1, 0, ">k", transform=ax.get_yaxis_transform(), clip_on=False)
         ax.plot(0, 1, "^k", transform=ax.get_xaxis_transform(), clip_on=False)
 
-        ax.set_xlabel(xlabel, rotation=0, labelpad=-35.0, x = 0.98)
-        ax.set_ylabel(ylabel, loc = 'top', rotation=0, labelpad=-45.0)
+        ax.set_xlabel(xlabel, loc = "right")#, x = xpos)
+        ax.set_ylabel(ylabel,  y = 1.02, rotation=0.0, labelpad=yha) # yha=y horizontal alignment
         ax.xaxis.set_tick_params(labelsize=xlabelsize)
         ax.yaxis.set_tick_params(labelsize=ylabelsize)
 #
