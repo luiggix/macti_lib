@@ -13,7 +13,7 @@ import os, sys, platform
 import pkg_resources
 from IPython.display import display, Latex
 
-class Quizz():
+class Quiz():
     def __init__(self,
                  qnum,
                  course,
@@ -25,7 +25,7 @@ class Quizz():
         Parameters
         ----------
         qnum: string
-        Número de quizz del tema (topic). Puede haber varios quizzes para un solo tema.
+        Número de quiz del tema (topic). Puede haber varios quizzes para un solo tema.
         
         server: string
         'local' cuando los datos (answers & feedback) se almacenan en un directorio local.
@@ -63,7 +63,7 @@ class Quizz():
         
         self.__course += sep  # Agregamos el separador
         self.__ans = '.ans' + sep # .ans/
-        self.__qnum = qnum # Número del quizz
+        self.__qnum = qnum # Número del quiz
 
         # Verbosity
         self.__verb = self.read('0', verb = True)['0'][0]
@@ -85,14 +85,14 @@ class Quizz():
     def read(self, enum, name = '.__ans_', verb = False):
         """
         Lectura de la respuesta del ejercicio con número enum. Esta lectura
-        se realiza del archivo en donde se encuentran las respuestas de todo el quizz.
+        se realiza del archivo en donde se encuentran las respuestas de todo el quiz.
         El archivo está en formato parquet y las respuestas se almacenan en columnas y en un solo renglón.
         El identificador de la columna corresponde con el número del ejercicio enum.
 
         Parameters
         ----------
         enum: string
-        Número del ejercicio dentro del quizz.
+        Número del ejercicio dentro del quiz.
         
         name: string
         Nombre del archivo donde se guardan las respuestas, por omisión es: ".__ans_".
@@ -112,7 +112,7 @@ class Quizz():
         except ValueError:
             print('NO EXISTE LA RESPUESTA. No está permitido usar \'{}\' para identificar un ejercicio \n'.format(enum))
         else:   
-            # Se agrega el número del quizz correspondiente al nombre del archivo de respuestas. 
+            # Se agrega el número del quiz correspondiente al nombre del archivo de respuestas. 
             filename = name + self.__qnum
 
             if self.__server == 'local' and self.__path_from_read == None:
@@ -136,7 +136,7 @@ class Quizz():
     #            stream = pkg_resources.resource_stream('macti', path + filename)
                 
             else:
-                print('Opciones inválidas. Revisa la declaración de Quizz()')
+                print('Opciones inválidas. Revisa la declaración de Quiz()')
 
             # Lectura del archivo en formato parquet, se regresa en un DataFrame.
             return(pd.read_parquet(stream, columns=[enum]))
@@ -409,7 +409,7 @@ class FileAnswer():
         path_to_store: string
         Ruta donde se guardarán las respuestas y la retroalimentación.
         Por omisión, los datos (answers & feedback) se almacenan en el directorio:.
-        $PWD/course/.ans/topic/. Las respuestas/retroalimentación para cada quizz 
+        $PWD/course/.ans/topic/. Las respuestas/retroalimentación para cada quiz 
         se almacenan en archivos diferentes, veáse la función to_file().
         
         """
@@ -526,7 +526,7 @@ class FileAnswer():
         Parameters
         ----------
         qnum: string
-        Es una cadena que proporciona el número del quizz. La cadena debe ser una
+        Es una cadena que proporciona el número del quiz. La cadena debe ser una
         cadena, se recomienta usar: '1', '2', ...
         """
         # Se define la verbosidad de la retroalimentación de cada respuesta. 
@@ -640,68 +640,68 @@ if __name__ == '__main__':
     print('-'*40)
 
     #---------------------- EVALUACIÓN DE LAS RESPUESTAS
-    quizz = Quizz('1', 'macti_lib', 'local')
+    quiz = Quiz('1', 'macti_lib', 'local')
 
-    print('\nVerbosidad de la ayuda : {} \n'.format(quizz.verb))
+    print('\nVerbosidad de la ayuda : {} \n'.format(quiz.verb))
 
 #    print('¿qué pasa si uso enum == 0?')
-#    quizz.eval_datastruct('0', 'a')
+#    quiz.eval_datastruct('0', 'a')
     
     print('Opción')
-    quizz.eval_option('1', 'c')
+    quiz.eval_option('1', 'c')
     
     x = sy.Symbol('x')
     resultado = x*x
     display(resultado)
 
     print('Expresión')
-    quizz.eval_expression('2', resultado)
+    quiz.eval_expression('2', resultado)
 
-    quizz.eval_numeric('3a', t)
-    quizz.eval_numeric('3b', w)
+    quiz.eval_numeric('3a', t)
+    quiz.eval_numeric('3b', w)
     
     print('Matriz')
-    quizz.eval_numeric('4', matriz_np)
+    quiz.eval_numeric('4', matriz_np)
     print('Array')
-    quizz.eval_numeric('5', array_np)
+    quiz.eval_numeric('5', array_np)
     
     print('Flotante')
-    quizz.eval_numeric('6', flotante)
+    quiz.eval_numeric('6', flotante)
     print('Entero')
-    quizz.eval_numeric('7', entero)
+    quiz.eval_numeric('7', entero)
     print('Complejo')
-    quizz.eval_numeric('8', complejo)
+    quiz.eval_numeric('8', complejo)
     print('Logico')
-    quizz.eval_numeric('9', logico)
+    quiz.eval_numeric('9', logico)
     
     print('Lista numérica')
-    quizz.eval_numeric('10', lista_num)
+    quiz.eval_numeric('10', lista_num)
     print('Tupla numérica')
-    quizz.eval_numeric('11', tupla_num)    
+    quiz.eval_numeric('11', tupla_num)    
 #    print('Conjunto numérico')
-#    quizz.eval_numeric('12', conjunto_num)
+#    quiz.eval_numeric('12', conjunto_num)
 
     print('Lista')
-    quizz.eval_datastruct('13', lista)
-#    quizz.eval_datastruct('13', ['delacruz', 'luis', 'miguel'])
+    quiz.eval_datastruct('13', lista)
+#    quiz.eval_datastruct('13', ['delacruz', 'luis', 'miguel'])
 
     print('Tupla')
-    quizz.eval_datastruct('14', tupla)
-#    quizz.eval_datastruct('14', ('c', 'b', 'a'))
+    quiz.eval_datastruct('14', tupla)
+#    quiz.eval_datastruct('14', ('c', 'b', 'a'))
 
     print('Conjunto')
-    quizz.eval_datastruct('15', conjunto)
-#    quizz.eval_datastruct('15', {'c', 'b', 'a'})
+    quiz.eval_datastruct('15', conjunto)
+#    quiz.eval_datastruct('15', {'c', 'b', 'a'})
 
     print('Diccionario')
-    quizz.eval_datastruct('16', diccionario)
-#    quizz.eval_datastruct('16', {'k1':3.446, 'k2':5.6423, 'k3':3.234324})
+    quiz.eval_datastruct('16', diccionario)
+#    quiz.eval_datastruct('16', {'k1':3.446, 'k2':5.6423, 'k3':3.234324})
     
     print('nd.array NO NUMÉRICO')
-    quizz.eval_datastruct('17', array_no_num)
-#    quizz.eval_datastruct('17', np.array(['x', 'a', 'w']))
+    quiz.eval_datastruct('17', array_no_num)
+#    quiz.eval_datastruct('17', np.array(['x', 'a', 'w']))
 
     print('Expresión más compleja')
-    quizz.eval_expression('18', forma_cuadratica)
+    quiz.eval_expression('18', forma_cuadratica)
     
 
