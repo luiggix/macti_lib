@@ -27,7 +27,7 @@ def get_students_df(db_name):
         student_info["Email"] =  student.email
         student_info["LMS_user_id"] =  student.lms_user_id
         students.append(student_info)
-    return pd.DataFrame(students).set_index(['Id'])
+    return pd.DataFrame(students)
     
 def update_students(db_name, students_df):
     """
@@ -202,13 +202,13 @@ if __name__ == "__main__":
 
     with Gradebook(db_name) as gb:   
         # Actualizar la info de los estudiantes desde Moodle hacia nbgrader
-#        update_students(gb, student_df)
+        update_students(gb, student_df)
     
         # Mostrar la información de la base de datos de nbgrader después de la actualización
-#        print(get_students_df(gb))
+        print(get_students_df(gb))
 
         # Actualiza la lista de assignments
-#        update_assignments(db_name)
+        update_assignments(gb)
         
         # Mostrar la información de los assignments en la base de datos
         show_assignments(gb)
@@ -216,7 +216,7 @@ if __name__ == "__main__":
         assignment = int(input("Assignment a evaluar:"))
         notebook   = int(input("Notebook a evaluar:"))
         
-        grades = calculate_grades(gb, assignment, notebook)
+        grades = calculate_grades(gb, assignment, notebook, 1)
 
         print_for_moodle(grades)
 
