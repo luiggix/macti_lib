@@ -27,7 +27,7 @@ def get_students_df(db_name):
         student_info["Email"] =  student.email
         student_info["LMS_user_id"] =  student.lms_user_id
         students.append(student_info)
-    return pd.DataFrame(students).set_index(['Firstname', 'Lastname'])
+    return pd.DataFrame(students).set_index(['Id'])
     
 def update_students(db_name, students_df):
     """
