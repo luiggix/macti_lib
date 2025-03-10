@@ -56,7 +56,7 @@ def update_students(db_name, students_df):
     default_students = ["bitdiddle", "hacker", "reasoner"]
     for ds in default_students:
         try:
-            gb.remove_student(ds)
+            db_name.remove_student(ds)
         except MissingEntry:
             print(f"\t{ds} Not found")
         else:
@@ -76,7 +76,7 @@ def update_assignments(db_name, name="ps1"):
     """
     print("\nCleaning assignment list:")    
     try:
-        gb.remove_assignment(name)
+        db_name.remove_assignment(name)
     except MissingEntry:
         print(f"\t{name} Not found")
     else:
@@ -99,11 +99,6 @@ def show_assignments(db_name):
             file = str(file).split("/")[1]
             print(f"{j:>4d} {file[:-1]}")
         print()
-    
-# En caso de que no aparezcan las Notebooks en la base de datos,
-# se puede agregar manualmente como sigue:
-# Agregar una Notebook (q1_hecompa.ipynb) a un Assignment (1_Introduccion)
-#        gb.add_notebook("q1_hecompa.ipynb", "01_Introduccion")
 
 def calculate_grades(db_name, a_id, n_id, verb=0):
     """
@@ -145,7 +140,7 @@ def calculate_grades(db_name, a_id, n_id, verb=0):
         
         try:
             # Busca la entrega del alumno correspondiente
-            submission = gb.find_submission(assignment.name, student.id)
+            submission = db_name.find_submission(assignment.name, student.id)
             
         except MissingEntry:
             student_grades['Score'] = 0.0
