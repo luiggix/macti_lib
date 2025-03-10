@@ -44,9 +44,9 @@ def update_students(db_name, students_df):
     generado en el Moodle del curso en la opción de Participantes.
     
     """
-    for i, (n, s, e) in enumerate(zip(student_df['Nombre'], 
-                                      student_df['Apellido(s)'], 
-                                      student_df['Dirección Email'])):
+    for i, (n, s, e) in enumerate(zip(students_df['Nombre'], 
+                                      students_df['Apellido(s)'], 
+                                      students_df['Dirección Email'])):
         # Agregamos o actualizamos el nombre y apellido de los estudiantes
         # a la base de datos (gradebook.db)
         db_name.update_or_create_student(e, first_name=n, last_name=s, email=e)
@@ -121,6 +121,9 @@ def calculate_grades(db_name, a_id, n_id, verb=0):
     n_id: int
     Identificador del notebook a evaluar dentro de la lista completa 
     de notebook del assignment correspondiente.  
+
+    verb: int
+    Cuando es 0 no se muestra información, cuando es mayor que 0 se muestra informción.
 
     Returns:
     --------
