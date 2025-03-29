@@ -128,7 +128,7 @@ def calculate_grades(db_name, a_id, n_id = -1, verb=0):
     grades = []
     assignment = db_name.assignments[a_id] # obtiene el assignment
 
-    if nd_id >= 0:
+    if n_id >= 0:
         notebook = assignment.notebooks[n_id]  # obtiene el Notebook
         print(f"\nEvaluación de la {notebook}\n")
     else:
@@ -155,7 +155,7 @@ def calculate_grades(db_name, a_id, n_id = -1, verb=0):
                 print(f"Notebook NOT FOUND")
                 print(f"\tCalificación {student_grades['Grades']:5.2f}")
         else:
-            if nd_id >= 0:
+            if n_id >= 0:
                 sb_nb = submission.notebooks # Lista de notebooks entregadas por el estudiante
                 submitted_notebook = sb_nb[n_id] # Notebook entregada por el estudiante a evaluar 
     
