@@ -100,7 +100,7 @@ def show_assignments(db_name):
             print(f"{j:>4d} {file[:-1]}")
         print()
 
-def calculate_grades(db_name, a_id, n_id, verb=0):
+def calculate_grades(db_name, a_id, n_id = -1, verb=0):
     """
     Calcula la calificación de una notebook dentro de un assignment.
 
@@ -115,7 +115,8 @@ def calculate_grades(db_name, a_id, n_id, verb=0):
 
     n_id: int
     Identificador del notebook a evaluar dentro de la lista completa 
-    de notebook del assignment correspondiente.  
+    de notebook del assignment correspondiente. Valor por omisión -1, significa
+    que evaluará todas las notebooks del assignment.
 
     verb: int
     Cuando es 0 no se muestra información, cuando es mayor que 0 se muestra informción.
@@ -126,8 +127,12 @@ def calculate_grades(db_name, a_id, n_id, verb=0):
     """
     grades = []
     assignment = db_name.assignments[a_id] # obtiene el assignment
-    notebook = assignment.notebooks[n_id]  # obtiene el Notebook
-    print(f"\nEvaluación del {notebook}\n")
+
+    if nd_id >= 0:
+        notebook = assignment.notebooks[n_id]  # obtiene el Notebook
+        print(f"\nEvaluación de la {notebook}\n")
+    else:
+        print(f"\nEvaluación de todo el assignment: {assignment}\n")
 
     for student in db_name.students:
         # Diccionario para almacenar la información
@@ -150,20 +155,34 @@ def calculate_grades(db_name, a_id, n_id, verb=0):
                 print(f"Notebook NOT FOUND")
                 print(f"\tCalificación {student_grades['Grades']:5.2f}")
         else:
-            sb_nb = submission.notebooks # Lista de notebooks entregadas por el estudiante
-            submitted_notebook = sb_nb[n_id] # Notebook entregada por el estudiante a evaluar 
+            if nd_id >= 0:
+                sb_nb = submission.notebooks # Lista de notebooks entregadas por el estudiante
+                submitted_notebook = sb_nb[n_id] # Notebook entregada por el estudiante a evaluar 
+    
+                # Cálculo de la calificación final del notebook
+                student_grades['Score'] = submitted_notebook.score
+                student_grades['Grades'] = round(10 * student_grades['Score'] / (submitted_notebook.max_score), 2)
 
-            # Cálculo de la calificación final
-            student_grades['Score'] = submitted_notebook.score
-            student_grades['Grades'] = round(10 * student_grades['Score'] / (submitted_notebook.max_score), 2)
-
-            if verb > 0:
-                print("Notebook: ", submitted_notebook) 
-                print(f"\tScore {student_grades['Score']} of {submitted_notebook.max_score}")
-                print(f"\tCalificación {student_grades['Grades']:5.2f}")
-        if verb > 0:
-            print()
-        
+                if verb > 0:
+                    print("Notebook: ", submitted_notebook) 
+                    print(f"\tScore {student_grades['Score']} of {submitted_notebook.max_score}")
+                    print(f"\tCalificación {student_grades['Grades']:5.2f}")
+                    print()
+            else:
+                student_grades['Score'] = 0.0
+                partial_grades = 0.0
+                for submitted_notebook in submission.notebooks:
+                    # Cálculo de la calificación final del notebook
+                    student_grades['Score'] = submitted_notebook.score
+                    partial_grades += 10 * student_grades['Score'] / submitted_notebook.max_score
+                    if verb > 0:
+                        print("Notebook: ", submitted_notebook) 
+                        print(f"\tScore {student_grades['Score']} of {submitted_notebook.max_score}")
+                        print(f"\tCalificación {student_grades['Grades']:5.2f}")
+                        print()
+                        
+                student_grades['Grades'] = round(partial_grades / len(submission.notebooks), 2)
+                    
         grades.append(student_grades)
 
     return grades
