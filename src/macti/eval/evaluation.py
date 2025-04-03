@@ -4,7 +4,7 @@
 
 # Herramientas para colorear texto y comparación de los resultados
 from colorama import Fore
-from nose.tools import assert_equal
+#from nose.tools import assert_equal
 import numpy as np
 import pandas as pd
 import sympy as sy
@@ -13,6 +13,153 @@ import os, sys, platform
 import pkg_resources
 from IPython.display import display, Latex
 
+class FileAnswer():
+    def __init__(self):
+        """
+        Clase para la escritura de las respuestas a los ejercicios.
+        
+        Se asume que se ejecuta dentro del directorio de un tema del curso
+        por ejemplo course/topic.
+        
+        Los datos (answers & feedback) se almacenan en el directorio:.
+        $PWD/course/.ans/topic/. 
+        
+        Las respuestas/retroalimentación para cada quiz 
+        se almacenan en archivos diferentes, veáse la función to_file().
+        """
+        cp, to = os.path.split(os.getcwd()) # Extracción del path del curso y del tema
+        self.__course_path = cp + os.sep # Agregamos el separador 
+        self.__topic = to + os.sep       # Agregamos el separador 
+
+        # Construcción del path para los archivos de respuestas
+        self.__ans_path = self.__course_path + ".ans" + os.sep + self.__topic
+
+        print("abspath", os.getcwd())
+        print("course path", self.__course_path)
+        print("topic", self.__topic)
+        print("ans path", self.__ans_path)
+
+        # Listas para almacenar los números de las respuestas, las respuestas
+        # y la retroalimentación.
+        self.__exernum = []
+        self.__answers = []
+        self.__feedback = []
+
+        # Por omisión la verbosidad es igual a 2, es decir toda la ayuda posible al alumno
+        self.__verb = 2
+
+    @property
+    def answers(self):
+        return self.__answers
+    
+    @property
+    def feedback(self):
+        return self.__feedback
+
+    @property
+    def verb(self):
+        return self.__verb
+        
+    @verb.setter
+    def verb(self, verb):
+        self.__verb = verb
+             
+    def write(self, enum, ans, feed=None, verb = False):
+        """
+        Esta función escribe una respuesta en una lista (self.__answer) y la retroalimentación de 
+        esta respuesta en otra lista (self.__feedback). El número del ejercicio se almacena en 
+        otra lista (self.__exernum). Si la respuesta es nueva, se agrega un elemento a la lista, 
+        si el ejercicio ya existía entonces se sustituye.
+
+        Parameters
+        ----------
+        enum: string
+        Cadena con el identificador del ejercicio. Este parámetro no puede ser '0' debido
+        a que ese identificador está destinado a almacenar la verbosidad de la retroalimentación.
+
+        ans: 
+        Objeto que contiene la respuesta, puede ser de cualquier tipo soportado por la
+        biblioteca (str, float, int, complex, boolean, ndarray, list, tuple, dict
+
+        feed: string
+        Cadena con la retroalimentación del ejercicio. Por omisión está vacía.
+
+        verb: bool
+        Es False siempre, excepto cuando se escribe la verbosidad.
+        """
+        try:
+            # Solo se permite enum == '0' cuando se almacena la verbosidad (verb == True)
+            if enum == '0' and not verb:
+                raise ValueError from None
+
+        except ValueError:
+            print('RESPUESTA NO ALMACENADA. No está permitido usar el valor \'{}\' para identificar un ejercicio.\n'.format(enum))
+            
+        else:
+            # Sustitución de una respuesta y de su retroalimentación
+            if enum in self.__exernum: # checamos si ya existe el número de ejercicio
+                index = self.__exernum.index(enum) # obtenemos el índice en la lista
+                if isinstance(ans, np.ndarray):
+                    self.__answers[index] = ans.flatten() # almacenamos los arreglos de numpy en 1D
+                elif isinstance(ans, dict):
+                    self.__answers[index] = np.array([list(ans.keys()), list(ans.values())]).flatten()
+                elif isinstance(ans, complex):
+                    self.__answers[index] = [ans.real, ans.imag]
+                else:
+                    self.__answers[index] = ans
+                    
+                self.__feedback[index] = feed 
+                
+            else: # Si el ejercicio es nuevo, lo agregamos
+                # Todos los arreglos de numpy se deben almacenar en formato unidimensional
+                if isinstance(ans, np.ndarray):
+                    self.__answers.append(ans.flatten()) # almacenamos los arreglos de numpy en 1D
+                elif isinstance(ans, dict):
+                    self.__answers.append(np.array([list(ans.keys()), list(ans.values())]).flatten())
+                elif isinstance(ans, complex):
+                    self.__answers.append([ans.real, ans.imag])      
+                else:
+                    self.__answers.append(ans)
+            
+                self.__exernum.append(enum)
+                self.__feedback.append(feed)
+    
+    
+    def to_file(self, qnum):
+        """
+        Escribe las respuestas y la retroalimentación en un archivo tipo parquet.
+
+        Parameters
+        ----------
+        qnum: string
+        Es una cadena que proporciona el número del quiz. La cadena debe ser una
+        cadena, se recomienta usar: '1', '2', ...
+        """
+        # Se define la verbosidad de la retroalimentación de cada respuesta. 
+        self.write('0', self.__verb, verb = True)
+        
+        ans_df = pd.DataFrame([self.__answers], columns=self.__exernum)
+        feed_df = pd.DataFrame([self.__feedback], columns=self.__exernum) 
+        
+        filename = '.__ans_' + qnum
+
+        if self.__path_to_store == None:
+            # Se almacena en el directorio course/.ans/topic
+            path = self.__course_path + self.__ans + self.__topic
+        else:
+            # Se almacena en el directorio course/topic
+            path = self.__path_to_store + sep + self.__topic
+        
+        if not os.path.exists(path):
+            print('Creando el directorio :{}'.format(path))
+            os.makedirs(path, exist_ok=True)
+        else:
+            print('El directorio :{} ya existe'.format(path))
+        
+        ans_df.to_parquet(path + '.__ans_' + qnum, compression='gzip')
+        feed_df.to_parquet(path + '.__fee_' + qnum, compression='gzip')
+        print('Respuestas y retroalimentación almacenadas.')
+        
 class Quiz():
     def __init__(self, qnum, course, server = 'hub', path_from_read = None):
         """
@@ -461,163 +608,7 @@ class Quiz():
             print(Fore.RESET + self.__line_len*'-') 
 
 
-class FileAnswer():
-    def __init__(self, 
-                 path_to_store = None):
-        """
-        Clase para la escritura de las respuestas a los ejercicios.
-        Se asume que se ejecuta dentro del directorio de un tema del curso:
-        course/topic.
-        
-        Parameters
-        ----------
-        path_to_store: string
-        Ruta donde se guardarán las respuestas y la retroalimentación.
-        Por omisión, los datos (answers & feedback) se almacenan en el directorio:.
-        $PWD/course/.ans/topic/. Las respuestas/retroalimentación para cada quiz 
-        se almacenan en archivos diferentes, veáse la función to_file().
-        
-        """
-        self.__path_to_store = path_to_store
-        self.__platform = platform.system()
-        self.__course_path = ''
 
-        # Separador dependiendo de la plataforma
-        sep = '\\' if self.__platform == 'Windows' else '/'
-        
-        # Obtenemos el nombre a partir del path actual
-        # Se asume que se ejecuta dentro de course/topic/
-        self.__path = os.getcwd()
-        self.__course = self.__path.split('/')[-2] # sin separador
-        self.__topic = self.__path.split('/')[-1] + sep
-
-        # Obtención del directorio del curso
-        abs_path = os.getcwd().split(sep = sep)
-        index_co = abs_path.index(self.__course)
-        for i in abs_path[0:index_co+1]:
-            self.__course_path += i + sep
-  
-        self.__course += sep  # Agregamos el separador
-        self.__ans = '.ans' + sep # .ans/
-        
-        self.__exernum = []
-        self.__answers = []
-        self.__feedback = []
-
-        # Por omisión la verbosidad es igual a 2, es decir toda la ayuda posible al alumno
-        self.__verb = 2
-
-    @property
-    def answers(self):
-        return self.__answers
-    
-    @property
-    def feedback(self):
-        return self.__feedback
-
-    @property
-    def verb(self):
-        return self.__verb
-        
-    @verb.setter
-    def verb(self, verb):
-        self.__verb = verb
-             
-    def write(self, enum, ans, feed=None, verb = False):
-        """
-        Esta función escribe una respuesta en una lista (self.__answer) y la retroalimentación de 
-        esta respuesta en otra lista (self.__feedback). El número del ejercicio se almacena en 
-        otra lista (self.__exernum). Si la respuesta es nueva, se agrega un elemento a la lista, 
-        si el ejercicio ya existía entonces se sustituye.
-
-        Parameters
-        ----------
-        enum: string
-        Cadena con el identificador del ejercicio. Este parámetro no puede ser '0' debido
-        a que ese identificador está destinado a almacenar la verbosidad de la retroalimentación.
-
-        ans: 
-        Objeto que contiene la respuesta, puede ser de cualquier tipo soportado por la
-        biblioteca (str, float, int, complex, boolean, ndarray, list, tuple, dict
-
-        feed: string
-        Cadena con la retroalimentación del ejercicio. Por omisión está vacía.
-
-        verb: bool
-        Es False siempre, excepto cuando se escribe la verbosidad.
-        """
-        try:
-            # Solo se permite enum == '0' cuando se almacena la verbosidad (verb == True)
-            if enum == '0' and not verb:
-                raise ValueError from None
-
-        except ValueError:
-            print('RESPUESTA NO ALMACENADA. No está permitido usar el valor \'{}\' para identificar un ejercicio.\n'.format(enum))
-            
-        else:
-            # Sustitución de una respuesta y de su retroalimentación
-            if enum in self.__exernum: # checamos si ya existe el número de ejercicio
-                index = self.__exernum.index(enum) # obtenemos el índice en la lista
-                if isinstance(ans, np.ndarray):
-                    self.__answers[index] = ans.flatten() # almacenamos los arreglos de numpy en 1D
-                elif isinstance(ans, dict):
-                    self.__answers[index] = np.array([list(ans.keys()), list(ans.values())]).flatten()
-                elif isinstance(ans, complex):
-                    self.__answers[index] = [ans.real, ans.imag]
-                else:
-                    self.__answers[index] = ans
-                    
-                self.__feedback[index] = feed 
-                
-            else: # Si el ejercicio es nuevo, lo agregamos
-                # Todos los arreglos de numpy se deben almacenar en formato unidimensional
-                if isinstance(ans, np.ndarray):
-                    self.__answers.append(ans.flatten()) # almacenamos los arreglos de numpy en 1D
-                elif isinstance(ans, dict):
-                    self.__answers.append(np.array([list(ans.keys()), list(ans.values())]).flatten())
-                elif isinstance(ans, complex):
-                    self.__answers.append([ans.real, ans.imag])      
-                else:
-                    self.__answers.append(ans)
-            
-                self.__exernum.append(enum)
-                self.__feedback.append(feed)
-    
-    
-    def to_file(self, qnum):
-        """
-        Escribe las respuestas y la retroalimentación en un archivo tipo parquet.
-
-        Parameters
-        ----------
-        qnum: string
-        Es una cadena que proporciona el número del quiz. La cadena debe ser una
-        cadena, se recomienta usar: '1', '2', ...
-        """
-        # Se define la verbosidad de la retroalimentación de cada respuesta. 
-        self.write('0', self.__verb, verb = True)
-        
-        ans_df = pd.DataFrame([self.__answers], columns=self.__exernum)
-        feed_df = pd.DataFrame([self.__feedback], columns=self.__exernum) 
-        
-        filename = '.__ans_' + qnum
-
-        if self.__path_to_store == None:
-            # Se almacena en el directorio course/.ans/topic
-            path = self.__course_path + self.__ans + self.__topic
-        else:
-            # Se almacena en el directorio course/topic
-            path = self.__path_to_store + sep + self.__topic
-        
-        if not os.path.exists(path):
-            print('Creando el directorio :{}'.format(path))
-            os.makedirs(path, exist_ok=True)
-        else:
-            print('El directorio :{} ya existe'.format(path))
-        
-        ans_df.to_parquet(path + '.__ans_' + qnum, compression='gzip')
-        feed_df.to_parquet(path + '.__fee_' + qnum, compression='gzip')
-        print('Respuestas y retroalimentación almacenadas.')
             
 #----------------------- TEST OF THE MODULE ----------------------------------   
 if __name__ == '__main__':
@@ -625,6 +616,8 @@ if __name__ == '__main__':
     #---------------------- CREACIÓN DEL ARCHIVO DE RESPUESTAS
     print()
     file_answer = FileAnswer()
+
+    pausa = input("Parar")
 #    file_answer.verb = 0
 
     #---------------------- CONSTRUCCIÓN DE RESPUESTAS
