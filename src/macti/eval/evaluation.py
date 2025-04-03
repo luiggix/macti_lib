@@ -34,11 +34,6 @@ class FileAnswer():
         # Construcción del path para los archivos de respuestas
         self.__ans_path = self.__course_path + ".ans" + os.sep + self.__topic
 
-        print("abspath", os.getcwd())
-        print("course path", self.__course_path)
-        print("topic", self.__topic)
-        print("ans path", self.__ans_path)
-
         # Listas para almacenar los números de las respuestas, las respuestas
         # y la retroalimentación.
         self.__exernum = []
@@ -124,7 +119,6 @@ class FileAnswer():
                 self.__exernum.append(enum)
                 self.__feedback.append(feed)
     
-    
     def to_file(self, qnum):
         """
         Escribe las respuestas y la retroalimentación en un archivo tipo parquet.
@@ -138,26 +132,20 @@ class FileAnswer():
         # Se define la verbosidad de la retroalimentación de cada respuesta. 
         self.write('0', self.__verb, verb = True)
         
-        ans_df = pd.DataFrame([self.__answers], columns=self.__exernum)
-        feed_df = pd.DataFrame([self.__feedback], columns=self.__exernum) 
-        
-        filename = '.__ans_' + qnum
+        if not os.path.exists(self.__ans_path):
+            print('Creando el directorio :{}'.format(self.__ans_path))
+            os.makedirs(self.__ans_path, exist_ok=True)
+        else:
+            print('El directorio :{} ya existe'.format(self.__ans_path))
 
-        if self.__path_to_store == None:
-            # Se almacena en el directorio course/.ans/topic
-            path = self.__course_path + self.__ans + self.__topic
-        else:
-            # Se almacena en el directorio course/topic
-            path = self.__path_to_store + sep + self.__topic
+        # Creación del archivo de respuestas
+        ans_df = pd.DataFrame([self.__answers], columns=self.__exernum)
+        ans_df.to_parquet(self.__ans_path + '.__ans_' + qnum, compression='gzip')
+
+        # Creación del archivo de retroalimentación
+        feed_df = pd.DataFrame([self.__feedback], columns=self.__exernum) 
+        feed_df.to_parquet(self.__ans_path + '.__fee_' + qnum, compression='gzip')
         
-        if not os.path.exists(path):
-            print('Creando el directorio :{}'.format(path))
-            os.makedirs(path, exist_ok=True)
-        else:
-            print('El directorio :{} ya existe'.format(path))
-        
-        ans_df.to_parquet(path + '.__ans_' + qnum, compression='gzip')
-        feed_df.to_parquet(path + '.__fee_' + qnum, compression='gzip')
         print('Respuestas y retroalimentación almacenadas.')
         
 class Quiz():
@@ -616,13 +604,20 @@ if __name__ == '__main__':
     #---------------------- CREACIÓN DEL ARCHIVO DE RESPUESTAS
     print()
     file_answer = FileAnswer()
+    file_answer.verb = 0
 
-    pausa = input("Parar")
-#    file_answer.verb = 0
-
-    #---------------------- CONSTRUCCIÓN DE RESPUESTAS
     opcion = 'c'
     derivada = 'x**2'
+
+    file_answer.write('0', 'a', 'Opción inválida')
+    file_answer.write('1', opcion, 'Las opciones válidas son ...')
+    file_answer.write('2', derivada, 'Checa las reglas de derivación')
+    file_answer.to_file('test01')
+
+    pausa = input("Parar")
+
+    #---------------------- CONSTRUCCIÓN DE RESPUESTAS
+
 
     t = np.linspace(0,1,10)
     w = np.sin(t)
