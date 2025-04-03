@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "macti"
+version = "0.3.0"
+description = "Biblioteca para evaluación de Jupyter Notebooks, Visualización de datos y Simulación de flujos, todo orientado a la enseñanza en nivel licenciatura."
+authors = [{ name = "Luis Miguel de la Cruz Salas", email = "luiggi@igeofisica.unam.mx" }]
+readme = "README.md"
+dependencies = []#"pytest" (possibly), "imp"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["macti", "macti.math", "macti.vis", "macti.mf6"]
+#license-files = ["MIT"]
+
+[tool.setuptools.package-data]
+"biblio" = ["../resources/*"]
