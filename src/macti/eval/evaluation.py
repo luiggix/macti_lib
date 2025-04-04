@@ -91,6 +91,7 @@ class FileAnswer():
         verb: bool
             Es False siempre, excepto cuando se escribe la verbosidad.
         """
+        print("write")
         try:
             # Solo se permite enum == '0' cuando se almacena la verbosidad (verb == True)
             if enum == '0' and not verb:
@@ -104,11 +105,19 @@ class FileAnswer():
             if enum in self.__exernum: # checamos si ya existe el número de ejercicio
                 index = self.__exernum.index(enum) # obtenemos el índice en la lista
                 if isinstance(ans, np.ndarray):
-                    self.__answers[index] = ans.flatten() # almacenamos los arreglos de numpy en 1D
+                    if ans.dtype == complex:
+                        # Preprocesamiento especial para números complejos.
+                        self.__answers[index] = np.array([[c.real, c.imag] for c in ans.flatten()]).flatten()
+                    else:
+                        self.__answers[index] = ans.flatten() # almacenamos los arreglos de numpy en 1D
                 elif isinstance(ans, dict):
                     # Las claves y los valores del diccionario se convierten a listas y luego se
                     # almacenan en un solo arreglo 1D de numpy
                     self.__answers[index] = np.array([list(ans.keys()), list(ans.values())]).flatten()
+                elif isinstance(ans, set):
+                    self.__answers[index] = np.array(list(ans)).flatten()                
+                elif isinstance(ans, list) or isinstance(ans, tuple):
+                    self.__answers[index] = np.array(ans).flatten()
                 elif isinstance(ans, complex):
                     # Almacenamos la parte real e imaginaria del número complejo en una lista.
                     self.__answers[index] = [ans.real, ans.imag]
@@ -120,9 +129,17 @@ class FileAnswer():
             else: # Si el ejercicio es nuevo, lo agregamos
                 # Todos los arreglos de numpy se deben almacenar en formato unidimensional
                 if isinstance(ans, np.ndarray):
-                    self.__answers.append(ans.flatten()) # almacenamos los arreglos de numpy en 1D
+                    if ans.dtype == complex:
+                        # Preprocesamiento especial para números complejos.
+                        self.__answers.append(np.array([[c.real, c.imag] for c in ans.flatten()]).flatten())
+                    else:
+                        self.__answers.append(ans.flatten()) # almacenamos los arreglos de numpy en 1D                        
                 elif isinstance(ans, dict):
                     self.__answers.append(np.array([list(ans.keys()), list(ans.values())]).flatten())
+                elif isinstance(ans, set):
+                    self.__answers.append(np.array(list(ans)).flatten())
+                elif isinstance(ans, list) or isinstance(ans, tuple):
+                    self.__answers.append(np.array(ans).flatten())
                 elif isinstance(ans, complex):
                     # Parquet no soporta complejos, dividimos en parte real e imaginaria
                     self.__answers.append([ans.real, ans.imag])      
@@ -425,9 +442,16 @@ class Quiz():
         
         try:
             if isinstance(ans, np.ndarray):
-                self.__test_array(correct, ans)
+                if ans.dtype == complex:
+                    # Preprocesamiento especial para números complejos.
+                    self.__test_array(correct,
+                                      np.array([[c.real, c.imag] for c in ans.flatten()]).flatten())
+                else:                        
+                    self.__test_array(correct, ans.flatten())
 
             elif isinstance(ans, list) or isinstance(ans, tuple):
+                print(correct)
+                print(ans)
                 self.__test_array(correct, np.array(ans))
 
             elif isinstance(ans, set):
@@ -502,7 +526,14 @@ if __name__ == '__main__':
     lista_num = [0, 1, 3.4]
     tupla_num = (1.2, 3.1416, np.pi)
     conjunto_num = {3, 5, 6, 2, 9,8}
+    arreglo_complejo = np.array([1j,2j,3j,4j,5j])
+    lista_lista = [[1,2],[3,4]]
 
+    lista = ['luis', 'miguel', 'delacruz']
+    tupla = ('a', 'b', 'c')
+    conjunto = {'a', 'b', 'c'}
+    diccionario = {'k1':3.446, 'k2':5.6423, 'k3':2.234324}
+    
     file_answer.write('0', 'a', 'Opción inválida')
     file_answer.write('1', opcion, 'Las opciones válidas son ...')
     file_answer.write('2', derivada, 'Checa las reglas de derivación')
@@ -516,6 +547,13 @@ if __name__ == '__main__':
     file_answer.write('8', lista_num, 'Checa la lista numérica')
     file_answer.write('9', tupla_num, 'Checa la tupla numérica')
     file_answer.write('10', conjunto_num, 'Checa los conjuntos numéricos')
+    file_answer.write('11', arreglo_complejo, 'Checa el arreglo complejo')
+    file_answer.write('12', lista_lista, "Checa la lista de listas")
+    file_answer.write('13', lista, "checa la estructura de tipo lista")
+    file_answer.write('14', tupla, "checa la estructura de tipo tupla")
+    file_answer.write('15', conjunto, "checa la estructura de tipo conjunto")
+    file_answer.write('16', diccionario, "checa la estructura de tipo diccionario")
+
     file_answer.to_file('test01')
 
     print("Quiz number:", file_answer.quiz_num)
@@ -554,6 +592,13 @@ if __name__ == '__main__':
     print('Conjunto numérico')
 #    conjunto_num = {1,2,3,4,5,1}
     quiz.eval_numeric('10', conjunto_num)
+    print('numpy array complex')
+#    arreglo_complejo = np.array([0j,2j,3j,4j,5j])
+    quiz.eval_numeric('11', arreglo_complejo)
+    print('Lista de listas')
+    quiz.eval_numeric('12', lista_lista)
+    print('estructura de datos')
+#    quiz.eval_numeric('13', lista)
     pausa = input("Parar")
 
     #---------------------- CONSTRUCCIÓN DE RESPUESTAS
