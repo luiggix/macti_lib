@@ -8,7 +8,7 @@ version = "0.3.0"
 description = "Biblioteca para evaluación de Jupyter Notebooks, Visualización de datos y Simulación de flujos, todo orientado a la enseñanza en nivel licenciatura."
 authors = [{ name = "Luis Miguel de la Cruz Salas", email = "luiggi@igeofisica.unam.mx" }]
 readme = "README.md"
-dependencies = []#"pyarrow",]
+dependencies = []#"pyarrow","sympy"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}

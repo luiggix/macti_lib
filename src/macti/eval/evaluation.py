@@ -124,6 +124,7 @@ class FileAnswer():
                 elif isinstance(ans, dict):
                     self.__answers.append(np.array([list(ans.keys()), list(ans.values())]).flatten())
                 elif isinstance(ans, complex):
+                    # Parquet no soporta complejos, dividimos en parte real e imaginaria
                     self.__answers.append([ans.real, ans.imag])      
                 else:
                     self.__answers.append(ans)
@@ -207,6 +208,10 @@ class Quiz():
         self.__verb = self.read('0', verb = True)['0'][0]
 
         self.__line_len = 40
+
+        self.__array_len_correct = 0
+        self.__array_len_answer = 0
+        self.__array_len_diff = False
 
     @property
     def verb(self):
@@ -356,6 +361,50 @@ class Quiz():
             # Se lanza una excepción con la información correspondiente.
             raise AssertionError from None
 
+    def __test_array(self, a, b):
+        """
+        Compara dos valores numéricos o arreglos de valores numéricos.
+        
+        Para comparar la respuesta del alumno (b) con la respuesta correcta (a) 
+        debemos usar la función flatten(), para que ambos arreglos sean lineales (1D).
+        Utilizamos la función np.allcose() para comparar los arreglos elemento por elemento
+        dentro de una tolerancia definida (rtol=1e-05, atol=1e-08). Si hay NaN´s en los arreglos
+        la función devuelve True si están en el mismo lugar dentro de los arreglos.
+
+        Parameters
+        ----------
+        a : ndarray
+            Respuesta correcta.
+
+        b : ndarray
+            Respuesta del alumno.
+
+        Returns
+        -------
+        AssertionError cuando hay diferencia entre a y b.
+        """
+        b = b.flatten()
+        if len(a) == len(b):
+            if not np.allclose(a, b, equal_nan=True):
+                first = int(np.where((a == b) == False)[0][0]) # primer elemento donde hay diferencia
+    
+                if self.__verb >= 1:
+                    # Mensaje de ayuda
+                    msg = f"\n 1er elemento con error: {first}.\n valor correcto {a[first]}, \n valor calculado {b[first]}\n"
+                else:
+                    msg = ""
+                    
+                # Se lanza la excepción
+                return np.testing.assert_allclose(a, b, err_msg=msg)
+        else:
+            # Cuando la longitud de los arreglos es distinta se lanza una excepción
+            self.__array_len_correct = len(a)
+            self.__array_len_answer = len(b)
+            self.__array_len_diff = True
+            
+            # Se lanza la excepción para que sea detectada por NBGrader
+            raise AssertionError from None
+            
     def eval_numeric(self, enum, ans):
         """
         Evalúa una respuesta numérica que puede ser un número o un arreglo de números.
@@ -375,34 +424,21 @@ class Quiz():
         correct = value[enum][0]
         
         try:
-            # Cuando la respuesta es un np.ndarray:
             if isinstance(ans, np.ndarray):
-                # Para comparar la respuesta del alumno (ans) con la respuesta correcta (correct) 
-                # debemos usar la función flatten(), para que ambos arreglos sean lineales (1D).
-                # Utilizamos la función np.allcose() para comparar los arreglos elemento por elemento
-                # dentro de una tolerancia definida (rtol=1e-05, atol=1e-08). Si hay NaN´s en los arreglos
-                # la función devuelve True si están en el mismo lugar dentro de los arreglos.
-                if not np.allclose(correct, ans.flatten(), equal_nan=True):
-                    # Cuando la condición anterior se cumple (NO SON IGUALES), se lanza una excepción
-                    # y se ubica el primer lugar de los arreglos donde hay diferencia en los arreglos.
-                    # La función assert_equal() requiere de listas.
-                    assert_equal(list(correct), list(ans.flatten()))
-                    
-            elif isinstance(ans, list):
-                if not np.allclose(list(correct), ans):
-                    assert_equal(list(correct), ans)
-                        
-            elif isinstance(ans, tuple):
-                if not np.allclose(tuple(correct), ans):
-                    assert_equal(tuple(correct), ans)
-                    
+                self.__test_array(correct, ans)
+
+            elif isinstance(ans, list) or isinstance(ans, tuple):
+                self.__test_array(correct, np.array(ans))
+
+            elif isinstance(ans, set):
+                self.__test_array(correct, np.array(list(ans)))
+
             elif isinstance(ans, complex):
-                if not np.allclose(list(correct), [ans.real, ans.imag]):
-                    assert_equal(list(correct), [ans.real, ans.imag])
+                self.__test_array(np.array([complex(correct[0], correct[1])]), np.array([ans]))
 
             elif isinstance(ans, int) or isinstance(ans, float) or isinstance(ans, bool):
-                if not np.allclose(correct, ans):
-                    assert_equal(correct, ans)
+                self.__test_array(np.array([correct]), np.array([ans]))
+
             else:
                 print(enum + ' | Respuesta inválida: {} es de tipo {}'.format(ans, type(ans)))
 
@@ -414,6 +450,11 @@ class Quiz():
             print(Fore.RED + enum + ' | Ocurrió un error en tus cálculos.')
             print(Fore.RESET + self.__line_len*'-')
             print(Fore.RED + 'Hint:', end = ' ')
+
+            if self.__array_len_diff:
+                print("La longitud de los arreglos es distinta")
+                print(f"Longitud correcta={self.__array_len_correct}")
+                print(f"Longitud de tu respuesta={self.__array_len_answer}")
 
             # Se obtiene la retroalimentación para la pregunta correspondiente.            
             feedback = self.read(enum, '.__fee_')
@@ -438,145 +479,7 @@ class Quiz():
             print(Fore.GREEN + enum + ' | Tu resultado es correcto.')
             print(Fore.RESET + self.__line_len*'-')            
 
-    def eval_datastruct(self, enum, ans):
-        """
-        Evalúa una respuesta numérica que puede ser un número o un arreglo de números.
-        
-        Parameters
-        ----------
-        enum: string
-        Número de pregunta.
-        
-        ans: string
-        Respuesta del alumno.
-        """
-        # Se obtiene la respuesta correcta del archivo. Recordemos que
-        # Parquet escribe listas y tuplas en forma de np.ndarray, por lo que
-        # al recuperarlas del archivo vienen en formato np.ndarray en 1D.
-        value = self.read(enum)        
-        correct = value[enum][0]
-        
-        try:
-            if isinstance(ans, np.ndarray):
-                # Para comparar la respuesta del alumno (ans) con la respuesta correcta (correct) 
-                # debemos usar la función flatten(), para que ambos arreglos sean lineales (1D).
-                # La función assert_equal() requiere de listas.
-                assert_equal(set(correct), set(ans.flatten()))
 
-            elif isinstance(ans, str):
-                assert_equal(correct, ans)
-            
-            elif isinstance(ans, list) or isinstance(ans, tuple) or isinstance(ans, set):
-                assert_equal(set(correct), set(ans))
-
-            elif isinstance(ans, dict):
-                n = len(ans)
-                ans = np.array([list(ans.keys()), list(ans.values())]).flatten()
-                k1 = correct[0:n]
-                v1 = correct[n:]
-                k2 = ans[0:n]
-                v2 = ans[n:]
-                
-                assert_equal(list(k1), list(k2)) # Comparamos keys
-                assert_equal(list(v1), list(v2)) # Comparamos values
-                    
-            else:
-                print('Respuesta inválida: {} es de tipo {}'.format(ans, type(ans)))
-
-                # Se lanza la excepción para que sea detectada por NBGrader
-                raise AssertionError from None
-            
-        except AssertionError as info:
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + enum + ' | Ocurrió un error.')
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + 'Hint:', end = ' ')
-
-            # Se obtiene la retroalimentación para la pregunta correspondiente.            
-            feedback = self.read(enum, '.__fee_')
-
-            # Si el ejercicio (enum) contiene retroalimentación, se imprime en pantalla.
-            # En otro caso no se imprime nada.
-            if feedback[enum][0] != None and self.__verb >= 1:            
-                print(Fore.RED + feedback[enum][0])
-            else:
-                print()            
-            print(Fore.RESET + self.__line_len*'-')
-
-            # Se imprime la información del error.
-            if self.__verb >= 2:
-                print(info)
-
-            # Se lanza la excepción para que sea detectada por NBGrader
-            raise AssertionError from None
-            
-        else:
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.GREEN + enum + ' | Tu resultado es correcto.')
-            print(Fore.RESET + self.__line_len*'-') 
-
-    def eval_ordered_datastruct(self, enum, ans):
-        """
-        Evalúa una respuesta numérica que puede ser un número o un arreglo de números.
-        
-        Parameters
-        ----------
-        enum: string
-        Número de pregunta.
-        
-        ans: string
-        Respuesta del alumno.
-        """
-        # Se obtiene la respuesta correcta del archivo. Recordemos que
-        # Parquet escribe listas y tuplas en forma de np.ndarray, por lo que
-        # al recuperarlas del archivo vienen en formato np.ndarray en 1D.
-        value = self.read(enum)        
-        correct = value[enum][0]
-        
-        try:
-            if isinstance(ans, np.ndarray):
-                # Para comparar la respuesta del alumno (ans) con la respuesta correcta (correct) 
-                # debemos usar la función flatten(), para que ambos arreglos sean lineales (1D).
-                # La función assert_equal() requiere de listas.
-                assert_equal(list(correct), list(ans.flatten()))
-            
-            elif isinstance(ans, list) or isinstance(ans, tuple):
-                assert_equal(list(correct), list(ans))
-                    
-            else:
-                print('Respuesta inválida: {} es de tipo {}'.format(ans, type(ans)))
-
-                # Se lanza la excepción para que sea detectada por NBGrader
-                raise AssertionError from None
-            
-        except AssertionError as info:
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + enum + ' | Ocurrió un error.')
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + 'Hint:', end = ' ')
-
-            # Se obtiene la retroalimentación para la pregunta correspondiente.            
-            feedback = self.read(enum, '.__fee_')
-
-            # Si el ejercicio (enum) contiene retroalimentación, se imprime en pantalla.
-            # En otro caso no se imprime nada.
-            if feedback[enum][0] != None and self.__verb >= 1:            
-                print(Fore.RED + feedback[enum][0])
-            else:
-                print()            
-            print(Fore.RESET + self.__line_len*'-')
-
-            # Se imprime la información del error.
-            if self.__verb >= 2:
-                print(info)
-
-            # Se lanza la excepción para que sea detectada por NBGrader
-            raise AssertionError from None
-            
-        else:
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.GREEN + enum + ' | Tu resultado es correcto.')
-            print(Fore.RESET + self.__line_len*'-') 
 
 
 
@@ -591,29 +494,66 @@ if __name__ == '__main__':
 
     opcion = 'c'
     derivada = 'x**2'
+    flotante = 0.0
+    entero = 1
+    complejo = 1 + 5j
+    logico = True
+    w = np.sin(np.linspace(0,1,10))
+    lista_num = [0, 1, 3.4]
+    tupla_num = (1.2, 3.1416, np.pi)
+    conjunto_num = {3, 5, 6, 2, 9,8}
 
     file_answer.write('0', 'a', 'Opción inválida')
     file_answer.write('1', opcion, 'Las opciones válidas son ...')
     file_answer.write('2', derivada, 'Checa las reglas de derivación')
+    file_answer.write('3', flotante, 'Checa el valor de flotante')
+    file_answer.write('4', entero, 'Checa el valor de entero')
+    file_answer.write('5', complejo, 'Checa el valor de complejo')
+    file_answer.write('6', logico, 'Checa  logico')
+    mensaje ="""Puedes poner mucho texto y ver que sucede en la impresión del hint,
+    quizá es necesario usar triples comillas"""
+    file_answer.write('7', w, mensaje)
+    file_answer.write('8', lista_num, 'Checa la lista numérica')
+    file_answer.write('9', tupla_num, 'Checa la tupla numérica')
+    file_answer.write('10', conjunto_num, 'Checa los conjuntos numéricos')
     file_answer.to_file('test01')
 
     print("Quiz number:", file_answer.quiz_num)
 
-    pausa = input("Vamos con Quiz")
-
     quiz = Quiz(file_answer.quiz_num, 'local')
 
     print('\nVerbosidad de la ayuda : {} \n'.format(quiz.verb))
+    
     print('Opción')
     quiz.eval_option('1', 'c')
     
+    print('Expresión')
     x = sy.Symbol('x')
     resultado = x*x
     display(resultado)
-
-    print('Expresión')
     quiz.eval_expression('2', resultado)
     
+    print('Flotante')
+    quiz.eval_numeric('3', flotante)
+    print('Entero')
+    quiz.eval_numeric('4', entero)
+    print('Complejo')
+    quiz.eval_numeric('5', complejo)
+    print('Logico')
+    quiz.eval_numeric('6', logico)
+    print('numpy array')
+    quiz.eval_numeric('7', w)
+    print('Lista numérica')
+#    lista_num[-2] =0.001
+#    lista_num = [0, 1]
+    quiz.eval_numeric('8', lista_num)
+    print('Tupla numérica')
+#    tupla_num = (1.2, 3.1416, 2*np.pi)
+#    tupla_num = (0, 1)
+    quiz.eval_numeric('9', tupla_num)    
+    print('Conjunto numérico')
+#    conjunto_num = {1,2,3,4,5,1}
+    quiz.eval_numeric('10', conjunto_num)
     pausa = input("Parar")
 
     #---------------------- CONSTRUCCIÓN DE RESPUESTAS
