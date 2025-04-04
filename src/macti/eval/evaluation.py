@@ -28,8 +28,8 @@ class FileAnswer():
         se almacenan en archivos diferentes, veáse la función to_file().
         """
         cp, to = os.path.split(os.getcwd()) # Extracción del path del curso y del tema
-        self.__course_path = cp + os.sep # Agregamos el separador 
-        self.__topic = to + os.sep       # Agregamos el separador 
+        self.__course_path = cp + os.sep # Agregamos el separador a la ruta del curso 
+        self.__topic = to + os.sep       # Agregamos el separador al nombre del tema
 
         # Construcción del path para los archivos de respuestas
         self.__ans_path = self.__course_path + ".ans" + os.sep + self.__topic
@@ -43,6 +43,13 @@ class FileAnswer():
         # Por omisión la verbosidad es igual a 2, es decir toda la ayuda posible al alumno
         self.__verb = 2
 
+        # Cadena final del nombre de los archivos, se actualiza en la función self.to_file()
+        self.__quiz_num = ""
+
+    @property
+    def quiz_num(self):
+        return self.__quiz_num
+        
     @property
     def answers(self):
         return self.__answers
@@ -61,6 +68,8 @@ class FileAnswer():
              
     def write(self, enum, ans, feed=None, verb = False):
         """
+        Escribe la respuest y la retroalimentación de una pregunta.
+        
         Esta función escribe una respuesta en una lista (self.__answer) y la retroalimentación de 
         esta respuesta en otra lista (self.__feedback). El número del ejercicio se almacena en 
         otra lista (self.__exernum). Si la respuesta es nueva, se agrega un elemento a la lista, 
@@ -68,19 +77,19 @@ class FileAnswer():
 
         Parameters
         ----------
-        enum: string
-        Cadena con el identificador del ejercicio. Este parámetro no puede ser '0' debido
-        a que ese identificador está destinado a almacenar la verbosidad de la retroalimentación.
+        enum: str
+            Cadena con el identificador del ejercicio. Este parámetro no puede ser '0' debido
+            a que ese identificador está destinado a almacenar la verbosidad de la retroalimentación.
 
-        ans: 
-        Objeto que contiene la respuesta, puede ser de cualquier tipo soportado por la
-        biblioteca (str, float, int, complex, boolean, ndarray, list, tuple, dict
+        ans: str, float, int, complex, boolean, ndarray, list, tuple, dict
+            Objeto que contiene la respuesta, puede ser de cualquier tipo soportado por la
+            biblioteca (str, float, int, complex, boolean, ndarray, list, tuple, dict)
 
-        feed: string
-        Cadena con la retroalimentación del ejercicio. Por omisión está vacía.
+        feed: str
+            Cadena con la retroalimentación del ejercicio. Por omisión está vacía.
 
         verb: bool
-        Es False siempre, excepto cuando se escribe la verbosidad.
+            Es False siempre, excepto cuando se escribe la verbosidad.
         """
         try:
             # Solo se permite enum == '0' cuando se almacena la verbosidad (verb == True)
@@ -97,8 +106,11 @@ class FileAnswer():
                 if isinstance(ans, np.ndarray):
                     self.__answers[index] = ans.flatten() # almacenamos los arreglos de numpy en 1D
                 elif isinstance(ans, dict):
+                    # Las claves y los valores del diccionario se convierten a listas y luego se
+                    # almacenan en un solo arreglo 1D de numpy
                     self.__answers[index] = np.array([list(ans.keys()), list(ans.values())]).flatten()
                 elif isinstance(ans, complex):
+                    # Almacenamos la parte real e imaginaria del número complejo en una lista.
                     self.__answers[index] = [ans.real, ans.imag]
                 else:
                     self.__answers[index] = ans
@@ -115,9 +127,9 @@ class FileAnswer():
                     self.__answers.append([ans.real, ans.imag])      
                 else:
                     self.__answers.append(ans)
-            
-                self.__exernum.append(enum)
-                self.__feedback.append(feed)
+                
+                self.__exernum.append(enum)  # Se almacena el número de la pregunta
+                self.__feedback.append(feed) # Se almacena la retroalimentación de la pregunta
     
     def to_file(self, qnum):
         """
@@ -125,10 +137,13 @@ class FileAnswer():
 
         Parameters
         ----------
-        qnum: string
-        Es una cadena que proporciona el número del quiz. La cadena debe ser una
-        cadena, se recomienta usar: '1', '2', ...
+        qnum: str
+            Es una cadena que identifica a una pregunta del quiz. 
+            Se recomienta usar: '1', '2', ...
         """
+        # Cadena final del nombre de los archivos de respuestas y de retroalimentación
+        self.__quiz_num = qnum
+        
         # Se define la verbosidad de la retroalimentación de cada respuesta. 
         self.write('0', self.__verb, verb = True)
         
@@ -149,7 +164,8 @@ class FileAnswer():
         print('Respuestas y retroalimentación almacenadas.')
         
 class Quiz():
-    def __init__(self, qnum, course, server = 'hub', path_from_read = None):
+    def __init__(self, qnum, 
+                 server = 'hub', spath = '/usr/local/share/nbgrader/exchange/'):
         """
         Clase para la evaluación de ejercicios.
         
@@ -161,44 +177,31 @@ class Quiz():
         course : str
             Nombre del directorio del curso.
         
-        server: str
+        server : str
             Puede tener cualquiera de los dos siguientes valores:
             'local' cuando los datos (answers & feedback) se almacenan en un directorio local.
             'hub' cuando los datos (answers & feedback) se almacenan en un directorio global del hub.
 
-        path_from_read: string
-            Ruta de donde se leerán las respuestas y la retroalimentación. 
-            NOTA: Esta es una característica en proceso de desarrollo.
+        spath : str
+            Directorio de intercambio de nbgrader. Cuando server = 'hub' esta ruta se debe proporcionar.
+            En el caso de la instalación de MACTI es '/usr/local/share/nbgrader/exchange/' que es el 
+            valor por omisión. OJO: esta ruta debe incluir el caracter '/' al final.
         """
         self.__server = server
-        self.__path_from_read = path_from_read
-        self.__course_path = ''
+        self.__server_path = spath
 
-        # Separador dependiendo de la plataforma
-        self.__platform = platform.system()
-        sep = '\\' if self.__platform == 'Windows' else '/'
+        cp, to = os.path.split(os.getcwd()) # Extracción del path del curso y del tema
+        self.__course_path = cp + os.sep    # Agregamos el separador a la ruta del curso
+        self.__course = cp.split(os.sep)[-1] + os.sep # Nombre del curso con separador
+        self.__topic = to + os.sep       # Agregamos el separador al nombre del tema
+
+        # Construcción del path para los archivos de respuestas
+        if self.__server == 'local':
+            self.__ans_path = self.__course_path + ".ans" + os.sep + self.__topic
+        elif self.__server == 'hub':
+            self.__ans_path = self.__server_path + self.__course + ".ans" + os.sep + self.__topic
         
-        # Obtenemos el nombre a partir del path actual
-        # Se asume que se ejecuta dentro de course/topic/
-        self.__path = os.getcwd()
-        self.__course = course # sin separador
-        self.__topic = self.__path.split('/')[-1] + sep
-
-        if server == 'local':
-            # Construcción de una lista con los componentes de la ruta absoluta
-            # a partir de donde se ejecuta la notebook
-            abs_path = os.getcwd().split(sep = sep)  # Ruta absoluta
-
-            # Obtención del índice donde está el nombre del curso dentro de la lista abs_path
-            index_co = abs_path.index(self.__course)
-
-            # Construcción del path del curso
-            for i in abs_path[0:index_co+1]:
-                self.__course_path += i + sep
-        
-        self.__course += sep  # Agregamos el separador
-        self.__ans = '.ans' + sep # .ans/
-        self.__qnum = qnum # Número del quiz
+        self.__quiz_num = qnum # Número del quiz
 
         # Verbosity
         self.__verb = self.read('0', verb = True)['0'][0]
@@ -249,28 +252,8 @@ class Quiz():
             print('NO EXISTE LA RESPUESTA. No está permitido usar \'{}\' para identificar un ejercicio \n'.format(enum))
         else:   
             # Se agrega el número del quiz correspondiente al nombre del archivo de respuestas. 
-            filename = name + self.__qnum
-
-            if self.__server == 'local' and self.__path_from_read == None:
-                path = self.__course_path + self.__ans + self.__topic
-                stream = path + filename
-                
-            elif self.__server == 'hub' and self.__path_from_read == None: 
-                # Directorio global en el hub
-                path = '/usr/local/share/nbgrader/exchange/' + self.__course + self.__ans + self.__topic
-                stream = path + filename 
-                
-            elif self.__path_from_read != None:
-                path = self.__path_from_read + sep + self.__topic
-                
-    #        elif self.__server == 'macti':
-                # Se utiliza pkg_resources para obtener el directorio de instalación de la biblioteca.
-                # /opt/conda/lib/python3.11/site-packages/macti/data/course/.ans/topic/
-    #            path = '/data/' + self.__course + self.__ans + self.__topic
-    #            stream = pkg_resources.resource_stream('macti', path + filename)
-                
-            else:
-                print('Opciones inválidas. Revisa la declaración de Quiz()')
+            filename = name + self.__quiz_num
+            stream = self.__ans_path + filename
 
             # Lectura del archivo en formato parquet, se regresa en un DataFrame.
             return (pd.read_parquet(stream, columns=[enum]))
@@ -602,9 +585,9 @@ class Quiz():
 if __name__ == '__main__':
 
     #---------------------- CREACIÓN DEL ARCHIVO DE RESPUESTAS
-    print()
+    print("Iniciamos con FileAnswer")
     file_answer = FileAnswer()
-    file_answer.verb = 0
+#    file_answer.verb = 0
 
     opcion = 'c'
     derivada = 'x**2'
@@ -614,6 +597,23 @@ if __name__ == '__main__':
     file_answer.write('2', derivada, 'Checa las reglas de derivación')
     file_answer.to_file('test01')
 
+    print("Quiz number:", file_answer.quiz_num)
+
+    pausa = input("Vamos con Quiz")
+
+    quiz = Quiz(file_answer.quiz_num, 'local')
+
+    print('\nVerbosidad de la ayuda : {} \n'.format(quiz.verb))
+    print('Opción')
+    quiz.eval_option('1', 'c')
+    
+    x = sy.Symbol('x')
+    resultado = x*x
+    display(resultado)
+
+    print('Expresión')
+    quiz.eval_expression('2', resultado)
+    
     pausa = input("Parar")
 
     #---------------------- CONSTRUCCIÓN DE RESPUESTAS
