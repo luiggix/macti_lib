@@ -413,7 +413,7 @@ class Quiz():
             # Se lanza una excepción con la información correspondiente.
             raise AssertionError from None
 
-    def __test_array(self, a, b):
+    def __test_array(self, b, a):
         """
         Compara dos valores numéricos o arreglos de valores numéricos.
         
@@ -433,7 +433,10 @@ class Quiz():
 
         Returns
         -------
-        AssertionError cuando hay diferencia entre a y b.
+        msg : str
+            Mensaje con el posible error encontrado: 
+             - diferencia entre longitudes de los arreglos.
+             - diferencia en algún elemento de los arreglos (la primera que ocurre).
         """
         b = b.flatten()
         msg = ""
@@ -476,31 +479,31 @@ class Quiz():
                 if ans.dtype == complex:
                     # Preprocesamiento especial para números complejos.
                     b = np.array([[c.real, c.imag] for c in ans.flatten()]).flatten()
-                    msg = self.__test_array(correct, b)
-                    np.testing.assert_allclose(correct, b)
+                    msg = self.__test_array(b, correct)
+                    np.testing.assert_allclose(b, correct)
                 else:                        
-                    msg = self.__test_array(correct, ans)
-                    np.testing.assert_allclose(correct, ans)
+                    msg = self.__test_array(ans, correct)
+                    np.testing.assert_allclose(ans, correct)
 
             elif isinstance(ans, list) or isinstance(ans, tuple):
                 b = np.array(ans).flatten() # Se requiere flatten() para listas de listas
-                msg = self.__test_array(correct, b)
-                np.testing.assert_allclose(correct, b)
+                msg = self.__test_array(b, correct)
+                np.testing.assert_allclose(b, correct)
 
             elif isinstance(ans, set):
                 b = np.array(list(ans))
-                msg = self.__test_array(correct, b)
-                np.testing.assert_allclose(correct, b)
+                msg = self.__test_array(b, correct)
+                np.testing.assert_allclose(b, correct)
 
             elif isinstance(ans, complex):
                 a = np.array([complex(correct[0], correct[1])])
                 b = np.array([ans])
-                msg = self.__test_array(a, b)
-                np.testing.assert_allclose(a, b)
+                msg = self.__test_array(b, a)
+                np.testing.assert_allclose(b, a)
 
             elif isinstance(ans, int) or isinstance(ans, float) or isinstance(ans, bool):
-                msg = self.__test_array(np.array([correct]), np.array([ans]))
-                np.testing.assert_allclose(correct, ans)
+                msg = self.__test_array(np.array([ans]), np.array([correct]))
+                np.testing.assert_allclose(ans, correct)
 
             else:
                 print(enum + ' | Respuesta inválida: {} es de tipo {}'.format(ans, type(ans)))
@@ -562,16 +565,16 @@ class Quiz():
                 correct = value[enum][0]
                 a = np.array([correct])
                 b = np.array([dict_len])
-                msg = self.__test_array(a, b)
-                np.testing.assert_allclose(a, b)
+                msg = self.__test_array(b, a)
+                np.testing.assert_allclose(b, a)
                 
                 # Se obtienen los keys del diccionario y se comparan con la respuesta del alumno.
                 enum = enum_copy + "_key"
                 value = self.read(enum)        
                 correct = value[enum][0]
                 b = np.array(keys)
-                msg = self.__test_array(correct, b)
-                np.testing.assert_allclose(correct, b)
+                msg = self.__test_array(b, correct)
+                np.testing.assert_allclose(b, correct)
 
                 # Se obtienen los valores del diccionario, uno a uno, y se comparan con la respuesta del alumno.
                 for i, v in enumerate(ans.values()):
@@ -582,8 +585,8 @@ class Quiz():
                         v = list(v)
                     a = np.array([correct]).flatten() # cuando los valores son listas, se requiere flatten()
                     b = np.array([v]).flatten() 
-                    msg = self.__test_array(a, b)
-                    np.testing.assert_allclose(a, b)
+                    msg = self.__test_array(b, a)
+                    np.testing.assert_allclose(b, a)
 
             else:
                 print(enum + ' | Respuesta inválida: {} es de tipo {}'.format(ans, type(ans)))
@@ -593,7 +596,7 @@ class Quiz():
                 
         except AssertionError as info:
             print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + enum + ' | Ocurrió un error en tus cálculos.')
+            print(Fore.RED + enum_copy + ' - '+ enum + ' | Ocurrió un error en tus cálculos.')
             print(Fore.RESET + self.__line_len*'-')
             print(Fore.RED + 'Hint:', end = ' ')
 
@@ -617,9 +620,67 @@ class Quiz():
 
         else:
             print(Fore.RESET + self.__line_len*'-')
-            print(Fore.GREEN + enum + ' | Tu resultado es correcto.')
+            print(Fore.GREEN + enum_copy + ' | Tu resultado es correcto.')
             print(Fore.RESET + self.__line_len*'-')   
+
+    
+    def eval_datastruct(self, enum, ans):
+        """
+        Evalúa una respuesta almacenada en una estructura de datos.
+        
+        Parameters
+        ----------
+        enum: string
+        Número de pregunta.
+        
+        ans: string
+        Respuesta del alumno.
+        """
+        # Se obtiene la respuesta correcta del archivo. Recordemos que
+        # Parquet escribe listas y tuplas en forma de np.ndarray, por lo que
+        # al recuperarlas del archivo vienen en formato np.ndarray en 1D.
+        value = self.read(enum)        
+        correct = value[enum][0]
+        
+        try:
+
+            if isinstance(ans, list):
+                np.testing.assert_equal(a, b)        
+                    
+            else:
+                print('Respuesta inválida: {} es de tipo {}'.format(ans, type(ans)))
+
+                # Se lanza la excepción para que sea detectada por NBGrader
+                raise AssertionError from None
             
+        except AssertionError as info:
+            print(Fore.RESET + self.__line_len*'-')
+            print(Fore.RED + enum + ' | Ocurrió un error.')
+            print(Fore.RESET + self.__line_len*'-')
+            print(Fore.RED + 'Hint:', end = ' ')
+
+            # Se obtiene la retroalimentación para la pregunta correspondiente.            
+            feedback = self.read(enum, '.__fee_')
+
+            # Si el ejercicio (enum) contiene retroalimentación, se imprime en pantalla.
+            # En otro caso no se imprime nada.
+            if feedback[enum][0] != None and self.__verb >= 1:            
+                print(Fore.RED + feedback[enum][0])
+            else:
+                print()            
+            print(Fore.RESET + self.__line_len*'-')
+
+            # Se imprime la información del error.
+            if self.__verb >= 2:
+                print(info)
+
+            # Se lanza la excepción para que sea detectada por NBGrader
+            raise AssertionError from None
+            
+        else:
+            print(Fore.RESET + self.__line_len*'-')
+            print(Fore.GREEN + enum + ' | Tu resultado es correcto.')
+            print(Fore.RESET + self.__line_len*'-') 
 
 
             
@@ -685,9 +746,9 @@ if __name__ == '__main__':
     file_answer.write('11', conjunto_num, 'Checa los conjuntos numéricos')
     file_answer.write('12', diccionario_num, 'Checa los diccionarios numéricos')
     file_answer.write('13', diccionario_num_list, 'Checa los diccionarios numéricos con valores tipo lista')
-
     file_answer.write('14', arreglo_complejo, 'Checa el arreglo complejo')
     file_answer.write('15', lista_lista, "Checa la lista de listas")
+    
     file_answer.write('16', lista, "checa la estructura de tipo lista")
     file_answer.write('17', tupla, "checa la estructura de tipo tupla")
     file_answer.write('18', conjunto, "checa la estructura de tipo conjunto")
@@ -754,7 +815,7 @@ if __name__ == '__main__':
 #    conjunto_num = {1,2,3.5,4,5,6}
     quiz.eval_numeric('11', conjunto_num)
     print('Diccionario numérico')
-#    diccionario_num = {1:3.446, 2:5.6423}
+    diccionario_num = {1:3.446, 2:5.6423}
 #    diccionario_num = {1:3.44, 4:5.6423, 3:2.234324}
 #    diccionario_num = {1:3.446, 2:5.642, 3:2.234324}
     quiz.eval_dict('12', diccionario_num)
@@ -768,6 +829,8 @@ if __name__ == '__main__':
 #    arreglo_complejo = np.array([0j,2j,3j,4j,5j])
     quiz.eval_numeric('14', arreglo_complejo)
     print('Lista de listas')
+#    lista_lista = [[1,2],[3,4],[5,6]]
+#    lista_lista = [[1,2],[3.14,4]]
     quiz.eval_numeric('15', lista_lista)
     
 #    print('estructura de datos')
