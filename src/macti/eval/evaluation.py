@@ -261,7 +261,7 @@ class Quiz():
         self.__quiz_num = qnum # Número del quiz
 
         # Verbosity
-        self.__verb = self.read('0', verb = True)['0'][0]
+        self.__verb = self.__read('0', verb = True)['0'][0]
 
         self.__line_len = 40
         self.__line = 40 * chr(0x2015)
@@ -278,7 +278,7 @@ class Quiz():
     def server(self, server):
         self.__server = server
         
-    def read(self, enum, name = '.__ans_', verb = False):
+    def __read(self, enum, name = '.__ans_', verb = False):
         """
         Lectura de la respuesta del ejercicio con número enum. 
         
@@ -315,104 +315,75 @@ class Quiz():
 
             # Lectura del archivo en formato parquet, se regresa en un DataFrame.
             return (pd.read_parquet(stream, columns=[enum]))
-            
-    def eval_option(self, enum, ans):
+
+    def __print_correct(self, enum, equiz="", ans=""):
         """
-        Evalúa una pregunta de opción múltiple. 
-        
-        Cuando la respuesta es incorrecta lanza un excepción.
-        
+        Imprime el mensaje de que la respuesta es correcta.
+
         Parameters
         ----------
-        enum: str
-            Número de pregunta.
-        
-        ans: str
-            Respuesta del alumno.
-        """
-        # Se obtiene la respuesta correcta del archivo.
-        answer = self.read(enum)
-        ans = ans.replace(" ","") 
+        enum : str
+            Número del ejercicio dentro del quiz.      
 
-        # Se compara la respuesta del alumno (ans) con la correcta (answer[enum][0])
-        # La comparación se realiza en minúsculas.
-        correcta = ans.lower() == answer[enum][0].lower()
-        
-        if correcta:
-            print(Fore.RESET + self.__line_len*'-')
+        equiz : str
+            Tipo de evaluación.
+        """
+        print(Fore.RESET + self.__line)
+        if equiz == "option":
             print(Fore.GREEN + enum + ' | Tu respuesta:', end = ' ')
             print(Fore.RESET + '{}'.format(ans), end = '')
-            print(Fore.GREEN + ', es correcta.')
-            print(Fore.RESET + self.__line_len*'-')
-        else:
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + enum + ' | Tu respuesta:', end = ' ')
-            print(Fore.RESET + '{}'.format(ans), end = '')
-            print(Fore.RED + ', es INCORRECTA.') 
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + 'Hint:', end = ' ')
-
-            # Se obtiene la retroalimentación para la pregunta correspondiente.
-            feedback = self.read(enum, '.__fee_')
-
-            # Si el ejercicio (enum) contiene retroalimentación, se imprime en pantalla.
-            # En otro caso no se imprime nada.
-            if feedback[enum][0] != None and self.__verb >= 1:            
-                print(Fore.RED + feedback[enum][0])
-            else: 
-                print()
-            print(Fore.RESET + self.__line_len*'-')
-
-            # Se lanza una excepción con la información correspondiente.
-            raise AssertionError from None
-
-    def eval_expression(self, enum, ans):
-        """
-        Evalúa una expresión simbólica escrita en formato Python+Sympy.
-        
-        Parameters
-        ----------
-        enum: str
-            Número de pregunta.
-        
-        ans: str
-            Respuesta del alumno.
-        """
-        # Se obtiene la respuesta correcta del archivo.
-        value = self.read(enum)
-
-        # Se convierte la respuesta correcta (value) en formato SymPy.
-        problema = sy.sympify(value[enum][0])
-
-        # Se compara la respuesta correcta (problema) con la respuesta
-        # del alumno (ans) usando la función equals().
-        if problema.equals(ans):
-            print(Fore.RESET + self.__line_len*'-')
+            print(Fore.GREEN + ', es correcta.') 
+        elif equiz == "expression":
             print(Fore.GREEN + enum + ' | Tu respuesta:')
             display(ans)
             print(Fore.GREEN + 'es correcta.')
-            print(Fore.RESET + self.__line_len*'-')
         else:
-            print(Fore.RESET + self.__line_len*'-')
+            print(Fore.GREEN + enum + ' | Tu resultado es correcto.')
+        print(Fore.RESET + self.__line)
+    
+    def __print_error_hint(self, enum, equiz="", ans="", msg="", info=""):
+        """
+        Imprime el error y la retroalimentación.
+
+        Parameters
+        ----------
+        enum : str
+            Número del ejercicio dentro del quiz.
+
+        equiz : str
+            Tipo de evaluación.
+            
+        msg : str
+            Mensaje con el posible error encontrado.
+        """
+        print(Fore.RESET + self.__line)
+        if equiz == "option":
+            print(Fore.RED + enum + ' | Tu respuesta:', end = ' ')
+            print(Fore.RESET + '{}'.format(ans), end = '')
+            print(Fore.RED + ', es INCORRECTA.') 
+        elif equiz == "expression":
             print(Fore.RED + enum + ' | Tu respuesta:')
             display(ans)
             print(Fore.RED + 'NO es correcta.')
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + 'Hint:', end = ' ')
-
-            # Se obtiene la retroalimentación para la pregunta correspondiente.
-            feedback = self.read(enum, '.__fee_')   
-
-            # Si el ejercicio (enum) contiene retroalimentación, se imprime en pantalla.
-            # En otro caso no se imprime nada.
-            if feedback[enum][0] != None and self.__verb >= 1:            
-                print(Fore.RED + feedback[enum][0])
-            else:
-                print()
-            print(Fore.RESET + self.__line_len*'-')
-
-            # Se lanza una excepción con la información correspondiente.
-            raise AssertionError from None
+        else:
+            print(Fore.RED + enum + ' | Ocurrió un error en tus cálculos.')
+        print(Fore.RESET + self.__line)
+        print(Fore.RED + 'Hint:', end = ' ')
+    
+        # Se obtiene la retroalimentación para la pregunta correspondiente.            
+        feedback = self.__read(enum, '.__fee_')
+        
+        # Si el ejercicio (enum) contiene retroalimentación, se imprime en pantalla.
+        # En otro caso no se imprime nada.
+        if feedback[enum][0] != None and self.__verb >= 1:            
+            print(Fore.RED + feedback[enum][0] + msg)
+        else:
+            print()            
+            print(Fore.RESET + self.__line)
+            
+        # Se imprime la información del error.
+        if self.__verb >= 2:
+            print(info)
 
     def __test_string_array(self, b, a):
         """
@@ -487,7 +458,65 @@ class Quiz():
             msg = f"\nLongitud correcta={len(a)}\nLongitud de tu respuesta={len(b)}"
                 
         return msg
-            
+        
+    def eval_option(self, enum, ans):
+        """
+        Evalúa una pregunta de opción múltiple. 
+        
+        Cuando la respuesta es incorrecta lanza un excepción.
+        
+        Parameters
+        ----------
+        enum: str
+            Número de pregunta.
+        
+        ans: str
+            Respuesta del alumno.
+        """
+        # Se obtiene la respuesta correcta del archivo.
+        answer = self.__read(enum)
+        ans = ans.replace(" ","") 
+
+        # Se compara la respuesta del alumno (ans) con la correcta (answer[enum][0])
+        # La comparación se realiza en minúsculas.
+        correcta = ans.lower() == answer[enum][0].lower()
+        
+        if correcta:
+            self.__print_correct(enum, equiz="option", ans=ans)
+        else:
+            self.__print_error_hint(enum, equiz="option", ans=ans)
+
+            # Se lanza una excepción con la información correspondiente.
+            raise AssertionError from None
+
+    def eval_expression(self, enum, ans):
+        """
+        Evalúa una expresión simbólica escrita en formato Python+Sympy.
+        
+        Parameters
+        ----------
+        enum: str
+            Número de pregunta.
+        
+        ans: str
+            Respuesta del alumno.
+        """
+        # Se obtiene la respuesta correcta del archivo.
+        value = self.__read(enum)
+
+        # Se convierte la respuesta correcta (value) en formato SymPy.
+        problema = sy.sympify(value[enum][0])
+
+        # Se compara la respuesta correcta (problema) con la respuesta
+        # del alumno (ans) usando la función equals().
+        if problema.equals(ans):
+            self.__print_correct(enum, equiz="expression", ans=ans)
+        else:
+            self.__print_error_hint(enum, equiz="expression", ans=ans)
+
+            # Se lanza una excepción con la información correspondiente.
+            raise AssertionError from None
+
     def eval_numeric(self, enum, ans):
         """
         Evalúa una respuesta numérica que puede ser un número o un arreglo de números.
@@ -503,7 +532,7 @@ class Quiz():
         # Se obtiene la respuesta correcta del archivo. Recordemos que
         # Parquet escribe listas y tuplas en forma de np.ndarray, por lo que
         # al recuperarlas del archivo vienen en formato np.ndarray en 1D.
-        value = self.read(enum)        
+        value = self.__read(enum)        
         correct = value[enum][0]
         msg = ""
 
@@ -548,35 +577,15 @@ class Quiz():
                 raise AssertionError from None
                 
         except AssertionError as info:
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + enum + ' | Ocurrió un error en tus cálculos.')
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + 'Hint:', end = ' ')
-
-            # Se obtiene la retroalimentación para la pregunta correspondiente.            
-            feedback = self.read(enum, '.__fee_')
-
-            # Si el ejercicio (enum) contiene retroalimentación, se imprime en pantalla.
-            # En otro caso no se imprime nada.
-            if feedback[enum][0] != None and self.__verb >= 1:            
-                print(Fore.RED + feedback[enum][0] + msg)
-            else:
-                print()            
-            print(Fore.RESET + self.__line_len*'-')
-
-            # Se imprime la información del error.
-            if self.__verb >= 2:
-                print(info)
+            self.__print_error_hint(enum, msg=msg, info=info)
 
             # Se lanza la excepción para que sea detectada por NBGrader
             raise AssertionError from None
             
         else:
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.GREEN + enum + ' | Tu resultado es correcto.')
-            print(Fore.RESET + self.__line_len*'-')   
+            self.__print_correct(enum)
 
-    def eval_datastruct(self, enum, ans):
+    def eval_datastruct(self, enum, ans, inorder=True):
         """
         Evalúa una respuesta almacenada en una estructura de datos.
         
@@ -591,16 +600,24 @@ class Quiz():
         # Se obtiene la respuesta correcta del archivo. Recordemos que
         # Parquet escribe listas y tuplas en forma de np.ndarray, por lo que
         # al recuperarlas del archivo vienen en formato np.ndarray en 1D.
-        value = self.read(enum)        
+        value = self.__read(enum)        
         correct = value[enum][0]
         msg = ""       
 
         try:
-            if isinstance(ans, list) or isinstance(ans, tuple) or isinstance(ans, set):
-                if isinstance(ans, set): ans = list(ans)
-                b = np.array(ans).flatten() # Se requiere flatten() para listas de listas
-                msg = self.__test_string_array(b, correct)
-                np.testing.assert_equal(b, correct)     
+            if isinstance(ans, set) or isinstance(ans, tuple): ans = list(ans)
+                
+            if isinstance(ans, list):
+                if inorder: 
+                    b = np.array(ans).flatten() # Se requiere flatten() para listas de listas
+                    msg = self.__test_string_array(b, correct)
+                    np.testing.assert_equal(b, correct)
+                else:
+                    b = np.array(ans).flatten() # Se requiere flatten() para listas de listas
+                    b.sort()
+                    correct.sort()
+                    msg = self.__test_string_array(b, correct)
+                    np.testing.assert_equal(b, correct)                    
                     
             else:
                 print('Respuesta inválida: {} es de tipo {}'.format(ans, type(ans)))
@@ -609,33 +626,13 @@ class Quiz():
                 raise AssertionError from None
             
         except AssertionError as info:
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + enum + ' | Ocurrió un error.')
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + 'Hint:', end = ' ')
-
-            # Se obtiene la retroalimentación para la pregunta correspondiente.            
-            feedback = self.read(enum, '.__fee_')
-
-            # Si el ejercicio (enum) contiene retroalimentación, se imprime en pantalla.
-            # En otro caso no se imprime nada.
-            if feedback[enum][0] != None and self.__verb >= 1:            
-                print(Fore.RED + feedback[enum][0] + msg)
-            else:
-                print()            
-            print(Fore.RESET + self.__line_len*'-')
-
-            # Se imprime la información del error.
-            if self.__verb >= 2:
-                print(info)
+            self.__print_error_hint(enum, msg=msg, info=info)
 
             # Se lanza la excepción para que sea detectada por NBGrader
             raise AssertionError from None
             
         else:
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.GREEN + enum + ' | Tu resultado es correcto.')
-            print(Fore.RESET + self.__line_len*'-') 
+            self.__print_correct(enum)
             
     def eval_dict(self, enum, ans, numeric = True):
         """
@@ -657,7 +654,7 @@ class Quiz():
                 # Se obtiene la longitud del diccionario y se compara con la respuesta del alumno.
                 dict_len = len(ans) # Respuesta del alumno
                 enum = enum_copy + "_len" # etiqueta de la columna con la respuesta en el archivo
-                value = self.read(enum)   
+                value = self.__read(enum)   
                 correct = value[enum][0]
                 if not math.isclose(correct, dict_len):
                     msg = f"\n Valor correcto  : {correct}\n Valor calculado : {dict_len}\n"
@@ -666,7 +663,7 @@ class Quiz():
                 # Se obtienen los keys del diccionario y se comparan con la respuesta del alumno.
                 keys = np.array(list(ans.keys())) # Respuesta del alumno
                 enum = enum_copy + "_key" # etiqueta de la columna con la respuesta en el archivo
-                value = self.read(enum)        
+                value = self.__read(enum)        
                 correct = value[enum][0]
                 where = np.where((correct == keys) == False)
                 if len(where[0]) > 0:
@@ -676,7 +673,7 @@ class Quiz():
                 # Se obtienen los valores del diccionario, uno a uno, y se comparan con la respuesta del alumno.
                 for i, b in enumerate(ans.values()):
                     enum = enum_copy + "_val_" + str(i)
-                    value = self.read(enum)        
+                    value = self.__read(enum)        
                     correct = value[enum][0]
 
                     if numeric:
@@ -709,38 +706,13 @@ class Quiz():
                 raise AssertionError from None
                 
         except AssertionError as info:
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + enum_copy + ' - '+ enum + ' | Ocurrió un error en tus cálculos.')
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.RED + 'Hint:', end = ' ')
-
-            # Se obtiene la retroalimentación para la pregunta correspondiente.            
-            feedback = self.read(enum, '.__fee_')
-
-            # Si el ejercicio (enum) contiene retroalimentación, se imprime en pantalla.
-            # En otro caso no se imprime nada.
-            if feedback[enum][0] != None and self.__verb >= 1:            
-                print(Fore.RED + feedback[enum][0] + msg)
-            else:
-                print()            
-            print(Fore.RESET + self.__line_len*'-')
-
-            # Se imprime la información del error.
-            if self.__verb >= 2:
-                print(info)
-
+            self.__print_error_hint(enum, msg=msg,  info=info)
+            
             # Se lanza la excepción para que sea detectada por NBGrader
             raise AssertionError from None
 
         else:
-            print(Fore.RESET + self.__line_len*'-')
-            print(Fore.GREEN + enum_copy + ' | Tu resultado es correcto.')
-            print(Fore.RESET + self.__line_len*'-')   
-
-    
-
-
-
+            self.__print_correct(enum) 
             
 #----------------------- TEST OF THE MODULE ----------------------------------   
 if __name__ == '__main__':
@@ -787,6 +759,11 @@ if __name__ == '__main__':
 
     # Estructuras de datos más complejas
     lista_lista = [[1,2],[3,4]]
+
+    # Lista y tuplas no ordenadas
+    lista_no = ['a', 'b', 'x', '4', 'c']
+    tupla_no = ('a', 'b', 'x', '4', 'c')
+
     diccionario_num_list = {1:[3.446,34.566], 2:[5.6423, 6.7564], 3:[2.234324, 5.65645]}
 
     #----- CREACIÓN DEL DATAFRAME DE RESPUESTAS
@@ -825,7 +802,10 @@ if __name__ == '__main__':
     file_answer.write('18', arreglo_complejo, 'Checa el arreglo complejo')
 
     file_answer.write('19', lista_lista, "Checa la lista de listas")
-    file_answer.write('20', diccionario_num_list, 'Checa los diccionarios numéricos con valores tipo lista')
+    file_answer.write('20', lista_no, "Checa la lista NO ordenada")
+    file_answer.write('21', tupla_no, "Checa la tupla NO ordenada")
+
+#    file_answer.write('21', diccionario_num_list, 'Checa los diccionarios numéricos con valores tipo lista')
 
     #----- ESCRITURA DE LAS RESPUESTAS Y LA RETROALIMENTACIÓN ARCHIVOS.
     
@@ -852,7 +832,7 @@ if __name__ == '__main__':
     print('\nVerbosidad de la ayuda : {} \n'.format(quiz.verb))
     
     print('Opción')
-    quiz.eval_option('1', 'c')
+    quiz.eval_option('1', opcion)
     
     print('Expresión')
     quiz.eval_expression('2', derivada)
@@ -881,7 +861,7 @@ if __name__ == '__main__':
 #    lista = ['miguel', 'delacruz']
 #    lista = ['luis', 'migul', 'delacruz']
     quiz.eval_datastruct('9', lista)
-    
+
     print('Tupla numérica')
 #    tupla_num = (0, 1)
 #    tupla_num = (1.2, 3.1416, 2*np.pi)
@@ -934,12 +914,30 @@ if __name__ == '__main__':
 #    lista_lista = [[1,2],[3,4],[5,6]]
 #    lista_lista = [[1,2],[3.14,4]]
     quiz.eval_numeric('19', lista_lista)
+
+    print('Lista NO ordenada')
+    # Lista original: lista_no = ['a', 'b', 'x', '4', 'c']
+    # La respuesta puede estar en otro orden y ser correcta
+#    lista_no = ['x', '4', 'a', 'c', 'b']
+    # Los siguientes casos fallan
+#    lista_no = ['x', '4', 'c', 'b']
+#    lista_no = ['x', '4', 'c', 'b', 'y']
+    quiz.eval_datastruct('20', lista_no, inorder=False)
+
+    print('Tupla NO ordenada')
+    # Tupla original: tupla_no = ('a', 'b', 'x', '4', 'c')
+    # La respuesta puede estar en otro orden y ser correcta
+#    tupla_no = ('x', '4', 'a', 'c', 'b')
+    # Los siguientes casos fallan
+#    tupla_no = ('x', '4', 'c', 'b')
+#    tupla_no = ('x', '4', 'c', 'b', 'y')
+    quiz.eval_datastruct('21', tupla_no, inorder=False)
     
 #    print('Diccionario numérico con valores tipo lista')
 #    diccionario_num_list = {1:[3.446,34.566], 2:[5.6423, 6.7564]}
 #    diccionario_num_list = {1:[3.446,34.566], 2:[5.6423, 6.7564], 5:[2.234324, 5.65645]}
 #    diccionario_num_list = {1:[3.446,34.566], 2:[5.643, 6.7564], 3:[2.234324, 5.65645]}
-#    quiz.eval_dict('20', diccionario_num_list)
+#    quiz.eval_dict('22', diccionario_num_list)
     
 
 
