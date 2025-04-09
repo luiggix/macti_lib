@@ -68,7 +68,7 @@ class FileAnswer():
              
     def write(self, enum, ans, feed=None, verb = False):
         """
-        Escribe la respuest y la retroalimentación de una pregunta.
+        Escribe la respuesta y la retroalimentación de una pregunta.
         
         Esta función escribe una respuesta en una lista (self.__answer) y la retroalimentación de 
         esta respuesta en otra lista (self.__feedback). El número del ejercicio se almacena en 
@@ -264,6 +264,7 @@ class Quiz():
         self.__verb = self.read('0', verb = True)['0'][0]
 
         self.__line_len = 40
+        self.__line = 40 * chr(0x2015)
 
     @property
     def verb(self):
@@ -745,7 +746,6 @@ class Quiz():
 if __name__ == '__main__':
 
     #----- CREACIÓN DE RESPUESTAS
-    
     opcion = 'c'
     
     # Símbolos de sympy para cálculo simbólico
