@@ -17,3 +17,6 @@
 * Simulación.
 * MODFLOW 6.
 
+# Instalación
+
+pip install git+https://github.com/repomacti/macti_lib
