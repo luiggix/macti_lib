@@ -20,3 +20,5 @@
 # Instalación
 
 pip install git+https://github.com/repomacti/macti_lib
+
+Si quieres reinstalar la misma versión usa: --force-reinstall
