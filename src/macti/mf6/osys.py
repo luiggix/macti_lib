@@ -5,15 +5,20 @@ import flopy
 #from xmf6.tdis import TDis
 
 def nice_print(data, message = ''):
+    size = len(message)
+    fmt = '{:^'+str(size)+'}'
     print(Fore.BLUE)
     print(message)
-    print('{:^30}'.format(30*'-') + Style.RESET_ALL)
+    print(fmt.format(size * chr(0x2015)) + Style.RESET_ALL)
 
     if isinstance(data, dict):
         for k,v in data.items():
             print('{:>20} = {:<10}'.format(k, v))
     else: #if not isinstance(data, dict):# or isinstance(data, TDis):
         data.print()
+
+
+    print(Fore.BLUE + fmt.format(size * chr(0x2015)) + Style.RESET_ALL)
 
 class OSPar():
     """
@@ -166,9 +171,9 @@ class OFiles():
 
 if __name__ == '__main__':
 
-    ospar = OSPar(ws = "test", exe = "test", 
-                  fn = "test", hf = "test", hbf = "test")
+    ospar = OSPar(ws = "test1", exe = "test12", 
+                  fn = "test123", hf = "test1234", hbf = "test 12345")
 
     from osys import nice_print
-    nice_print(ospar, 'Testing ...')
+    nice_print(ospar, 'Testing ... mucho texto')
 
