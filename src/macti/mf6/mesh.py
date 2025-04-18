@@ -17,17 +17,17 @@ class MeshDis():
         self.__bottom = float(bottom) # Layer bottom elevation 
 
     def print(self):
-        print('NX = {:12d} (ncol)'.format(self.__nx))
-        print('NY = {:12d} (nrow)'.format(self.__ny))
-        print('NZ = {:12d} (nlay)'.format(self.__nz))
-        print('LX = {:12.3f} (row)'.format(self.__lx))
-        print('LY = {:12.3f} (col)'.format(self.__ly))
-        print('LZ = {:12.3f} (lay)'.format(self.__lz))
-        print('DX = {:12.5e} (delr)'.format(self.__dx))
-        print('DY = {:12.5e} (delc)'.format(self.__dy))
-        print('TOP= {:12.3f} (top)'.format(self.__top))
-        print('BOT= {:12.3f} (bottom)'.format(self.__bottom))
-        print('DZ = {:12.5e} (top-botm)'.format(self.__dz))
+        print('  NX = {:<12d} (ncol)'.format(self.__nx))
+        print('  NY = {:<12d} (nrow)'.format(self.__ny))
+        print('  NZ = {:<12d} (nlay)'.format(self.__nz))
+        print('  LX = {:<12.3f} (row)'.format(self.__lx))
+        print('  LY = {:<12.3f} (col)'.format(self.__ly))
+        print('  LZ = {:<12.3f} (lay)'.format(self.__lz))
+        print('  DX = {:<12.5e} (delr)'.format(self.__dx))
+        print('  DY = {:<12.5e} (delc)'.format(self.__dy))
+        print(' TOP = {:<12.3f} (top)'.format(self.__top))
+        print(' BOT = {:<12.3f} (bottom)'.format(self.__bottom))
+        print('  DZ = {:<12.5e} (top-botm)'.format(self.__dz))
 
             
     @property
@@ -145,11 +145,6 @@ class MeshDis():
                                  np.linspace(0, self.__ly, self.__ny),
                                  np.linspace(0, self.__lz, self.__nz))
 
-    def get_dict(self):
-        return {'row_length': self.__lx, 'col_length': self.__ly, 'lay_length': self.__lz,
-                'ncol': self.__nx, 'nrow': self.__ny, 'nlay': self.__nz,
-                'delr': self.__dx, 'delc': self.__dy, 'dell': self.__dz,
-                'top': self.__top, 'bottom': self.__bottom}
 
 if __name__ == '__main__':
     mesh = MeshDis(
@@ -162,7 +157,7 @@ if __name__ == '__main__':
         bottom = 0,  # Layer bottom elevation 
     )
 
-    from output import nice_print
+    from osys import nice_print
     nice_print(mesh, 'Testing ...')
     
 
