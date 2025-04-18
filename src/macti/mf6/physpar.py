@@ -6,24 +6,40 @@ class PhysPar():
         self.__ppar['length'] = length
         
     def print(self):
+        # Calcula lo longitud máxima de cada cadena
+        size = max(list(map(len, list(self.__ppar.keys())))) + 1
+        # Define los formatos
+        fmts = '{:>' + str(size) + 's} = {:<20s}'
+        fmtd = '{:>' + str(size) + 's} = {:<20d}'
+        fmtf = '{:>' + str(size) + 's} = {:<10.5f}'
+
         for k, v in self.__ppar.items():
             if isinstance(v, str):
-                print(f"{k:>30s} = {v:<20s}")
+                print(fmts.format(k, v))
+#                print(f"{k:>30s} = {v:<20s}")
             if isinstance(v, int):
-                print(f"{k:>30s} = {v:<20d}")                
+                print(fmtd.format(k, v))
+#                print(f"{k:>30s} = {v:<20d}")                
             if isinstance(v, float):
-                print(f"{k:>30s} = {v:<10.5f}")
-#        print('  Time units = {:20s}'.format(self.__time))
-#        print('Length units = {:20s}\n'.format(self.__length))
+                print(fmtf.format(k, v))
+#                print(f"{k:>30s} = {v:<10.5f}")
         
 
     @property
     def time(self):
         return self.__ppar['time']
 
+    @time.setter
+    def time(self, value):
+        self.__ppar['time'] = value
+        
     @property
     def length(self):
         return self.__ppar['length']
+
+    @length.setter
+    def length(self, value):
+        self.__ppar['length'] = value
 
     @property
     def specific_discharge(self):
@@ -58,5 +74,5 @@ if __name__ == '__main__':
     phpar.specific_discharge = 0.1
     
     from osys import nice_print
-    nice_print(phpar, 'Testing ...')
+    nice_print(phpar, '... Testing ...')
 

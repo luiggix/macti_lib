@@ -11,12 +11,11 @@ def nice_print(data, message = ''):
     print(message)
     print(fmt.format(size * chr(0x2015)) + Style.RESET_ALL)
 
-    if isinstance(data, dict):
+    if isinstance(data, dict): # Esta característica será eliminada
         for k,v in data.items():
             print('{:>20} = {:<10}'.format(k, v))
     else: #if not isinstance(data, dict):# or isinstance(data, TDis):
         data.print()
-
 
     print(Fore.BLUE + fmt.format(size * chr(0x2015)) + Style.RESET_ALL)
 
@@ -66,11 +65,11 @@ class OSPar():
     def print(self):
         print('         Workspace = {:12s}'.format(self.__workspace))
         print('     MODFLOW 6 exe = {:12s}'.format(self.__mf6exe))
-        print('         Flow name = {:12s}'.format(self.__flow_name))
+        print('     Flow sim name = {:12s}'.format(self.__flow_name))
         print('         Head file = {:12s}'.format(self.__head_file))
         print('     h Budget file = {:12s}'.format(self.__hbudget_file))
         if self.__transport_name != "":
-            print('    Transport name = {:12s}'.format(self.__transport_name))
+            print('Transport sim name = {:12s}'.format(self.__transport_name))
         if self.__concentration_file != "":
             print('Concentration file = {:12s}'.format(self.__concentration_file))
         if self.__cbudget_file != "":
