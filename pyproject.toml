@@ -12,7 +12,7 @@ dependencies = ["pyarrow", "sympy", "flopy", "nbgrader"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["macti", "macti.eval", "macti.math", "macti.vis", "macti.mf6"]
+packages = ["macti", "macti.eval", "macti.math", "macti.vis"]
 #license-files = ["MIT"]
 
 [tool.setuptools.package-data]
