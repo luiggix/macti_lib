@@ -585,17 +585,20 @@ class Quiz():
         else:
             self.__print_correct(enum)
 
-    def eval_datastruct(self, enum, ans, inorder=True):
+    def eval_datastruct(self, enum, ans, in_order=True):
         """
         Evalúa una respuesta almacenada en una estructura de datos.
         
         Parameters
         ----------
         enum: string
-        Número de pregunta.
+            Número de pregunta.
         
         ans: string
-        Respuesta del alumno.
+            Respuesta del alumno.
+
+        in_order: bool
+            Si la respuesta debe estar en orden (True) o no (False).
         """
         # Se obtiene la respuesta correcta del archivo. Recordemos que
         # Parquet escribe listas y tuplas en forma de np.ndarray, por lo que
@@ -608,7 +611,7 @@ class Quiz():
             if isinstance(ans, set) or isinstance(ans, tuple): ans = list(ans)
                 
             if isinstance(ans, list):
-                if inorder: 
+                if in_order: 
                     b = np.array(ans).flatten() # Se requiere flatten() para listas de listas
                     msg = self.__test_string_array(b, correct)
                     np.testing.assert_equal(b, correct)
@@ -645,6 +648,9 @@ class Quiz():
         
         ans: str
             Respuesta del alumno.
+
+        numeric: bool.
+            Verifica
         """
         enum_copy = enum
         msg = ""       
@@ -888,13 +894,13 @@ if __name__ == '__main__':
 #    diccionario_num = {1:3.446, 2:5.642, 3:2.234324}
     quiz.eval_dict('14', diccionario_num)
 
-    print('Diccionario numérico con keys str')
+    print('Diccionario con keys str y values numéricos')
 #    diccionario_k_str = {'k1':1, 'k2':2}
 #    diccionario_k_str = {'k1':1, 'k4':2, 'k3':3}
 #    diccionario_k_str = {'k1':1, 'k2':2.4, 'k3':3}
     quiz.eval_dict('15', diccionario_k_str)
 
-    print('Diccionario numérico con keys and values str')
+    print('Diccionario con keys y values str')
 #    diccionario_kv_str= {'k1':'luis', 'k2':'miguel'}
 #    diccionario_kv_str= {'k1':'luis', 'k4':'miguel', 'k3':'x'}
 #    diccionario_kv_str= {'k1':'luis', 'k2':'mil', 'k3':'x'}
@@ -922,7 +928,7 @@ if __name__ == '__main__':
     # Los siguientes casos fallan
 #    lista_no = ['x', '4', 'c', 'b']
 #    lista_no = ['x', '4', 'c', 'b', 'y']
-    quiz.eval_datastruct('20', lista_no, inorder=False)
+    quiz.eval_datastruct('20', lista_no, in_order=False)
 
     print('Tupla NO ordenada')
     # Tupla original: tupla_no = ('a', 'b', 'x', '4', 'c')
@@ -931,7 +937,7 @@ if __name__ == '__main__':
     # Los siguientes casos fallan
 #    tupla_no = ('x', '4', 'c', 'b')
 #    tupla_no = ('x', '4', 'c', 'b', 'y')
-    quiz.eval_datastruct('21', tupla_no, inorder=False)
+    quiz.eval_datastruct('21', tupla_no, in_order=False)
     
 #    print('Diccionario numérico con valores tipo lista')
 #    diccionario_num_list = {1:[3.446,34.566], 2:[5.6423, 6.7564]}
