@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "macti"
-version = "0.3.0"
+version = "1.0.0"
 description = "Biblioteca para evaluación de Jupyter Notebooks, Visualización de datos y Simulación de flujos, todo orientado a la enseñanza en nivel licenciatura."
 authors = [{ name = "Luis Miguel de la Cruz Salas", email = "luiggi@igeofisica.unam.mx" }]
 readme = "README.md"
