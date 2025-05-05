@@ -5,15 +5,16 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "macti"
 version = "1.0.0"
-description = "Biblioteca para evaluación de Jupyter Notebooks, Visualización de datos y Simulación de flujos, todo orientado a la enseñanza en nivel licenciatura."
+description = "Biblioteca para evaluación de Jupyter Notebooks, Visualización de datos orientada a la enseñanza en nivel licenciatura."
 authors = [{ name = "Luis Miguel de la Cruz Salas", email = "luiggi@igeofisica.unam.mx" }]
 readme = "README.md"
-dependencies = ["pyarrow", "sympy", "flopy", "nbgrader"]
+dependencies = ["pyarrow", "sympy", "nbgrader"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["macti", "macti.eval", "macti.math", "macti.vis"]
+packages = ["macti", "macti.eval", "macti.math", "macti.vis", "macti.resources"]
+include-package-data = true
 #license-files = ["MIT"]
 
 [tool.setuptools.package-data]
-"biblio" = ["../resources/*"]
+"macti" = ["./resources/*"]

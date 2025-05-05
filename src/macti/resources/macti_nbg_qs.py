@@ -61,7 +61,7 @@ def init_course_nbgrader(c_name, home, path_c_name_nbg):
 
 #-------- DEFINICION DE ALGUNAS RUTAS --------
 # Este script se debe ejecutar desde donde está el directorio
-# del curso original de donde se van a copiar los notebooks de quizzes
+# del curso original de donde se van a copiar los notebooks de quizes
 
 os.system('clear')
 

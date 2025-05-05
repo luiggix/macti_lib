@@ -15,7 +15,6 @@
 * Evaluación.
 * Visualización.
 * Simulación.
-* MODFLOW 6.
 
 # Instalación
 
