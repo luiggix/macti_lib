@@ -221,7 +221,7 @@ class FileAnswer():
         print('Respuestas y retroalimentación almacenadas.')
         
 class Quiz():
-    def __init__(self, qnum, server = 'hub', spath = ''):
+    def __init__(self, qnum, course, server = 'hub', spath = ''):
         """
         Clase para la evaluación de ejercicios.
         
@@ -256,15 +256,8 @@ class Quiz():
         if self.__server == 'local':
             self.__ans_path = self.__course_path + ".ans" + os.sep + self.__topic
         elif self.__server == 'hub':
-            # TODO: solve this hack ...
-            dummy_path, self.__course = os.path.split(cp)
-#            print(dummy_path, self.__course)
-            dummy_path, self.__course = os.path.split(dummy_path)
-#            print(dummy_path, self.__course)
-            self.__course += os.sep
+            self.__course = course + os.sep
             self.__ans_path = self.__server_path + self.__course + ".ans" + os.sep + self.__topic
-#            print(self.__course)
-#            print(self.__ans_path)
         
         self.__quiz_num = qnum # Número del quiz
 
@@ -841,8 +834,8 @@ if __name__ == '__main__':
     
     print("Quiz number:", file_answer.quiz_num)
 
-    quiz = Quiz(file_answer.quiz_num, 'local')
-    quiz2 = Quiz(file_answer.quiz_num)
+    quiz = Quiz(file_answer.quiz_num, 'macti', 'local')
+#    quiz2 = Quiz(file_answer.quiz_num, 'macti')
     
     print('\nVerbosidad de la ayuda : {} \n'.format(quiz.verb))
     
