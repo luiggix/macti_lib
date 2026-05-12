@@ -128,6 +128,7 @@ def calculate_grades(db_name, a_id, n_id = -1, verb=0):
     grades = []
     assignment = db_name.assignments[a_id] # obtiene el assignment
 
+    
     if n_id >= 0:
         notebook = assignment.notebooks[n_id]  # obtiene el Notebook
         print(f"\nEvaluación de la {notebook}\n")
@@ -135,6 +136,8 @@ def calculate_grades(db_name, a_id, n_id = -1, verb=0):
         print(f"\nEvaluación de todo el assignment: {assignment}\n")
 
     for student in db_name.students:
+        no_notebook = 0 # Contador de notebooks que no se evalúan
+        
         # Diccionario para almacenar la información
         # de la notebook entregada por el estudiante
         student_grades = {}
@@ -174,14 +177,23 @@ def calculate_grades(db_name, a_id, n_id = -1, verb=0):
                 for submitted_notebook in submission.notebooks:
                     # Cálculo de la calificación final del notebook
                     student_grades['Score'] = submitted_notebook.score
-                    partial_grades += 10 * student_grades['Score'] / submitted_notebook.max_score
+
+                    # Revisa si la notebook debe ser evaluada
+                    if submitted_notebook.max_score > 0:
+                        # Evalúa la notebook
+                        partial_grades += 10 * student_grades['Score'] / submitted_notebook.max_score
+                    else:
+                        no_notebook += 1
+                        
                     if verb > 0:
                         print("Notebook: ", submitted_notebook) 
                         print(f"\tScore {student_grades['Score']} of {submitted_notebook.max_score}")
-                        print(f"\tCalificación {student_grades['Grades']:5.2f}")
-                        print()
                         
-                student_grades['Grades'] = round(partial_grades / len(submission.notebooks), 2)
+                student_grades['Grades'] = round(partial_grades / (len(submission.notebooks)-no_notebook), 2)
+                
+                if verb > 0:
+                    print(f"\tCalificación {student_grades['Grades']:5.2f}")
+                    print()
                     
         grades.append(student_grades)
 

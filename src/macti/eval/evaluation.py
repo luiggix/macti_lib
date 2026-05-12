@@ -1,5 +1,5 @@
 """
-@author: Luis M. de la Cruz [Updated on Tue Dec 12 15:32:38 2023].
+@author: Luis M. de la Cruz [Updated on Mon Aug 25 09:30:10 CST 2025].
 """
 
 # Herramientas para colorear texto y comparación de los resultados
@@ -27,12 +27,11 @@ class FileAnswer():
         Las respuestas/retroalimentación para cada quiz 
         se almacenan en archivos diferentes, veáse la función to_file().
         """
-        cp, to = os.path.split(os.getcwd()) # Extracción del path del curso y del tema
-        self.__course_path = cp + os.sep # Agregamos el separador a la ruta del curso 
-        self.__topic = to + os.sep       # Agregamos el separador al nombre del tema
-
-        # Construcción del path para los archivos de respuestas
-        self.__ans_path = self.__course_path + ".ans" + os.sep + self.__topic
+     
+        # Extracción del path del curso y del tema
+        cp, to = os.path.split(os.getcwd()) 
+        # Construcción del path del directorio para los archivos de respuestas
+        self.__ans_path = os.path.join(cp, ".ans", to)
 
         # Listas para almacenar los números de las respuestas, las respuestas
         # y la retroalimentación.
@@ -70,7 +69,7 @@ class FileAnswer():
         """
         Escribe la respuesta y la retroalimentación de una pregunta.
         
-        Esta función escribe una respuesta en una lista (self.__answer) y la retroalimentación de 
+        Esta función escribe una respuesta en una lista (self.__answers) y la retroalimentación de 
         esta respuesta en otra lista (self.__feedback). El número del ejercicio se almacena en 
         otra lista (self.__exernum). Si la respuesta es nueva, se agrega un elemento a la lista, 
         si el ejercicio ya existía entonces se sustituye.
@@ -116,15 +115,17 @@ class FileAnswer():
                     # columnas separadas lo siguiente:
                     # - La longitud del diccionario
                     # - Las keys como un arreglo
-                    # - Cada valueo como un arreglo
+                    # - Cada value como un arreglo
                     dict_len = len(ans)
                     keys = np.array(list(ans.keys()))
                     enum_l = enum + "_len"
                     enum_k = enum + "_key"
 
+                    # Escribimos la longitud del diccionario
                     self.write(enum_l, dict_len, f"{feed}. \n{enum_l} Longitudes de los diccionarios incompatibles.")
+                    # Escribimos la lista de claves
                     self.write(enum_k, keys, f"{feed}. \n{enum_k} Keys del diccionario incompatibles.")
-
+                    # Escribimos cada valor
                     for i, v in enumerate(ans.values()):
                         enum_v = enum + "_val_" + str(i)        
                         self.write(enum_v, v, f"{feed}. \n{enum_v} Valor en el diccionario incorrecto.")
@@ -164,9 +165,12 @@ class FileAnswer():
                     keys = np.array(list(ans.keys()))
                     enum_l = enum + "_len"
                     enum_k = enum + "_key"
-                    self.write(enum_l, dict_len, f"{feed}. \n{enum_l} Longitudes de los diccionarios incompatibles.")
-                    self.write(enum_k, keys, f"{feed}. \n{enum_k} Keys del diccionario incompatibles.")
 
+                    # Escribimos la longitud del diccionario
+                    self.write(enum_l, dict_len, f"{feed}. \n{enum_l} Longitudes de los diccionarios incompatibles.")
+                    # Escribimos la lista de claves
+                    self.write(enum_k, keys, f"{feed}. \n{enum_k} Keys del diccionario incompatibles.")
+                    # Escribimos cada valor
                     for i, v in enumerate(ans.values()):
                         enum_v = enum + "_val_" + str(i)        
                         self.write(enum_v, v, f"{feed}. \n{enum_v} Valor en el diccionario incorrecto.")
@@ -184,7 +188,8 @@ class FileAnswer():
                 else:
                     self.__answers.append(ans)
 
-                if not isinstance(ans, dict):
+                if not isinstance(ans, dict): # El caso de diccionarios los números de pregunta y la retroalimentación se
+                                              # almacenan de forma diferente. Véase la primera opción del 'if'
                     self.__exernum.append(enum)  # Se almacena el número de la pregunta
                     self.__feedback.append(feed) # Se almacena la retroalimentación de la pregunta
     
@@ -212,11 +217,15 @@ class FileAnswer():
 
         # Creación del archivo de respuestas
         ans_df = pd.DataFrame([self.__answers], columns=self.__exernum)
-        ans_df.to_parquet(self.__ans_path + '.__ans_' + qnum, compression='gzip')
+        ans_filename = os.path.join(self.__ans_path, '.__ans_' + qnum)
+        # Escritura de las respuestas en formato parquet
+        ans_df.to_parquet(ans_filename, compression='gzip')
 
         # Creación del archivo de retroalimentación
         feed_df = pd.DataFrame([self.__feedback], columns=self.__exernum) 
-        feed_df.to_parquet(self.__ans_path + '.__fee_' + qnum, compression='gzip')
+        feed_filename = os.path.join(self.__ans_path, '.__fee_' + qnum)
+        # Escritura de la retroalimentación en formato parquet
+        feed_df.to_parquet(feed_filename, compression='gzip')
         
         print('Respuestas y retroalimentación almacenadas.')
         
@@ -243,21 +252,15 @@ class Quiz():
         """
         self.__server = server
 
-        # MACTI: '/usr/local/share/nbgrader/exchange/' 
-        # OJO: esta ruta debe incluir el caracter '/' al final.
-        self.__server_path = "/usr/local/share/nbgrader/exchange/" # spath
-
         cp, to = os.path.split(os.getcwd()) # Extracción del path del curso y del tema
-        self.__course_path = cp + os.sep    # Agregamos el separador a la ruta del curso
-        self.__course = cp.split(os.sep)[-1] + os.sep # Nombre del curso con separador
-        self.__topic = to + os.sep       # Agregamos el separador al nombre del tema
 
         # Construcción del path para los archivos de respuestas
         if self.__server == 'local':
-            self.__ans_path = self.__course_path + ".ans" + os.sep + self.__topic
+            self.__ans_path = os.path.join(cp, ".ans", to)
         elif self.__server == 'hub':
-            self.__course = course + os.sep
-            self.__ans_path = self.__server_path + self.__course + ".ans" + os.sep + self.__topic
+            _, cn = os.path.split(cp)
+            self.__server_path = "/usr/local/share/nbgrader/exchange/" # Ruta en MACTI
+            self.__ans_path = os.path.join(self.__server_path, cn, ".ans", to)
         
         self.__quiz_num = qnum # Número del quiz
 
@@ -312,14 +315,15 @@ class Quiz():
         else:   
             # Se agrega el número del quiz correspondiente al nombre del archivo de respuestas. 
             filename = name + self.__quiz_num
-            stream = self.__ans_path + filename
+            stream = os.path.join(self.__ans_path, filename)
 
             # Lectura del archivo en formato parquet, se regresa en un DataFrame.
+            # Solo se lee la columna correspondiente con el identificador 'enum'
             return (pd.read_parquet(stream, columns=[enum]))
 
     def __print_correct(self, enum, equiz="", ans=""):
         """
-        Imprime el mensaje de que la respuesta es correcta.
+        Imprime el mensaje cuando la respuesta es correcta.
 
         Parameters
         ----------
@@ -344,7 +348,7 @@ class Quiz():
     
     def __print_error_hint(self, enum, equiz="", ans="", msg="", info=""):
         """
-        Imprime el error y la retroalimentación.
+        Imprime el mensaje cuando hay un error y la retroalimentación.
 
         Parameters
         ----------
@@ -476,13 +480,14 @@ class Quiz():
         """
         # Se obtiene la respuesta correcta del archivo.
         answer = self.__read(enum)
+        # Eliminamos espacios que haya de más en la respuesta del alumno.
         ans = ans.replace(" ","") 
 
         # Se compara la respuesta del alumno (ans) con la correcta (answer[enum][0])
         # La comparación se realiza en minúsculas.
-        correcta = ans.lower() == answer[enum][0].lower()
+        correct = ans.lower() == answer[enum][0].lower()
         
-        if correcta:
+        if correct:
             self.__print_correct(enum, equiz="option", ans=ans)
         else:
             self.__print_error_hint(enum, equiz="option", ans=ans)
@@ -506,11 +511,11 @@ class Quiz():
         value = self.__read(enum)
 
         # Se convierte la respuesta correcta (value) en formato SymPy.
-        problema = sy.sympify(value[enum][0])
+        correct = sy.sympify(value[enum][0])
 
-        # Se compara la respuesta correcta (problema) con la respuesta
+        # Se compara la respuesta correcta (correct) con la respuesta
         # del alumno (ans) usando la función equals().
-        if problema.equals(ans):
+        if correct.equals(ans):
             self.__print_correct(enum, equiz="expression", ans=ans)
         else:
             self.__print_error_hint(enum, equiz="expression", ans=ans)
