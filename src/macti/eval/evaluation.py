@@ -258,7 +258,8 @@ class Quiz():
         if self.__server == 'local':
             self.__ans_path = os.path.join(cp, ".ans", to)
         elif self.__server == 'hub':
-            _, cn = os.path.split(cp)
+            #_, cn = os.path.split(cp)
+            cn = course
             self.__server_path = "/usr/local/share/nbgrader/exchange/" # Ruta en MACTI
             self.__ans_path = os.path.join(self.__server_path, cn, ".ans", to)
         
