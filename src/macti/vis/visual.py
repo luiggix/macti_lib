@@ -190,7 +190,7 @@ class Plotter():
         matplotlib.pyplot.show().
         
         """
-        plt.show(close, block)
+        plt.show(block=block)
 #
 #----------------------- Methods for axis configuration ----------------------------   
 #
