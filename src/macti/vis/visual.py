@@ -139,7 +139,8 @@ class Plotter():
         self.__ax = [plt.subplot(rows, cols, n, **axis_par[n-1]) for n in range(1,self.__nfigs + 1)]
 
         # Ajustamos las subgráficas.
-        plt.tight_layout()
+        if self.__nfigs > 1:
+            plt.tight_layout()
 #
 #----------------------- Methods applied to the figure  ----------------------------   
 #
