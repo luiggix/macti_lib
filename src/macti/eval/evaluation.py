@@ -2,13 +2,15 @@
 @author: Luis M. de la Cruz [Updated on Mon Aug 25 09:30:10 CST 2025].
 """
 
-# Herramientas para colorear texto y comparación de los resultados
+import os
+import sys
+import platform
 from colorama import Fore
 import math
 import numpy as np
 import pandas as pd
-import sympy as sy
-import os, sys, platform
+import sympy as sp
+
 
 #import pkg_resources
 from IPython.display import display, Latex
@@ -512,7 +514,7 @@ class Quiz():
         value = self.__read(enum)
 
         # Se convierte la respuesta correcta (value) en formato SymPy.
-        correct = sy.sympify(value[enum][0])
+        correct = sp.sympify(value[enum][0])
 
         # Se compara la respuesta correcta (correct) con la respuesta
         # del alumno (ans) usando la función equals().
@@ -764,7 +766,7 @@ if __name__ == '__main__':
 
     diccionario_num_list = {1:[3.446,34.566], 
                             2:[5.6423, 6.7564], 
-                            3:[2.234324, 5.6]}
+                            3:[2.234324, 5.65645]}
     quiz.eval_dict('4', diccionario_num_list)
     
 
