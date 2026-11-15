@@ -157,7 +157,7 @@ class Plotter():
         """
         return self.__fig
     
-    def figtitle(self, title, title_par = {}):
+    def fig_title(self, title, title_par = {}):
         """
         Agrega un título para la figura.
         
@@ -171,16 +171,16 @@ class Plotter():
         """
         self.__fig.suptitle(title, **title_par)
 
-    def tight_layout(self, pad=1.08, h_pad=None, w_pad=None, rect=None):
-        """
-        Ejecuta la función matplotlib.pyplot.tight_layout.
+    # def tight_layout(self, pad=1.08, h_pad=None, w_pad=None, rect=None):
+    #     """
+    #     Ejecuta la función matplotlib.pyplot.tight_layout.
 
-        See Also
-        --------
-        matplotlib.pyplot.tight_layout().
+    #     See Also
+    #     --------
+    #     matplotlib.pyplot.tight_layout().
 
-        """
-        plt.tight_layout(pad, h_pad, w_pad, rect = rect)
+    #     """
+    #     plt.tight_layout(pad, h_pad, w_pad, rect = rect)
         
     def show(self, close=None, block=None):
         """
@@ -238,11 +238,11 @@ class Plotter():
         ax = self.__ax[n-1]
 
         # Ajuste de los límites de los ejes en cada dirección.
-        lmax = max(Lx,Ly)
+        lmax = max(Lx, Ly)
         offx = lmax * 0.010
         offy = lmax * 0.010
-        ax.set_xlim(-offx, Lx+offx)
-        ax.set_ylim(-offy, Ly+offy)
+        ax.set_xlim(-offx, Lx + offx)
+        ax.set_ylim(-offy, Ly + offy)
         ax.grid(False)
 
         # Se eliminan los spines (marco de la gráfica).
@@ -355,7 +355,7 @@ class Plotter():
         ax.xaxis.set_tick_params(labelsize=xlabelsize)
         ax.yaxis.set_tick_params(labelsize=ylabelsize)
 #
-#----------------------- Methods applied to all subplots  ----------------------------   
+#----------------------- Methods applied to selected subplots  ----------------------------   
 #       
     def grid(self, nlist = [], par = None):
         """
