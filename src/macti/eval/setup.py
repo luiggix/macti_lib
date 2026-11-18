@@ -23,7 +23,7 @@ def print_macti_info(msg):
 def init_translator(appname, lang):
 
     # Directorio local
-    locale_dir = importlib.resourcesfiles("macti").joinpath("locales")
+    locale_dir = importlib.resources.files("macti").joinpath("locales")
     
     #locale_dir = 'locales'
     
