@@ -21,11 +21,14 @@ def print_macti_info(msg):
     print(Fore.GREEN + "[MACTI | INFO] " + Style.RESET_ALL + msg)
 
 def init_translator(appname, lang):
+
     # Directorio local
-    localedir = 'locales'
+    locale_dir = importlib.resourcesfiles("macti").joinpath("locales")
+    
+    #locale_dir = 'locales'
     
     # Set up Gettext
-    trans_i18n = gettext.translation(appname, localedir, fallback=True, languages=[lang])
+    trans_i18n = gettext.translation(appname, locale_dir, fallback=True, languages=[lang])
     
     # Create the "magic" function
     trans_i18n.install()

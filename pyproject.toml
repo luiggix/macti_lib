@@ -31,4 +31,4 @@ include-package-data = true
 #license-files = ["MIT"]
 
 [tool.setuptools.package-data]
-"macti" = ["./resources/*"]
+"macti" = ["./resources/*", "./locales/**/*.mo", "./locales/**/*.po"]
