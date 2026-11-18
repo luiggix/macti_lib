@@ -65,7 +65,7 @@ def __initial_screen():
     #
     # --- Pantalla inicial
     #
-    os.system("clear")
+    #os.system("clear")
     print()
     print_macti_info(Fore.WHITE + Back.GREEN + _(" Creación de directorio del curso \n") )
     
