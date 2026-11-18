@@ -67,8 +67,8 @@ def __initial_screen():
     #
     #os.system("clear")
     print()
-    print_macti_info(Fore.WHITE + Back.GREEN + _(" Creación de directorio del curso \n") )
-    
+    print_macti_info(Fore.WHITE + Back.GREEN + _(" Creación de directorio del curso ") )
+    print()
     c_name = input(_(" Nombre del curso : "))
     print()
 
