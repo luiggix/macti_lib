@@ -11,8 +11,6 @@ import numpy as np
 import pandas as pd
 import sympy as sp
 
-
-#import pkg_resources
 from IPython.display import display, Latex
 
 class FileAnswer():
