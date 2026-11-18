@@ -24,6 +24,8 @@ def init_translator(appname, lang):
 
     # Directorio local
     locale_dir = importlib.resources.files("macti").joinpath("locales")
+
+    print(f" RUTA {locale_dir.name}")
     
     #locale_dir = 'locales'
     
