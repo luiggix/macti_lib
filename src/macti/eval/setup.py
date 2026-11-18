@@ -25,11 +25,9 @@ def init_translator(appname, lang):
     # Directorio local
     locale_dir = importlib.resources.files("macti").joinpath("locales")
 
-    with importlib.resources.as_file(locale_dir) as path:
-        print(f"RUTA {path}")
-    
-    #locale_dir = 'locales'
-    
+#    with importlib.resources.as_file(locale_dir) as path:
+#        print(f"RUTA {path}")
+        
     # Set up Gettext
     trans_i18n = gettext.translation(appname, locale_dir, fallback=True, languages=[lang])
     
@@ -67,7 +65,7 @@ def __initial_screen():
     #
     # --- Pantalla inicial
     #
-    #os.system("clear")
+    os.system("clear")
     print()
     print_macti_info(Fore.WHITE + Back.GREEN + _(" Creación de directorio del curso \n") )
     
