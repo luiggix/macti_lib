@@ -25,8 +25,9 @@ def init_translator(appname, lang):
     # Directorio local
     locale_dir = importlib.resources.files("macti").joinpath("locales")
 
-    print(f" RUTA {locale_dir.path} - {locale_dir.name}")
-
+    with importlib.resources.as_file(locale_dir) as path:
+        print(f"RUTA {path}")
+    
     #locale_dir = 'locales'
     
     # Set up Gettext
